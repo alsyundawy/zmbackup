@@ -53,6 +53,7 @@ function notify_finish()
         else
           QTDE=$(find "$WORKDIR/$1" -name "*.ldiff" | wc -l)
         fi
+        QTDE=${QTDE//[[:space:]]/}
       else
         SIZE=0
         QTDE=0

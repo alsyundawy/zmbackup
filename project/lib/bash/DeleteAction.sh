@@ -34,7 +34,17 @@ function delete_one(){
 function delete_old(){
   echo "Removing old backup folders - please wait."
   zmlog local7.info "Zmbhousekeep: Cleaning $WORKDIR from old backup sessions."
-  OLDEST=$(date +%Y%m%d%H%M%S -d "-$ROTATE_TIME days")
+  local OLDEST
+  if date -d "-1 days" >/dev/null 2>&1; then
+    # GNU date
+    OLDEST=$(date +%Y%m%d%H%M%S -d "-$ROTATE_TIME days")
+  elif date -v -1d >/dev/null 2>&1; then
+    # BSD date (macOS)
+    OLDEST=$(date -v -"${ROTATE_TIME}"d +%Y%m%d%H%M%S)
+  else
+    echo "ERROR: Unsupported date utility" >&2
+    exit 1
+  fi
   session_query \
     "select sessionID from backup_session where conclusion_date < datetime('now','-$ROTATE_TIME day')" \
     "grep SESS \"$WORKDIR\"/sessions.txt | awk -v oldest=\"$OLDEST\" '{n=split(\$2,a,\"-\"); if (n>=2 && a[2]+0 < oldest+0) print \$2}'" \
@@ -93,10 +103,11 @@ function clean_empty(){
   zmlog local7.info "Zmbhousekeep: Cleaning $WORKDIR from empty files."
   ERR=$(find "$WORKDIR" -type f -size 0 -delete 2>&1)
   BASHERRCODE=$?
-  if [[ $BASHERRCODE -eq 0 ]]; then
+  if [[ $BASHERRCODE -eq 0 && -z "$ERR" ]]; then
     echo "Empty files removed with success."
     zmlog local7.info "Zmbhousekeep: Empty files removed with success."
   else
+    [[ $BASHERRCODE -eq 0 ]] && BASHERRCODE=1
     echo "Can't remove empty files - $ERR"
     zmlog local7.err "Zmbhousekeep: Can't remove the empty files - See the error message below:"
     zmlog local7.err "Zmbhousekeep: $ERR"

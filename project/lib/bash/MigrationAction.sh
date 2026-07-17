@@ -70,9 +70,25 @@ function importsessionTXT(){
     MONTH=$(echo "$ROW" | cut -d'|' -f2 | cut -d'-' -f2)
     DAY=$(echo "$ROW" | cut -d'|' -f2 | cut -d'-' -f3 | cut -d'T' -f1)
     YEAR=$(echo "$ROW" | cut -d'|' -f2 | cut -d'-' -f1)
+    local HOUR MINUTE date_out date_arg fmt_str
     HOUR=$(echo "$ROW" | cut -d'|' -f2 | cut -d'T' -f2 | cut -d':' -f1)
     MINUTE=$(echo "$ROW" | cut -d'|' -f2 | cut -d'T' -f2 | cut -d':' -f2)
-    echo "SESSION: $SESSIONID started on $(date -d "$MONTH/$DAY/$YEAR $HOUR:$MINUTE")" >> "$WORKDIR"/sessions.txt
+    date_arg="$MONTH/$DAY/$YEAR"
+    fmt_str="%m/%d/%Y"
+    if [[ "$HOUR" =~ ^[0-9]+$ && "$MINUTE" =~ ^[0-9]+$ ]]; then
+      date_arg="$MONTH/$DAY/$YEAR $HOUR:$MINUTE"
+      fmt_str="%m/%d/%Y %H:%M"
+    fi
+    if date -d "01/01/2020" >/dev/null 2>&1; then
+      # GNU date
+      date_out=$(date -d "$date_arg")
+    elif date -j -f "$fmt_str" "$date_arg" >/dev/null 2>&1; then
+      # BSD date
+      date_out=$(date -j -f "$fmt_str" "$date_arg")
+    else
+      date_out="$YEAR-$MONTH-$DAY ${HOUR:-00}:${MINUTE:-00}"
+    fi
+    echo "SESSION: $SESSIONID started on $date_out" >> "$WORKDIR"/sessions.txt
     sqlite3 "$WORKDIR"/sessions.sqlite3 "select email from backup_account where sessionID='$SESSIONID'" | while read -r ACCOUNT; do
       echo "$SESSIONID:$ACCOUNT:$MONTH/$DAY/$YEAR" >> "$WORKDIR"/sessions.txt
     done
