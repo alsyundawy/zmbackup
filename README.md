@@ -216,6 +216,31 @@ The installer script automatically creates a cron config file in `/etc/cron.d/zm
 
 - Please help us contributing the Waddles project instead - Zmbackup will be deprecated and the only thing we will do here will be bugfixes.
 
+## Changelog
+
+### v1.2.10 — 27 Juli 2026 — Multi-Server Cluster Support, Security Hardening & Performance Optimization
+
+- **[FEAT]** **Multi-Mailbox Server Cluster Support**: Added `get_mailbox_url` helper to query `zimbraMailHost` and route REST calls (`getRestURL`/`postRestURL`) across multi-server Zimbra environments.
+- **[FEAT]** **Zimbra Domain Backup & Restore**: Added `-dom` / `--domain-backup` CLI flag supporting full Zimbra domain configuration backup (`__backupDomain`) and restoration (`restore_main_domain`).
+- **[SEC]** **LDAP & SQL Injection Protection**: Implemented LDAP filter escaping (`\`, `*`, `(`, `)`) and SQL input escaping (`safe_sql_value`) for emails, domains, and session IDs.
+- **[SEC]** **Comprehensive Input Validation**: Implemented validation regex helpers (`validate_email`, `validate_domain`, `validate_session_id`, `validate_account_args`) before CLI execution.
+- **[REF]** **Centralized Session Query Engine**: Refactored `session_query` helper to unify TXT file and SQLite3 database operations into a single dispatcher.
+- **[REF]** **Session Timestamp Parsing**: Extracted `parse_session_name` helper to streamline timestamp parsing (`YEAR`, `MONTH`, `DAY`) across action libraries.
+- **[FIX]** **Installer Sourcing Order (`install.sh`)**: Sourced installer libraries before `--help` flag evaluation, fixing `show_help: command not found`.
+- **[FIX]** **Exit Code Capture (`project/zmbackup`)**: Fixed exit code handling in `restore_main_mailbox` path (`restore_main_mailbox || ERRCODE=$?`).
+- **[FIX]** **Parallel Job Failure Tracking**: Recorded `FAILED` session status in `backup_session` database when parallel jobs or staging directory moves fail.
+- **[FIX]** **Exit Trap Failure Handling**: Updated `on_exit` trap to treat any non-zero exit code as `FAILURE`.
+- **[FIX]** **Notification Glob Fix**: Replaced raw file globbing with `find -name "*.tgz"` and `find -name "*.ldiff"` in `notify_finish`.
+- **[FIX]** **Cross-Platform BSD Support**: Added BSD `date -v -1d` fallbacks for macOS/FreeBSD and sanitized `wc -l` outputs (`tr -d ' '`).
+- **[FIX]** **Domain List Splitting**: Fixed comma-separated `-d` domain list parsing in `build_listBKP`.
+- **[OPT]** **Native Bash Parameter Expansion**: Replaced subshell `echo | sed` string manipulation with `${4//,/ }`.
+- **[TEST]** **468 BATS Test Cases**: 100% pass rate across unit and functional test suites (468 passed, 0 failed).
+- **[LINT]** **100% ShellCheck Certified**: All 18 shell scripts pass ShellCheck without warnings or errors.
+
+### v1.2.9 — Original Baseline Release (by Lucas Costa Beyeler)
+
+- Baseline release with full, incremental, mailbox, LDAP, alias, and distribution list backup/restore commands in TXT/SQLite3 formats.
+
 ## License
 
 [![GNU GPL v3.0](http://www.gnu.org/graphics/gplv3-127x51.png)](http://www.gnu.org/licenses/gpl.html)

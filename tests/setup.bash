@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # Common test helpers loaded by all test files
 
+# shellcheck disable=SC2034
 TESTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${TESTS_DIR}/.." && pwd)"
 LIB_DIR="${PROJECT_ROOT}/project/lib/bash"
 INSTALLER_DIR="${PROJECT_ROOT}/installScript"
 MOCKS_DIR="${TESTS_DIR}/mocks"
 FIXTURES_DIR="${TESTS_DIR}/fixtures"
+export PROJECT_ROOT LIB_DIR INSTALLER_DIR MOCKS_DIR FIXTURES_DIR
 
 setup_mock_path() {
   PATH="${MOCKS_DIR}:${PATH}"
@@ -27,6 +29,7 @@ destroy_workdir() {
 load_test_config() {
   local _saved_exit_trap
   _saved_exit_trap="$(trap -p EXIT)"
+  # shellcheck source=/dev/null
   source "${LIB_DIR}/MiscAction.sh"
   eval "$_saved_exit_trap"
   BACKUPUSER="$(/usr/bin/whoami)"
