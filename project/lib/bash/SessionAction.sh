@@ -42,6 +42,7 @@ function list_sessions_txt ()
     esac
 
     # Printing the information as a table
+    # shellcheck disable=SC2153
     printf "| %-25s | %s/%s/%s | %-8s | %-26s |\n" "$i" "$MONTH" "$DAY" "$YEAR" "$SIZE" "$OPT"
   done
   printf "+---------------------------+------------+----------+----------------------------+\n"

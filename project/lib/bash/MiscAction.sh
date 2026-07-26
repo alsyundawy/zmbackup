@@ -11,8 +11,11 @@
 function parse_session_name() {
   local name="$1"
   [[ "$name" =~ -([0-9]{4})([0-9]{2})([0-9]{2}) ]] || return 1
+  # shellcheck disable=SC2034
   YEAR="${BASH_REMATCH[1]}"
+  # shellcheck disable=SC2034
   MONTH="${BASH_REMATCH[2]}"
+  # shellcheck disable=SC2034
   DAY="${BASH_REMATCH[3]}"
 }
 
@@ -157,6 +160,7 @@ function load_config(){
   local bashrc="${ZIMBRA_BASHRC:-/opt/zimbra/.bashrc}"
   local ldaprc="${ZIMBRA_LDAPRC:-/opt/zimbra/.ldaprc}"
   if [ -f "$conf" ]; then
+    # shellcheck source=/dev/null
     source "$conf" 2> /dev/null
     ZMBACKUP_BLOCKEDLIST="${ZMBACKUP_BLOCKEDLIST:-/etc/zmbackup/blockedlist.conf}"
     export ZMBACKUP_BLOCKEDLIST
@@ -166,6 +170,7 @@ function load_config(){
     exit 1
   fi
   if [ -f "$bashrc" ]; then
+    # shellcheck source=/dev/null
     source "$bashrc" 2> /dev/null
   else
     zmlog local7.err "Zmbackup: zimbra user's .bashrc not found."

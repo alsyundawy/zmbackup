@@ -62,39 +62,37 @@ The table below documents what zmbackup covers and what falls outside its scope.
 
 If you use CentOS, first install the package **[epel-release](https://fedoraproject.org/wiki/EPEL)**, as we will need this repository to download part of the dependencies.
 
-```
-# yum install epel-release
+```bash
+yum install epel-release
 ```
 
 Now, install the packages **parallel**, **wget**, **sqlite3** and **curl** in your server. You don't need to install grep, date, mktemp and cron, because they are already part of all GNU/Linux distros. **ldap-utils** is need to be installed only if you do a separate server for Zmbackup, otherwise Zimbra OSE is already deployed with this package;
 
-```
-# apt-get install parallel wget curl sqlite3
-# yum install parallel wget curl sqlite3
+```bash
+apt-get install parallel wget curl sqlite3
+yum install parallel wget curl sqlite3
 ```
 
 Download the latest package with the BETA tag in "Release" section, or git clone the development branch:
 
-```
+```bash
 git clone -b master https://github.com/lucascbeyeler/zmbackup.git
 ```
 
 Inside the project folder, execute the script **install.sh** and follow all the instructions to install the project. To validate if the script is installed, change to your server's zimbra user and execute zmbackup -v.
 
-```
-# cd zmbackup
-# ./install.sh
-# su - zimbra
-$ zmbackup -v
-  zmbackup version: 1.2.9
+```bash
+cd zmbackup
+./install.sh
+su - zimbra
+zmbackup -v
 ```
 
 ## Usage
 
 To check all the options available to Zmbackup, just execute **zmbackup -h** or **zmbackup --help**. This will return for you a list with all the options, what each one of them does, and the syntax.
 
-```
-$ zmbackup -h
+```text
 usage: zmbackup -f [-m,-dl,-al,-ldp, -sig] [-d,-a] <mail/domain>
        zmbackup -i <mail>
        zmbackup -r [-m,-dl,-al,-ldp, -sig] [-d,-a] <session> <mail>
@@ -138,76 +136,74 @@ Restore Backup Options:
 
 To execute a full backup routine, which include by default the mailbox and the ldiff, just run the script with the option **-f** or **--full**. Depending of the ammount of accounts or the number of proccess you set in the option **MAX_PARALLEL_PROCESS**, this will take sometime before conclude.
 
-```
-$ zmbackup -f
+```bash
+zmbackup -f
 ```
 
 You can filter for what you want using the options **-m** for Mailbox, **-ldp** for LDAP account entry only, **-al** for Alias, and **-dl** for Distribution List. REMEMBER - These options don't stack with each other, so don't try -dl and -al at the same time (the script will break if you do this).
 
 To back up **only the mailbox** (no LDAP entry):
 
-```
-$ zmbackup -f -m
+```bash
+zmbackup -f -m
 ```
 
 To back up **only the LDAP account entry** (no mailbox — useful when you want account metadata without email data):
 
-```
-$ zmbackup -f -ldp
+```bash
+zmbackup -f -ldp
 ```
 
 **INCORRECT** — options cannot be combined:
 
-```
-$ zmbackup -f -m -ldp
+```bash
+zmbackup -f -m -ldp
 ```
 
 Aside from the full backup action, Zmbackup still have a option to do incremental backups. This works like this: before a incremental be executed, Zmbackup should check the date for the latest routine for each account, and execute a restore action based on that date. At the moment, the incremental will backup the ldap account and the mailbox, and accept no paramenter aside the list of accounts to be backed up.
 
-```
-$ zmbackup -i
+```bash
+zmbackup -i
 ```
 
 To restore a backup, you use the option **-r** or **--restore**, but this time you should inform the ID session you want to restore. You can check the sessionID with the command zmbackup -l.
 
-```
-$ zmbackup -l
+```text
 +---------------------------+--------------+--------------+----------+----------------------------+
 |       Session Name        |    Start     |    Ending    |   Size   |        Description         |
 +---------------------------+--------------+--------------+----------+----------------------------+
 | full-20180408160227       |  04/08/2018  |  04/08/2018  | 76K      | Full Account               |
 | mbox-20180408160808       |  04/08/2018  |  04/08/2018  | 40K      | Mailbox                    |
 +---------------------------+--------------+--------------+----------+----------------------------+
+```
 
-
-$ zmbackup -r full-20170621201603
+```bash
+zmbackup -r full-20170621201603
 ```
 
 The restoreOnAccount act different of the rest of the restore actions, as you should inform the account you want to restore, and the destination of that account, aside from the sessionID. This will dump all the content inside that account from that session in the destination account.
 
-```
-$ zmbackup -r -ro full-20170621201603 slayerofdemons@boletaria.com chosenundead@lordran.com
+```bash
+zmbackup -r -ro full-20170621201603 slayerofdemons@boletaria.com chosenundead@lordran.com
 ```
 
 To remove a backup session, you only need to use the option **-d** or **--delete**, and inform the session you want to delete. Or, if you want to remove all the backups before X days, you can use the option **-hp** or **--housekeep** to execute the Housekeep process. **WARNING**: The housekeep can take sometime depending the ammount of data you want to remove.
 
-```
-$ zmbackup -d full-20170621201603
-$ zmbackup -hp
+```bash
+zmbackup -d full-20170621201603
+zmbackup -hp
 ```
 
 Zmbackup is capable to migrate from TXT to SQLite3, if you want to store you data inside a relational database. The advantage of doing this is more efficience when trying to list the sessions, and more details when you do this (like the beginning and conclusion of the session). To enable the SQLite3, first edit the option SESSION_TYPE insinde zmbackup.conf:
 
-```
-# vim /etc/zmbackup/zmbackup.conf
-...
+```ini
 SESSION_TYPE=SQLITE3
 ```
 
 With the SQLITE3 option enabled, now you need to migrate your entire sessions.txt to the relational database using the option **-m** or **--migrate**. After the end of the migration, you can run all zmbackup commands again.
 
-```
-$ zmbackup -m
+```bash
+zmbackup -m
 ```
 
 **REMEMBER:** at this moment, this migration activity is a only one way road. There is no rollback, and, if you try to do a rollback, you will lost your sessions file.
@@ -226,6 +222,28 @@ The installer script automatically creates a cron config file in `/etc/cron.d/zm
 
 View official GNU site <http://www.gnu.org/licenses/gpl.html>.
 
-## Author Information
+## Author & Maintainer Information
 
-- [Lucas Costa Beyeler](https://github.com/lucascbeyeler)
+- **Original Creator**: [Lucas Costa Beyeler](https://github.com/lucascbeyeler)
+- **Optimized & Maintained by**: **Harry Dertin Sutisna Alsyundawy** ([@alsyundawy](https://github.com/alsyundawy))
+
+## Donasi / Support ☕
+
+Jika Anda merasa terbantu dan ingin mendukung pengembangan serta optimasi proyek ini, pertimbangkan untuk berdonasi. Terima kasih atas dukungannya!
+
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Dukung%20via%20Ko--fi-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/alsyundawy)
+[![PayPal](https://img.shields.io/badge/PayPal-Dukung%20via%20PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.me/alsyundawy)
+
+### ☕ Donasi via Ko-fi
+
+Dukung pengembangan script melalui Ko-fi:
+👉 **[ko-fi.com/alsyundawy](https://ko-fi.com/alsyundawy)**
+
+### 💳 Donasi via PayPal
+
+Dukung pengembangan script melalui PayPal:
+👉 **[paypal.me/alsyundawy](https://www.paypal.me/alsyundawy)**
+
+### 📱 Donasi via QRIS
+
+![QRIS Donation](https://github.com/user-attachments/assets/a0126f28-6dde-43da-ba14-d7c9a27de0df)

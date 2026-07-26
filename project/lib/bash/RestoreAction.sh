@@ -62,10 +62,10 @@ function restore_main_mailbox()
       MAIL_FAILFILE=$(mktemp)
       export MAIL_FAILFILE
       build_listRST "$1" "$2"
-      TOTAL_COUNT=$(wc -l < "$TEMPACCOUNT")
+      TOTAL_COUNT=$(wc -l < "$TEMPACCOUNT" | tr -d ' ')
       parallel --jobs "$MAX_PARALLEL_PROCESS" "mailbox_restore '$1' '{}'" < "$TEMPACCOUNT"
       BASHERRCODE=$?
-      FAIL_COUNT=$(wc -l < "$MAIL_FAILFILE")
+      FAIL_COUNT=$(wc -l < "$MAIL_FAILFILE" | tr -d ' ')
       [[ $FAIL_COUNT -gt 0 ]] && BASHERRCODE=1
       SUCCESS_COUNT=$((TOTAL_COUNT - FAIL_COUNT))
       rm -f "$MAIL_FAILFILE"
@@ -143,10 +143,10 @@ function restore_main_ldap()
     LDAP_FAILFILE=$(mktemp)
     export LDAP_FAILFILE
     build_listRST "$1" "$2"
-    TOTAL_COUNT=$(wc -l < "$TEMPACCOUNT")
+    TOTAL_COUNT=$(wc -l < "$TEMPACCOUNT" | tr -d ' ')
     parallel --jobs "$MAX_PARALLEL_PROCESS" "ldap_restore '$1' '{}'" < "$TEMPACCOUNT"
     BASHERRCODE=$?
-    FAIL_COUNT=$(wc -l < "$LDAP_FAILFILE")
+    FAIL_COUNT=$(wc -l < "$LDAP_FAILFILE" | tr -d ' ')
     [[ $FAIL_COUNT -gt 0 ]] && BASHERRCODE=1
     SUCCESS_COUNT=$((TOTAL_COUNT - FAIL_COUNT))
     rm -f "$LDAP_FAILFILE"

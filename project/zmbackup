@@ -47,15 +47,25 @@
 ################################################################################
 # LOADING ZMBACKUP LIBRARIES
 ################################################################################
+# shellcheck source=/dev/null
 source /usr/local/lib/zmbackup/bash/HelpAction.sh
+# shellcheck source=/dev/null
 source /usr/local/lib/zmbackup/bash/MiscAction.sh
+# shellcheck source=/dev/null
 source /usr/local/lib/zmbackup/bash/NotifyAction.sh
+# shellcheck source=/dev/null
 source /usr/local/lib/zmbackup/bash/ParallelAction.sh
+# shellcheck source=/dev/null
 source /usr/local/lib/zmbackup/bash/ListAction.sh
+# shellcheck source=/dev/null
 source /usr/local/lib/zmbackup/bash/BackupAction.sh
+# shellcheck source=/dev/null
 source /usr/local/lib/zmbackup/bash/RestoreAction.sh
+# shellcheck source=/dev/null
 source /usr/local/lib/zmbackup/bash/DeleteAction.sh
+# shellcheck source=/dev/null
 source /usr/local/lib/zmbackup/bash/MigrationAction.sh
+# shellcheck source=/dev/null
 source /usr/local/lib/zmbackup/bash/SessionAction.sh
 
 ################################################################################
@@ -197,8 +207,7 @@ case "$1" in
           fi
           restore_main_ldap "$2" "$3" "$4"
           ERRCODE=$?
-          restore_main_mailbox "$2" "$3" "$4"
-          [[ $? -ne 0 ]] && ERRCODE=$?
+          restore_main_mailbox "$2" "$3" "$4" || ERRCODE=$?
           rm -rf "$PID"
         else
           show_help

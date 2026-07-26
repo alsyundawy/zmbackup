@@ -5,3 +5,4 @@ node_modules/
 .claude
 MULTI_SERVER_SUPPORT.md 
 *.log
+.DS_Store

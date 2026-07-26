@@ -259,7 +259,13 @@ function ldap_filter()
   EXIST=
   if [[ "$LOCK_BACKUP" == "true" ]]; then
     TODAY=$(date +%Y-%m-%dT%H:%M:%S.%N)
-    YESTERDAY=$(date +%Y-%m-%dT%H:%M:%S.%N -d "yesterday")
+    if date -d "yesterday" >/dev/null 2>&1; then
+      YESTERDAY=$(date +%Y-%m-%dT%H:%M:%S.%N -d "yesterday")
+    elif date -v -1d >/dev/null 2>&1; then
+      YESTERDAY=$(date -v -1d +%Y-%m-%dT%H:%M:%S.%N)
+    else
+      YESTERDAY="$TODAY"
+    fi
     local SAFE_EMAIL
     SAFE_EMAIL=$(safe_sql_value "$1")
     EXIST=$(session_query \
