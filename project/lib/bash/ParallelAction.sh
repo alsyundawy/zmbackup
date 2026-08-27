@@ -79,7 +79,20 @@ function mailbox_backup()
       "select MAX(initial_date) from backup_account where email='${SAFE_EMAIL}' and (sessionID like 'full%' or sessionID like 'inc%' or sessionID like 'mbox%')" \
       "grep \"$1\" \"$WORKDIR\"/sessions.txt | tail -1 | awk -F: '{print \$3}' | cut -d- -f2")
     if [[ -n "$DATE" ]]; then
-      YESTERDAY=$(date -d "$DATE" --date='-48 hours' +%m/%d/%Y)
+      if date -d "yesterday" >/dev/null 2>&1; then
+        YESTERDAY=$(date -d "$DATE -48 hours" +%m/%d/%Y 2>/dev/null || date -d "$DATE" --date='-48 hours' +%m/%d/%Y)
+      else
+        CLEAN_DATE="${DATE%%.*}"
+        if [[ "$CLEAN_DATE" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} ]]; then
+          YESTERDAY=$(date -j -f "%Y-%m-%dT%H:%M:%S" -v-48H "$CLEAN_DATE" +%m/%d/%Y 2>/dev/null || date -j -v-2d +%m/%d/%Y)
+        elif [[ "$CLEAN_DATE" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2} ]]; then
+          YESTERDAY=$(date -j -f "%Y-%m-%d" -v-48H "$CLEAN_DATE" +%m/%d/%Y 2>/dev/null || date -j -v-2d +%m/%d/%Y)
+        elif [[ "$CLEAN_DATE" =~ ^[0-9]{8} ]]; then
+          YESTERDAY=$(date -j -f "%Y%m%d" -v-48H "$CLEAN_DATE" +%m/%d/%Y 2>/dev/null || date -j -v-2d +%m/%d/%Y)
+        else
+          YESTERDAY=$(date -j -v-2d +%m/%d/%Y)
+        fi
+      fi
       AFTER='&'"query=after:\"$YESTERDAY\""
     else
       AFTER=''
@@ -258,18 +271,21 @@ function ldap_filter()
 {
   EXIST=
   if [[ "$LOCK_BACKUP" == "true" ]]; then
-    TODAY=$(date +%Y-%m-%dT%H:%M:%S.%N)
+    local TODAY YESTERDAY
     if date -d "yesterday" >/dev/null 2>&1; then
-      YESTERDAY=$(date +%Y-%m-%dT%H:%M:%S.%N -d "yesterday")
+      TODAY=$(date +%Y-%m-%dT%H:%M:%S.999 -d "+1 day")
+      YESTERDAY=$(date +%Y-%m-%dT%H:%M:%S.000 -d "yesterday")
     elif date -v -1d >/dev/null 2>&1; then
-      YESTERDAY=$(date -v -1d +%Y-%m-%dT%H:%M:%S.%N)
+      TODAY=$(date -v +1d +%Y-%m-%dT%H:%M:%S.999)
+      YESTERDAY=$(date -v -1d +%Y-%m-%dT%H:%M:%S.000)
     else
-      YESTERDAY="$TODAY"
+      TODAY="9999-12-31"
+      YESTERDAY="1970-01-01"
     fi
     local SAFE_EMAIL
     SAFE_EMAIL=$(safe_sql_value "$1")
     EXIST=$(session_query \
-      "select email from backup_account where conclusion_date < '$TODAY' and conclusion_date > '$YESTERDAY' and email='${SAFE_EMAIL}'" \
+      "select email from backup_account where conclusion_date <= '$TODAY' and conclusion_date >= '$YESTERDAY' and email='${SAFE_EMAIL}'" \
       "grep \"$1:$(date +%m/%d/%y)\" \"$WORKDIR\"/sessions.txt 2>/dev/null | tail -1")
   fi
   local blockedlist="${ZMBACKUP_BLOCKEDLIST:-/etc/zmbackup/blockedlist.conf}"
