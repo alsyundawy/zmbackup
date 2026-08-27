@@ -2,9 +2,10 @@
   "name": "zmbackup",
   "version": "1.2.11",
   "scripts": {
-    "test": "npx bats --jobs 8 tests/unit/ tests/functional/",
-    "test:unit": "npx bats --jobs 8 tests/unit/",
-    "test:functional": "npx bats --jobs 8 tests/functional/"
+    "test": "bats --jobs 8 tests/unit/ tests/functional/",
+    "test:unit": "bats --jobs 8 tests/unit/",
+    "test:functional": "bats --jobs 8 tests/functional/",
+    "lint": "npx shellcheck project/zmbackup project/lib/bash/*.sh installScript/*.sh"
   },
   "devDependencies": {
     "bats": "^1.13.0"
