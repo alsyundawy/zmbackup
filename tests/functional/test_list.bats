@@ -340,7 +340,7 @@ EOF
 }
 
 @test "list SQLITE3: multiple sessions of the same type are all listed" {
-  SESSION_TYPE="SQLITE3"
+  export SESSION_TYPE="SQLITE3"
   _init_sqlite3
   _add_sqlite3_session "full-20240101120000" "2024-01-01T12:00:00.000" "2024-01-01T13:00:00.000" "100M" "Full Backup"
   _add_sqlite3_session "full-20240108120000" "2024-01-08T12:00:00.000" "2024-01-08T13:00:00.000" "105M" "Full Backup"

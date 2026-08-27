@@ -76,68 +76,68 @@ validate_config
 export_function
 export_vars
 constant
-case "$1" in
+case "${1}" in
   "-f"|"--full" )
     checkpid
-    case "$2" in
+    case "${2}" in
       "-dl"|"--distributionlist" )
-        validate_account_args "$3" "$4" || exit 2
-        sessionvars "$2"
+        validate_account_args "${3}" "${4}" || exit 2
+        sessionvars "${2}"
         create_temp
-        backup_main "$DLOBJECT" "$DLFILTER" "$3" "$4"
-        rm -rf "$PID"
+        backup_main "${DLOBJECT}" "${DLFILTER}" "${3}" "${4}"
+        rm -rf "${PID}"
       ;;
       "-al"|"--alias" )
-        validate_account_args "$3" "$4" || exit 2
-        sessionvars "$2"
+        validate_account_args "${3}" "${4}" || exit 2
+        sessionvars "${2}"
         create_temp
-        backup_main "$ALOBJECT" "$ALFILTER" "$3" "$4"
-        rm -rf "$PID"
+        backup_main "${ALOBJECT}" "${ALFILTER}" "${3}" "${4}"
+        rm -rf "${PID}"
       ;;
       "-ldp"|"--ldap" )
-        validate_account_args "$3" "$4" || exit 2
-        sessionvars "$2"
+        validate_account_args "${3}" "${4}" || exit 2
+        sessionvars "${2}"
         create_temp
-        backup_main "$ACOBJECT" "$ACFILTER" "$3" "$4"
-        rm -rf "$PID"
+        backup_main "${ACOBJECT}" "${ACFILTER}" "${3}" "${4}"
+        rm -rf "${PID}"
       ;;
       "-m"|"--mail" )
-        validate_account_args "$3" "$4" || exit 2
-        sessionvars "$2"
+        validate_account_args "${3}" "${4}" || exit 2
+        sessionvars "${2}"
         create_temp
-        backup_main "$ACOBJECT" "$ACFILTER" "$3" "$4"
-        rm -rf "$PID"
+        backup_main "${ACOBJECT}" "${ACFILTER}" "${3}" "${4}"
+        rm -rf "${PID}"
       ;;
       "-sig"|"--signature" )
-        validate_account_args "$3" "$4" || exit 2
-        sessionvars "$2"
+        validate_account_args "${3}" "${4}" || exit 2
+        sessionvars "${2}"
         create_temp
-        backup_main "$SIOBJECT" "$SIFILTER" "$3" "$4"
-        rm -rf "$PID"
+        backup_main "${SIOBJECT}" "${SIFILTER}" "${3}" "${4}"
+        rm -rf "${PID}"
       ;;
       "-dom"|"--domain-backup" )
-        validate_account_args "$3" "$4" || exit 2
-        sessionvars "$2"
+        validate_account_args "${3}" "${4}" || exit 2
+        sessionvars "${2}"
         create_temp
-        backup_main "$DOMOBJECT" "$DOMFILTER" "$3" "$4"
-        rm -rf "$PID"
+        backup_main "${DOMOBJECT}" "${DOMFILTER}" "${3}" "${4}"
+        rm -rf "${PID}"
       ;;
       * )
-        validate_account_args "$2" "$3" || exit 2
-        sessionvars "$1"
+        validate_account_args "${2}" "${3}" || exit 2
+        sessionvars "${1}"
         create_temp
-        backup_main "$ACOBJECT" "$ACFILTER" "$2" "$3"
-        rm -rf "$PID"
+        backup_main "${ACOBJECT}" "${ACFILTER}" "${2}" "${3}"
+        rm -rf "${PID}"
       ;;
     esac
   ;;
   "-i"|"--incremental" )
-    validate_account_args "$2" "$3" || exit 2
-    sessionvars "$1" 'TRUE'
+    validate_account_args "${2}" "${3}" || exit 2
+    sessionvars "${1}" 'TRUE'
     checkpid
     create_temp
-    backup_main "$ACOBJECT" "$ACFILTER" "$2" "$3"
-    rm -rf "$PID"
+    backup_main "${ACOBJECT}" "${ACFILTER}" "${2}" "${3}"
+    rm -rf "${PID}"
   ;;
   "-l"|"--list" )
     list_sessions
@@ -145,71 +145,71 @@ case "$1" in
   "-r"|"--restore" )
     create_temp
     checkpid
-    case "$2" in
+    case "${2}" in
       "-dl"|"--distributionlist"|"-ldp"|"--ldap"|"-al"|"--alias"|"-sig"|"--signature")
-        case "$3" in
+        case "${3}" in
           "-a"|"--account"|"-d"|"--domain")
-            if ! validate_session_id "$4"; then
-              printf "\n\nError! Invalid session ID: %s\n\n" "$4"; exit 2
+            if ! validate_session_id "${4}"; then
+              printf "\n\nError! Invalid session ID: %s\n\n" "${4}"; exit 2
             fi
-            restore_main_ldap "$4" "$5"
+            restore_main_ldap "${4}" "${5}"
             ERRCODE=$?
           ;;
           * )
-            if ! validate_session_id "$3"; then
-              printf "\n\nError! Invalid session ID: %s\n\n" "$3"; exit 2
+            if ! validate_session_id "${3}"; then
+              printf "\n\nError! Invalid session ID: %s\n\n" "${3}"; exit 2
             fi
-            restore_main_ldap "$3" "$4"
+            restore_main_ldap "${3}" "${4}"
             ERRCODE=$?
           ;;
         esac
-        rm -rf "$PID"
+        rm -rf "${PID}"
       ;;
       "-dom"|"--domain-backup" )
-        if ! validate_session_id "$3"; then
-          printf "\n\nError! Invalid session ID: %s\n\n" "$3"; exit 2
+        if ! validate_session_id "${3}"; then
+          printf "\n\nError! Invalid session ID: %s\n\n" "${3}"; exit 2
         fi
-        restore_main_domain "$3" "$4"
+        restore_main_domain "${3}" "${4}"
         ERRCODE=$?
-        rm -rf "$PID"
+        rm -rf "${PID}"
       ;;
       "-m"|"--mail" )
-        if ! validate_session_id "$3"; then
-          printf "\n\nError! Invalid session ID: %s\n\n" "$3"; exit 2
+        if ! validate_session_id "${3}"; then
+          printf "\n\nError! Invalid session ID: %s\n\n" "${3}"; exit 2
         fi
-        restore_main_mailbox "$3" "$4" "$5"
+        restore_main_mailbox "${3}" "${4}" "${5}"
         ERRCODE=$?
-        rm -rf "$PID"
+        rm -rf "${PID}"
       ;;
       "-ro"|"--restoreOnAccount" )
-        if [ -z "$4" ] || [ -z "$5" ]; then
+        if [[ -z "${4}" || -z "${5}" ]]; then
           show_help
           printf "\n\nError! Please inform the account that should be restored, and when the restore should be placed.\n\n"
           exit 2
         else
-          if ! validate_session_id "$3"; then
-            printf "\n\nError! Invalid session ID: %s\n\n" "$3"; exit 2
+          if ! validate_session_id "${3}"; then
+            printf "\n\nError! Invalid session ID: %s\n\n" "${3}"; exit 2
           fi
-          if ! validate_email "$4"; then
-            printf "\n\nError! Invalid email address: %s\n\n" "$4"; exit 2
+          if ! validate_email "${4}"; then
+            printf "\n\nError! Invalid email address: %s\n\n" "${4}"; exit 2
           fi
-          if ! validate_email "$5"; then
-            printf "\n\nError! Invalid email address: %s\n\n" "$5"; exit 2
+          if ! validate_email "${5}"; then
+            printf "\n\nError! Invalid email address: %s\n\n" "${5}"; exit 2
           fi
-          restore_main_mailbox "$3" "$4" "$5"
+          restore_main_mailbox "${3}" "${4}" "${5}"
           ERRCODE=$?
-          rm -rf "$PID"
+          rm -rf "${PID}"
         fi
       ;;
       * )
-        if [[ "$2" == "full"* || "$2" == "inc"* ]]; then
-          if ! validate_session_id "$2"; then
-            printf "\n\nError! Invalid session ID: %s\n\n" "$2"; exit 2
+        if [[ "${2}" == "full"* || "${2}" == "inc"* ]]; then
+          if ! validate_session_id "${2}"; then
+            printf "\n\nError! Invalid session ID: %s\n\n" "${2}"; exit 2
           fi
-          restore_main_ldap "$2" "$3" "$4"
+          restore_main_ldap "${2}" "${3}" "${4}"
           ERRCODE=$?
-          restore_main_mailbox "$2" "$3" "$4" || ERRCODE=$?
-          rm -rf "$PID"
+          restore_main_mailbox "${2}" "${3}" "${4}" || ERRCODE=$?
+          rm -rf "${PID}"
         else
           show_help
           printf "\n\nError! Invalid parameters for restore\n"
@@ -218,32 +218,32 @@ case "$1" in
     esac
   ;;
   "-d"|"--delete" )
-    if [ -z "$2" ]; then
+    if [[ -z "${2}" ]]; then
       show_help
       printf "\n\nError! Please inform the session that should be deleted\n\n"
     else
-      if ! validate_session_id "$2"; then
-        printf "\n\nError! Invalid session ID: %s\n\n" "$2"
+      if ! validate_session_id "${2}"; then
+        printf "\n\nError! Invalid session ID: %s\n\n" "${2}"
         exit 2
       fi
       checkpid
-      delete_one "$2"
+      delete_one "${2}"
       ERRCODE=$?
-      rm -rf "$PID"
+      rm -rf "${PID}"
     fi
   ;;
   "-hp"|"--housekeep")
     checkpid
     delete_old
     clean_empty
-    rm -rf "$PID"
+    rm -rf "${PID}"
   ;;
   "-t"|"--truncate")
-    if [ -n "$2" ] && [ "--force-clean" == "$2" ]; then
+    if [[ -n "${2}" && "${2}" == "--force-clean" ]]; then
       checkpid
       leeroy_jenkins
       clean_empty
-      rm -rf "$PID"
+      rm -rf "${PID}"
     else
       echo "This action is irreversible - Use the option --force-clean to override this message"
     fi
@@ -257,7 +257,7 @@ case "$1" in
   "-mg"|"--migrate" )
     checkpid
     migration
-    rm -rf "$PID"
+    rm -rf "${PID}"
   ;;
   * )
     show_help

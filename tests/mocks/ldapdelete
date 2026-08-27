@@ -1,6 +1,6 @@
 #!/bin/bash
 # ldapdelete mock
-if [ "${MOCK_LDAPDELETE_FAIL:-0}" = "1" ]; then
+if [[ "${MOCK_LDAPDELETE_FAIL:-0}" == "1" ]]; then
   echo "ldap_error: no such object" >&2
   exit 1
 fi

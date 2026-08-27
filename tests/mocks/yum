@@ -1,6 +1,6 @@
 #!/bin/bash
 # yum mock
-if [ "${MOCK_YUM_FAIL:-0}" = "1" ]; then
+if [[ "${MOCK_YUM_FAIL:-0}" == "1" ]]; then
   echo "Error: Cannot retrieve metalink for repository" >&2
   exit 1
 fi

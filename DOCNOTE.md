@@ -4,12 +4,13 @@
 
 **Zmbackup** is an open-source, non-invasive hot backup and disaster recovery automation suite designed specifically for **Zimbra Collaboration Suite (ZCS 7.x through 10.1.x / Carbonio FOSS)** running on official enterprise Linux distributions.
 
-### Core Design Principles:
+### Core Design Principles
+
 - **Zero Downtime (Hot Backup)**: Interacts with Zimbra's native REST export API (`/?fmt=tgz&resolve=skip`) and OpenLDAP search/dump without stopping `zmcontrol`, Postfix, MariaDB, or Mailboxd services.
 - **Cluster & Multi-Server Mailbox Routing**: Automatically determines the authoritative mailbox host for each account via LDAP (`zimbraMailHost`) and dynamically routes REST requests to `http(s)://${zimbraMailHost}:${MAILPORT}`.
 - **Dual Storage Engine**:
   - `TXT`: Plain-text record format (`sessions.txt`) ideal for lightweight, human-auditable backup metadata.
-  - `SQLITE3`: Embedded ACID relational database (`sessions.sqlite3`) for fast indexing, querying, and reporting across tens of thousands of mailboxes.
+  - `SQLITE3`: Embedded ACID relational database (`sessions.sqlite3`) for fast indexing and querying across tens of thousands of mailboxes.
 - **GNU Parallel Concurrency**: Multi-process parallel worker threads configured via `MAX_PARALLEL_PROCESS`.
 
 ---
@@ -19,7 +20,7 @@
 Zimbra Collaboration Suite is strictly supported on enterprise Linux distributions (**Ubuntu Server** and **RHEL / CentOS / Rocky / AlmaLinux**). Zmbackup is engineered to run directly on the Zimbra server host under the `zimbra` system user.
 
 | Zimbra Release | Supported OS Distributions | Package Manager | Shell / Coreutils |
-|---|---|---|---|
+| :--- | :--- | :--- | :--- |
 | **ZCS 7.0 - 7.2** | Ubuntu 10.04 (Lucid), Ubuntu 12.04 (Precise), CentOS / RHEL 6.x | `apt-get` / `yum` | Bash 4.1+, GNU coreutils |
 | **ZCS 8.0 - 8.6** | Ubuntu 12.04 (Precise), Ubuntu 14.04 (Trusty), CentOS / RHEL 6.x, 7.x | `apt-get` / `yum` | Bash 4.2+, GNU coreutils |
 | **ZCS 8.7 - 8.8.15** | Ubuntu 14.04 (Trusty), Ubuntu 16.04 (Xenial), Ubuntu 18.04 (Bionic), Ubuntu 20.04 (Focal), CentOS / RHEL 7.x, 8.x | `apt-get` / `apt` / `yum` | Bash 4.3+, GNU coreutils |
@@ -27,7 +28,7 @@ Zimbra Collaboration Suite is strictly supported on enterprise Linux distributio
 | **ZCS 10.0 / 10.1 (Daffodil)** | Ubuntu 20.04 (Focal), Ubuntu 22.04 (Jammy), RHEL / Rocky / AlmaLinux 8.x, 9.x | `apt` / `dnf` | Bash 5.0+, GNU coreutils |
 
 > [!NOTE]
-> Zimbra does not officially support Debian, macOS, or FreeBSD. All backup, restore, and maintenance operations must be executed directly on supported Linux distributions hosting the Zimbra installation.
+> Zimbra does not officially support Debian, macOS, or FreeBSD. All backup and recovery operations must be executed directly on supported Linux distributions hosting the Zimbra installation.
 
 ---
 
@@ -51,16 +52,21 @@ Zimbra Collaboration Suite is strictly supported on enterprise Linux distributio
 ## 4. Security Architecture & Audit Report
 
 ### A. SQL Injection Prevention
+
 - All user inputs, email addresses, and session IDs passed to SQLite3 commands are sanitized via `safe_sql_value()` which escapes internal single quotes:
+
   ```bash
   safe_sql_value() {
     printf '%s' "${1//\'/\'\'}"
   }
   ```
+
 - Hardened in `DeleteAction.sh` (`__DELETEBACKUP`), `ListAction.sh` (`build_listRST`), `RestoreAction.sh`, and `MigrationAction.sh` (`importsessionSQL`, `importaccountsSQL`, `importsessionTXT`).
 
 ### B. LDAP Filter Injection Prevention
+
 - All LDAP search queries dynamically escape special filter characters (`\`, `*`, `(`, `)`) via `ldap_escape_filter()`:
+
   ```bash
   ldap_escape_filter() {
     local val="${1}"
@@ -73,6 +79,7 @@ Zimbra Collaboration Suite is strictly supported on enterprise Linux distributio
   ```
 
 ### C. Permissions & Isolation
+
 - PID lock file `/opt/zimbra/log/zmbackup.pid` is owned by `zimbra:zimbra`.
 - Backup data directory defaults to `/opt/zimbra/backup` with strict `0775` permissions.
 - Configuration `/etc/zmbackup/zmbackup.conf` is chmod `0600` owned by `zimbra:zimbra` to protect LDAP passwords.

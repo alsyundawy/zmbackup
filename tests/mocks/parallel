@@ -1,13 +1,13 @@
 #!/bin/bash
 # parallel mock - sequential execution
-if [[ "$1" == "--version" ]]; then
+if [[ "${1}" == "--version" ]]; then
   echo "GNU parallel ${MOCK_PARALLEL_VERSION:-20200722}"
   exit 0
 fi
 
 # Skip flags
 while [[ $# -gt 1 ]]; do
-  case "$1" in
+  case "${1}" in
     --jobs|-j)
       shift 2
       ;;
@@ -21,12 +21,12 @@ while [[ $# -gt 1 ]]; do
 done
 
 CMD_TEMPLATE="${1:-}"
-if [[ -z "$CMD_TEMPLATE" ]]; then
+if [[ -z "${CMD_TEMPLATE}" ]]; then
   exit 0
 fi
 
 ret=0
 while IFS= read -r line; do
-  eval "${CMD_TEMPLATE//\{\}/$line}" || ret=$?
+  eval "${CMD_TEMPLATE//\{\}/${line}}" || ret=$?
 done
-exit $ret
+exit "${ret}"

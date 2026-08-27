@@ -1,4 +1,11 @@
 {
+  "name": "zmbackup",
+  "version": "1.2.11",
+  "scripts": {
+    "test": "npx bats --jobs 8 tests/unit/ tests/functional/",
+    "test:unit": "npx bats --jobs 8 tests/unit/",
+    "test:functional": "npx bats --jobs 8 tests/functional/"
+  },
   "devDependencies": {
     "bats": "^1.13.0"
   }

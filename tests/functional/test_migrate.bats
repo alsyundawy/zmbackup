@@ -356,14 +356,14 @@ EOF
 }
 
 @test "migrate invalid type: still prints migration completed" {
-  SESSION_TYPE="JSON"
+  export SESSION_TYPE="JSON"
   create_session() { echo "Invalid File Format - Nothing to do."; }
   run migration
   [[ "$output" == *"Migration completed"* ]]
 }
 
 @test "migrate invalid type: does not remove sessions.txt" {
-  SESSION_TYPE="JSON"
+  export SESSION_TYPE="JSON"
   create_session() { echo "Invalid File Format - Nothing to do."; }
   migration
   [ -f "${WORKDIR}/sessions.txt" ]

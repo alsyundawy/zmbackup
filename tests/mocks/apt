@@ -1,6 +1,6 @@
 #!/bin/bash
 # apt mock
-if [ "${MOCK_APT_FAIL:-0}" = "1" ]; then
+if [[ "${MOCK_APT_FAIL:-0}" == "1" ]]; then
   echo "E: Could not connect to internet" >&2
   exit 1
 fi

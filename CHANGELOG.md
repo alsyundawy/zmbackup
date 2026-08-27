@@ -69,7 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.9] - 2026-07-26 (Original Baseline Release by Lucas Costa Beyeler)
 
-- Baseline release supporting online backup & restore for Zimbra OSE.
-- Support for Full, Incremental, Mailbox, LDAP, Alias, and Distribution List backup & restore.
+- Baseline release supporting online backup and restore for Zimbra OSE.
+- Support for full, incremental, mailbox, and directory object backup routines.
 - Multi-threading support powered by GNU Parallel.
 - Dual storage engine support for TXT flat files and SQLite3 relational database.

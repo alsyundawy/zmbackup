@@ -1,10 +1,10 @@
 #!/bin/bash
 # ldapsearch mock
-if [ "${MOCK_LDAPSEARCH_FAIL:-0}" = "1" ]; then
+if [[ "${MOCK_LDAPSEARCH_FAIL:-0}" == "1" ]]; then
   echo "ldap_error: Can't contact LDAP server" >&2
   exit 1
 fi
-if [ -n "${MOCK_LDAPSEARCH_OUTPUT:-}" ]; then
+if [[ -n "${MOCK_LDAPSEARCH_OUTPUT:-}" ]]; then
   echo "${MOCK_LDAPSEARCH_OUTPUT}"
 else
   echo "dn: uid=user@example.com,ou=people,dc=example,dc=com"
