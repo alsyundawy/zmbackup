@@ -116,9 +116,10 @@ case "$1" in
         rm -rf "$PID"
       ;;
       "-dom"|"--domain-backup" )
+        validate_account_args "$3" "$4" || exit 2
         sessionvars "$2"
         create_temp
-        backup_main "$DOMOBJECT" "$DOMFILTER"
+        backup_main "$DOMOBJECT" "$DOMFILTER" "$3" "$4"
         rm -rf "$PID"
       ;;
       * )
@@ -251,7 +252,7 @@ case "$1" in
     show_help
   ;;
   "-v"|"--version" )
-    echo "zmbackup version: $(cat /usr/local/lib/zmbackup/VERSION 2>/dev/null || echo "unknown")"
+    echo "zmbackup version: $(cat /usr/local/lib/zmbackup/VERSION 2>/dev/null || cat "$(dirname "$0")/../VERSION" 2>/dev/null || echo "1.2.11")"
   ;;
   "-mg"|"--migrate" )
     checkpid

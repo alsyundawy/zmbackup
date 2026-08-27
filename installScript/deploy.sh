@@ -145,11 +145,6 @@ function uninstall() {
   rm -rf /etc/yum.repos.d/tange.repo
   rm -rf /etc/cron.d/zmbackup
   rm -rf "$ZMBKP_LIB" "$ZMBKP_CONF" "$ZMBKP_SRC"/zmbackup
-  echo -ne '##########            (50%)\r'
-  if [[ -f $ZMBKP_CONF/blockedlist.conf ]]; then
-    install --backup=numbered -o "$OSE_USER" -m 600 "$MYDIR"/project/config/blockedlist.conf "$ZMBKP_CONF"
-    blocklist_gen
-  fi
   echo -ne '####################  (100%)\r'
   printf "Preserve Backup Storage?[n/Y]"
   read -r OPT

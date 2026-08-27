@@ -32,7 +32,7 @@ ZMBKP_MAIL_ALERT="admin@$OSE_INSTALL_DOMAIN"                                    
 MAX_PARALLEL_PROCESS="3"                                                                                                                       # Zmbackup's number of threads
 ROTATE_TIME="30"                                                                                                                               # Zmbackup's max of days before housekeeper
 LOCK_BACKUP=true                                                                                                                               # Zmbackup's backup lock
-ZMBKP_VERSION="zmbackup version: $(cat "$MYDIR/VERSION")"                                                                                      # Zmbackup's latest version
+ZMBKP_VERSION="zmbackup version: $(cat "$MYDIR/VERSION" 2>/dev/null || cat /usr/local/lib/zmbackup/VERSION 2>/dev/null || echo "1.2.11")"      # Zmbackup's latest version
 SESSION_TYPE="TXT"                                                                                                                             # Zmbackup's default session type
 
 # REPOSITORIES FOR PACKAGES

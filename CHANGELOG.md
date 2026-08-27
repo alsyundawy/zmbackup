@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.11] - 2026-08-28
+
+### Security & Hardening
+
+- **Comprehensive SQL Injection Elimination**: Applied `safe_sql_value` escaping to `__DELETEBACKUP` (`DeleteAction.sh`) and database migration routines (`importsessionSQL`, `importaccountsSQL`, `importsessionTXT` in `MigrationAction.sh`).
+- **LDAP Subshell & Trapping Resilience**: Enforced strict error trapping `|| true` on LDAP host and DN lookups in `ParallelAction.sh` to prevent script aborts under strict shell execution modes.
+- **Strict Variable Quoting & Bracing**: Standardized on `${VAR}` variable expansions and explicit boolean tests across all shell scripts adhering to Trunk and ShellCheck guidelines.
+
+### Changed & Improved
+
+- **Multi-Domain & Domain Option Support (`project/zmbackup` & `ListAction.sh`)**:
+  - Fixed domain backup flag handler (`-dom` / `--domain-backup`) in `project/zmbackup` to properly pass domain arguments (`-a`, `-d`, or explicit domain targets) to `backup_main`.
+  - Added `--domain` long flag support alongside `-d` in `build_listBKP` (`ListAction.sh`) using native Bash parameter expansion `${4//,/ }`.
+- **Installer & Uninstall Logic Hardening (`installScript/deploy.sh` & `vars.sh`)**:
+  - Removed erroneous re-installation and generation of `blockedlist.conf` during `uninstall()` routine.
+  - Hardened hostname detection in `vars.sh` with fallbacks (`hostname --fqdn || hostname -f || hostname`) for BSD/macOS and non-standard Linux environments.
+  - Multi-distro dependency provisioning for `sqlite3`/`sqlite` and `ldap-utils`/`openldap-clients` across Debian/Ubuntu and RHEL/CentOS/Rocky/Alma.
+- **Cross-Platform Compatibility**: Complete date arithmetic support for both GNU coreutils (`date -d`) and BSD (`date -v`, `date -j`).
+
+---
+
 ## [1.2.10] - 2026-07-27
 
 ### Added
