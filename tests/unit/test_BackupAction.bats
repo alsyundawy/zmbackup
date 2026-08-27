@@ -16,7 +16,7 @@ setup() {
   ACFILTER="zimbraMailDeliveryAddress"
   DOMOBJECT="(objectclass=zimbraDomain)"
   DOMFILTER="zimbraDomainName"
-  PID="$(mktemp)"
+  PID="${WORKDIR}/pid.tmp"
   export ACOBJECT ACFILTER DOMOBJECT DOMFILTER PID
 
   # Pre-declare SESSION and INC for export so parallel workers inherit them when tests set them

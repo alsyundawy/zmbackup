@@ -8,7 +8,7 @@ setup() {
   load_test_config
   stub_all_temps
   source "${LIB_DIR}/DeleteAction.sh"
-  PID="$(mktemp)"
+  PID="${WORKDIR}/pid.tmp"
   export PID
 }
 

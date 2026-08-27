@@ -10,7 +10,7 @@ setup() {
   source "${LIB_DIR}/ParallelAction.sh"
   source "${LIB_DIR}/ListAction.sh"
   source "${LIB_DIR}/RestoreAction.sh"
-  PID="$(mktemp)"
+  PID="${WORKDIR}/pid.tmp"
   export PID
 
   # Pre-declare SESSION so parallel workers see the value tests assign to it

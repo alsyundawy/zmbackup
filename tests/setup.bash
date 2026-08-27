@@ -16,13 +16,15 @@ setup_mock_path() {
 }
 
 create_workdir() {
-  WORKDIR="$(mktemp -d)"
+  WORKDIR="$(mktemp -d 2>/dev/null || mktemp -d -t 'zmbtmp')"
   touch "${WORKDIR}/sessions.txt"
   export WORKDIR
 }
 
 destroy_workdir() {
-  [ -n "${WORKDIR:-}" ] && rm -rf "${WORKDIR}"
+  if [[ -n "${WORKDIR:-}" && -d "${WORKDIR}" ]]; then
+    rm -rf "${WORKDIR}"
+  fi
   unset WORKDIR
 }
 
@@ -32,7 +34,7 @@ load_test_config() {
   # shellcheck source=/dev/null
   source "${LIB_DIR}/MiscAction.sh"
   eval "$_saved_exit_trap"
-  BACKUPUSER="$(/usr/bin/whoami)"
+  BACKUPUSER="${USER:-$(/usr/bin/whoami 2>/dev/null || echo root)}"
   LDAPSERVER="ldap://127.0.0.1"
   LDAPADMIN="cn=admin,dc=example,dc=com"
   LDAPPASS="testpassword"
@@ -47,7 +49,7 @@ load_test_config() {
   SSL_ENABLE="false"
   ZMMAILBOX="${MOCKS_DIR}/zmmailbox"
   MAILPORT="443"
-  LOGFILE="${WORKDIR}/zmbackup.log"
+  LOGFILE="${WORKDIR:-/tmp}/zmbackup.log"
   export BACKUPUSER LDAPSERVER LDAPADMIN LDAPPASS ENABLE_EMAIL_NOTIFY
   export EMAIL_NOTIFY EMAIL_SENDER MAX_PARALLEL_PROCESS ROTATE_TIME
   export LOCK_BACKUP SESSION_TYPE BACKUP_INACTIVE_ACCOUNTS SSL_ENABLE
@@ -59,18 +61,32 @@ init_sqlite3_db() {
 }
 
 stub_all_temps() {
-  TEMPDIR="$(mktemp -d)"
-  TEMPACCOUNT="$(mktemp)"
-  TEMPINACCOUNT="$(mktemp)"
-  MESSAGE="$(mktemp)"
-  FAILURE="$(mktemp)"
-  TEMPSESSION="$(mktemp)"
+  if [[ -n "${WORKDIR:-}" && -d "${WORKDIR}" ]]; then
+    local rand_id="${BASHPID:-$$}_$((RANDOM % 10000))"
+    TEMPDIR="${WORKDIR}/temp_${rand_id}"
+    mkdir -p "${TEMPDIR}"
+    TEMPACCOUNT="${WORKDIR}/acc_${rand_id}.tmp"
+    TEMPINACCOUNT="${WORKDIR}/inacc_${rand_id}.tmp"
+    MESSAGE="${WORKDIR}/msg_${rand_id}.tmp"
+    FAILURE="${WORKDIR}/fail_${rand_id}.tmp"
+    TEMPSESSION="${WORKDIR}/sess_${rand_id}.tmp"
+    touch "${TEMPACCOUNT}" "${TEMPINACCOUNT}" "${MESSAGE}" "${FAILURE}" "${TEMPSESSION}"
+  else
+    TEMPDIR="$(mktemp -d)"
+    TEMPACCOUNT="$(mktemp)"
+    TEMPINACCOUNT="$(mktemp)"
+    MESSAGE="$(mktemp)"
+    FAILURE="$(mktemp)"
+    TEMPSESSION="$(mktemp)"
+  fi
   export TEMPDIR TEMPACCOUNT TEMPINACCOUNT MESSAGE FAILURE TEMPSESSION
 }
 
 cleanup_temps() {
-  for f in "${TEMPDIR:-}" "${TEMPACCOUNT:-}" "${TEMPINACCOUNT:-}" \
-            "${MESSAGE:-}" "${FAILURE:-}" "${TEMPSESSION:-}"; do
-    [ -n "$f" ] && rm -rf "$f"
-  done
+  if [[ -z "${WORKDIR:-}" ]]; then
+    for f in "${TEMPDIR:-}" "${TEMPACCOUNT:-}" "${TEMPINACCOUNT:-}" \
+              "${MESSAGE:-}" "${FAILURE:-}" "${TEMPSESSION:-}"; do
+      [[ -n "${f}" ]] && rm -rf "${f}"
+    done
+  fi
 }
