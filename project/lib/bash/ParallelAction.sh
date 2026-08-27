@@ -12,11 +12,11 @@
 function get_mailbox_host()
 {
   local SAFE_ACCOUNT HOST
-  SAFE_ACCOUNT=$(ldap_escape_filter "$1")
-  HOST=$(ldapsearch -Z -x -H "$LDAPSERVER" -D "$LDAPADMIN" -w "$LDAPPASS" -b '' \
+  SAFE_ACCOUNT=$(ldap_escape_filter "${1}")
+  HOST=$(ldapsearch -Z -x -H "${LDAPSERVER}" -D "${LDAPADMIN}" -w "${LDAPPASS}" -b '' \
     -LLL "(&(|(mail=${SAFE_ACCOUNT})(uid=${SAFE_ACCOUNT})))" zimbraMailHost 2>/dev/null | \
-    grep '^zimbraMailHost:' | awk '{print $2}' | head -1)
-  printf '%s' "$HOST"
+    grep '^zimbraMailHost:' | awk '{print $2}' | head -1) || true
+  printf '%s' "${HOST}"
 }
 
 ###############################################################################
@@ -29,9 +29,9 @@ function get_mailbox_host()
 function get_mailbox_url()
 {
   local HOST
-  HOST=$(get_mailbox_host "$1")
-  if [[ -n "$HOST" ]]; then
-    printf '%s://%s' "$WEBPROTO" "$HOST"
+  HOST=$(get_mailbox_host "${1}")
+  if [[ -n "${HOST}" ]]; then
+    printf '%s://%s' "${WEBPROTO}" "${HOST}"
   fi
 }
 
@@ -49,15 +49,15 @@ function ldap_backup()
 {
   TEMP_CLI_OUTPUT=$(mktemp)
   local SAFE_ACCOUNT
-  SAFE_ACCOUNT=$(ldap_escape_filter "$1")
-  if ldapsearch -Z -x -H "$LDAPSERVER" -D "$LDAPADMIN" -w "$LDAPPASS" -b '' \
-             -LLL "(&(|(mail=${SAFE_ACCOUNT})(uid=${SAFE_ACCOUNT}))$2)" > "$TEMPDIR"/"$1".ldiff 2> "$TEMP_CLI_OUTPUT"; then
-    zmlog local7.info "Zmbackup: LDAP - Backup for account $1 finished."
+  SAFE_ACCOUNT=$(ldap_escape_filter "${1}")
+  if ldapsearch -Z -x -H "${LDAPSERVER}" -D "${LDAPADMIN}" -w "${LDAPPASS}" -b '' \
+             -LLL "(&(|(mail=${SAFE_ACCOUNT})(uid=${SAFE_ACCOUNT}))${2})" > "${TEMPDIR}/${1}.ldiff" 2> "${TEMP_CLI_OUTPUT}"; then
+    zmlog local7.info "Zmbackup: LDAP - Backup for account ${1} finished."
     export ERRCODE=0
   else
-    zmlog local7.err "Zmbackup: LDAP - Backup for account $1 failed. Error message below:"
-    echo "Zmbackup: $1 " | zmlog local7.err
-    zmlog local7.err  < "$TEMP_CLI_OUTPUT"
+    zmlog local7.err "Zmbackup: LDAP - Backup for account ${1} failed. Error message below:"
+    echo "Zmbackup: ${1} " | zmlog local7.err
+    zmlog local7.err < "${TEMP_CLI_OUTPUT}"
     export ERRCODE=1
   fi
   rm -rf "${TEMP_CLI_OUTPUT:?}"
@@ -72,66 +72,66 @@ function ldap_backup()
 function mailbox_backup()
 {
   TEMP_CLI_OUTPUT=$(mktemp)
-  if [[ "$INC" == "TRUE" ]]; then
+  if [[ "${INC}" == "TRUE" ]]; then
     local SAFE_EMAIL
-    SAFE_EMAIL=$(safe_sql_value "$1")
+    SAFE_EMAIL=$(safe_sql_value "${1}")
     DATE=$(session_query \
       "select MAX(initial_date) from backup_account where email='${SAFE_EMAIL}' and (sessionID like 'full%' or sessionID like 'inc%' or sessionID like 'mbox%')" \
-      "grep \"$1\" \"$WORKDIR\"/sessions.txt | tail -1 | awk -F: '{print \$3}' | cut -d- -f2")
-    if [[ -n "$DATE" ]]; then
+      "grep \"${1}\" \"${WORKDIR}\"/sessions.txt | tail -1 | awk -F: '{print \$3}' | cut -d- -f2")
+    if [[ -n "${DATE}" ]]; then
       if date -d "yesterday" >/dev/null 2>&1; then
-        YESTERDAY=$(date -d "$DATE -48 hours" +%m/%d/%Y 2>/dev/null || date -d "$DATE" --date='-48 hours' +%m/%d/%Y)
+        YESTERDAY=$(date -d "${DATE} -48 hours" +%m/%d/%Y 2>/dev/null || date -d "${DATE}" --date='-48 hours' +%m/%d/%Y)
       else
         CLEAN_DATE="${DATE%%.*}"
-        if [[ "$CLEAN_DATE" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} ]]; then
-          YESTERDAY=$(date -j -f "%Y-%m-%dT%H:%M:%S" -v-48H "$CLEAN_DATE" +%m/%d/%Y 2>/dev/null || date -j -v-2d +%m/%d/%Y)
-        elif [[ "$CLEAN_DATE" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2} ]]; then
-          YESTERDAY=$(date -j -f "%Y-%m-%d" -v-48H "$CLEAN_DATE" +%m/%d/%Y 2>/dev/null || date -j -v-2d +%m/%d/%Y)
-        elif [[ "$CLEAN_DATE" =~ ^[0-9]{8} ]]; then
-          YESTERDAY=$(date -j -f "%Y%m%d" -v-48H "$CLEAN_DATE" +%m/%d/%Y 2>/dev/null || date -j -v-2d +%m/%d/%Y)
+        if [[ "${CLEAN_DATE}" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} ]]; then
+          YESTERDAY=$(date -j -f "%Y-%m-%dT%H:%M:%S" -v-48H "${CLEAN_DATE}" +%m/%d/%Y 2>/dev/null || date -j -v-2d +%m/%d/%Y)
+        elif [[ "${CLEAN_DATE}" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2} ]]; then
+          YESTERDAY=$(date -j -f "%Y-%m-%d" -v-48H "${CLEAN_DATE}" +%m/%d/%Y 2>/dev/null || date -j -v-2d +%m/%d/%Y)
+        elif [[ "${CLEAN_DATE}" =~ ^[0-9]{8} ]]; then
+          YESTERDAY=$(date -j -f "%Y%m%d" -v-48H "${CLEAN_DATE}" +%m/%d/%Y 2>/dev/null || date -j -v-2d +%m/%d/%Y)
         else
           YESTERDAY=$(date -j -v-2d +%m/%d/%Y)
         fi
       fi
-      AFTER='&'"query=after:\"$YESTERDAY\""
+      AFTER='&'"query=after:\"${YESTERDAY}\""
     else
       AFTER=''
     fi
   fi
   local MAILBOX_URL
-  MAILBOX_URL=$(get_mailbox_url "$1")
-  if [[ -n "$MAILBOX_URL" ]]; then
-    if $ZMMAILBOX -t0 -z -m "$1" getRestURL -u "$MAILBOX_URL" --output "$TEMPDIR"/"$1".tgz "/?fmt=tgz&resolve=skip$AFTER" > "$TEMP_CLI_OUTPUT" 2>&1; then
+  MAILBOX_URL=$(get_mailbox_url "${1}")
+  if [[ -n "${MAILBOX_URL}" ]]; then
+    if "${ZMMAILBOX}" -t0 -z -m "${1}" getRestURL -u "${MAILBOX_URL}" --output "${TEMPDIR}/${1}.tgz" "/?fmt=tgz&resolve=skip${AFTER}" > "${TEMP_CLI_OUTPUT}" 2>&1; then
       local RESULT_OK=0
     else
       local RESULT_OK=1
     fi
   else
-    if $ZMMAILBOX -t0 -z -m "$1" getRestURL --output "$TEMPDIR"/"$1".tgz "/?fmt=tgz&resolve=skip$AFTER" > "$TEMP_CLI_OUTPUT" 2>&1; then
+    if "${ZMMAILBOX}" -t0 -z -m "${1}" getRestURL --output "${TEMPDIR}/${1}.tgz" "/?fmt=tgz&resolve=skip${AFTER}" > "${TEMP_CLI_OUTPUT}" 2>&1; then
       local RESULT_OK=0
     else
       local RESULT_OK=1
     fi
   fi
-  if [[ $RESULT_OK -eq 0 ]]; then
-    if [[ -s $TEMPDIR/$1.tgz ]]; then
-      zmlog local7.info "Zmbackup: Mailbox - Backup for account $1 finished."
+  if [[ ${RESULT_OK} -eq 0 ]]; then
+    if [[ -s "${TEMPDIR}/${1}.tgz" ]]; then
+      zmlog local7.info "Zmbackup: Mailbox - Backup for account ${1} finished."
       export ERRCODE=0
     else
-      zmlog local7.err "Zmbackup: Mailbox - Backup for account $1 finished, but the file is empty. Removing..."
-      echo "Zmbackup: $1 " | zmlog local7.err
-      zmlog local7.err < "$TEMP_CLI_OUTPUT"
-      rm -rf "$TEMPDIR"/"$1".tgz
+      zmlog local7.err "Zmbackup: Mailbox - Backup for account ${1} finished, but the file is empty. Removing..."
+      echo "Zmbackup: ${1} " | zmlog local7.err
+      zmlog local7.err < "${TEMP_CLI_OUTPUT}"
+      rm -rf "${TEMPDIR:?}/${1}.tgz"
       export ERRCODE=1
     fi
   else
-    if grep -q "status=204" "$TEMP_CLI_OUTPUT"; then
-      zmlog local7.info "Zmbackup: Mailbox - No new content for account $1 since last backup."
+    if grep -q "status=204" "${TEMP_CLI_OUTPUT}"; then
+      zmlog local7.info "Zmbackup: Mailbox - No new content for account ${1} since last backup."
       export ERRCODE=0
     else
-      zmlog local7.err "Zmbackup: Mailbox - Backup for account $1 failed. Error message below:"
-      echo "Zmbackup: $1 " | zmlog local7.err
-      zmlog local7.err < "$TEMP_CLI_OUTPUT"
+      zmlog local7.err "Zmbackup: Mailbox - Backup for account ${1} failed. Error message below:"
+      echo "Zmbackup: ${1} " | zmlog local7.err
+      zmlog local7.err < "${TEMP_CLI_OUTPUT}"
       export ERRCODE=1
     fi
   fi
@@ -148,24 +148,24 @@ function mailbox_backup()
 function ldap_restore()
 {
   local LDAP_DN
-  LDAP_DN=$(grep -m 1 "^dn:" "$WORKDIR"/"$1"/"$2".ldiff | awk '{print $2}')
-  if [[ -z "$LDAP_DN" ]]; then
+  LDAP_DN=$(grep -m 1 "^dn:" "${WORKDIR}/${1}/${2}.ldiff" | awk '{print $2}') || true
+  if [[ -z "${LDAP_DN}" ]]; then
     printf "\nError: Could not extract DN from %s/%s/%s.ldiff - skipping LDAP restore for account %s" \
-      "$WORKDIR" "$1" "$2" "$2"
-    [[ -n "${LDAP_FAILFILE:-}" ]] && echo "$2" >> "$LDAP_FAILFILE"
+      "${WORKDIR}" "${1}" "${2}" "${2}"
+    [[ -n "${LDAP_FAILFILE:-}" ]] && echo "${2}" >> "${LDAP_FAILFILE}"
     return 1
   fi
-  ldapdelete -Z -r -x -H "$LDAPSERVER" -D "$LDAPADMIN" -c -w "$LDAPPASS" \
-    "$LDAP_DN" > /dev/null 2>&1
-  ERR=$( (ldapadd -Z -x -H "$LDAPSERVER" -D "$LDAPADMIN" \
-           -c -w "$LDAPPASS" -f "$WORKDIR"/"$1"/"$2".ldiff) 2>&1)
+  ldapdelete -Z -r -x -H "${LDAPSERVER}" -D "${LDAPADMIN}" -c -w "${LDAPPASS}" \
+    "${LDAP_DN}" > /dev/null 2>&1 || true
+  ERR=$( (ldapadd -Z -x -H "${LDAPSERVER}" -D "${LDAPADMIN}" \
+           -c -w "${LDAPPASS}" -f "${WORKDIR}/${1}/${2}.ldiff") 2>&1)
   BASHERRCODE=$?
-  if ! [[ $BASHERRCODE -eq 0 ]]; then
-    printf "\nError during the restore process for account %s. Error message below:" "$2"
-    printf "\n%s: %s" "$2" "$ERR"
-    [[ -n "${LDAP_FAILFILE:-}" ]] && echo "$2" >> "$LDAP_FAILFILE"
+  if [[ ${BASHERRCODE} -ne 0 ]]; then
+    printf "\nError during the restore process for account %s. Error message below:" "${2}"
+    printf "\n%s: %s" "${2}" "${ERR}"
+    [[ -n "${LDAP_FAILFILE:-}" ]] && echo "${2}" >> "${LDAP_FAILFILE}"
   fi
-  return $BASHERRCODE
+  return "${BASHERRCODE}"
 }
 
 ###############################################################################
@@ -178,32 +178,32 @@ function mailbox_restore()
 {
   TEMP_CLI_OUTPUT=$(mktemp)
   local MAILBOX_URL
-  MAILBOX_URL=$(get_mailbox_url "$2")
-  if [[ -n "$MAILBOX_URL" ]]; then
-    if $ZMMAILBOX -t0 -z -m "$2" postRestURL -u "$MAILBOX_URL" '//?fmt=tgz&resolve=skip' "$WORKDIR"/"$1"/"$2".tgz > "$TEMP_CLI_OUTPUT" 2>&1; then
+  MAILBOX_URL=$(get_mailbox_url "${2}")
+  if [[ -n "${MAILBOX_URL}" ]]; then
+    if "${ZMMAILBOX}" -t0 -z -m "${2}" postRestURL -u "${MAILBOX_URL}" '//?fmt=tgz&resolve=skip' "${WORKDIR}/${1}/${2}.tgz" > "${TEMP_CLI_OUTPUT}" 2>&1; then
       BASHERRCODE=0
     else
       BASHERRCODE=$?
     fi
   else
-    if $ZMMAILBOX -t0 -z -m "$2" postRestURL '//?fmt=tgz&resolve=skip' "$WORKDIR"/"$1"/"$2".tgz > "$TEMP_CLI_OUTPUT" 2>&1; then
+    if "${ZMMAILBOX}" -t0 -z -m "${2}" postRestURL '//?fmt=tgz&resolve=skip' "${WORKDIR}/${1}/${2}.tgz" > "${TEMP_CLI_OUTPUT}" 2>&1; then
       BASHERRCODE=0
     else
       BASHERRCODE=$?
     fi
   fi
-  if [[ $BASHERRCODE -eq 0 ]]; then
-    if grep -q "No such file or directory" "$TEMP_CLI_OUTPUT"; then
-      printf "Account %s has nothing to restore - skipping..." "$2"
+  if [[ ${BASHERRCODE} -eq 0 ]]; then
+    if grep -q "No such file or directory" "${TEMP_CLI_OUTPUT}"; then
+      printf "Account %s has nothing to restore - skipping..." "${2}"
     fi
   else
-    printf "Error during the restore process for account %s. Error message below:" "$2"
-    printf "\n%s: " "$2"
-    cat "$TEMP_CLI_OUTPUT"
-    [[ -n "${MAIL_FAILFILE:-}" ]] && echo "$2" >> "$MAIL_FAILFILE"
+    printf "Error during the restore process for account %s. Error message below:" "${2}"
+    printf "\n%s: " "${2}"
+    cat "${TEMP_CLI_OUTPUT}"
+    [[ -n "${MAIL_FAILFILE:-}" ]] && echo "${2}" >> "${MAIL_FAILFILE}"
   fi
   rm -rf "${TEMP_CLI_OUTPUT:?}"
-  return $BASHERRCODE
+  return "${BASHERRCODE}"
 }
 
 
@@ -216,15 +216,15 @@ function mailbox_restore()
 function domain_backup()
 {
   DC=",dc="
-  DOMAIN_DN="dc=${1//./$DC}"
+  DOMAIN_DN="dc=${1//./${DC}}"
   TEMP_CLI_OUTPUT=$(mktemp)
-  if ldapsearch -Z -x -H "$LDAPSERVER" -D "$LDAPADMIN" -w "$LDAPPASS" \
-             -b "$DOMAIN_DN" -s base -LLL "$2" > "$TEMPDIR"/"$1".ldiff 2> "$TEMP_CLI_OUTPUT"; then
-    zmlog local7.info "Zmbackup: LDAP - Domain backup for $1 finished."
+  if ldapsearch -Z -x -H "${LDAPSERVER}" -D "${LDAPADMIN}" -w "${LDAPPASS}" \
+             -b "${DOMAIN_DN}" -s base -LLL "${2}" > "${TEMPDIR}/${1}.ldiff" 2> "${TEMP_CLI_OUTPUT}"; then
+    zmlog local7.info "Zmbackup: LDAP - Domain backup for ${1} finished."
     export ERRCODE=0
   else
-    zmlog local7.err "Zmbackup: LDAP - Domain backup for $1 failed. Error message below:"
-    zmlog local7.err < "$TEMP_CLI_OUTPUT"
+    zmlog local7.err "Zmbackup: LDAP - Domain backup for ${1} failed. Error message below:"
+    zmlog local7.err < "${TEMP_CLI_OUTPUT}"
     export ERRCODE=1
   fi
   rm -rf "${TEMP_CLI_OUTPUT:?}"
@@ -240,24 +240,24 @@ function domain_backup()
 function domain_restore()
 {
   local LDAP_DN
-  LDAP_DN=$(grep -m 1 "^dn:" "$WORKDIR"/"$1"/"$2".ldiff | awk '{print $2}')
-  if [[ -z "$LDAP_DN" ]]; then
+  LDAP_DN=$(grep -m 1 "^dn:" "${WORKDIR}/${1}/${2}.ldiff" | awk '{print $2}') || true
+  if [[ -z "${LDAP_DN}" ]]; then
     printf "\nError: Could not extract DN from %s/%s/%s.ldiff - skipping domain restore for %s" \
-      "$WORKDIR" "$1" "$2" "$2"
+      "${WORKDIR}" "${1}" "${2}" "${2}"
     return 1
   fi
-  ERR=$( (ldapadd -Z -x -H "$LDAPSERVER" -D "$LDAPADMIN" \
-           -c -w "$LDAPPASS" -f "$WORKDIR"/"$1"/"$2".ldiff) 2>&1)
+  ERR=$( (ldapadd -Z -x -H "${LDAPSERVER}" -D "${LDAPADMIN}" \
+           -c -w "${LDAPPASS}" -f "${WORKDIR}/${1}/${2}.ldiff") 2>&1)
   BASHERRCODE=$?
-  if ! [[ $BASHERRCODE -eq 0 ]]; then
-    if echo "$ERR" | grep -q "Already exists"; then
-      zmlog local7.info "Zmbackup: Domain $2 already exists - skipping."
+  if [[ ${BASHERRCODE} -ne 0 ]]; then
+    if echo "${ERR}" | grep -q "Already exists"; then
+      zmlog local7.info "Zmbackup: Domain ${2} already exists - skipping."
       return 0
     fi
-    printf "\nError during the restore process for domain %s. Error message below:" "$2"
-    printf "\n%s: %s" "$2" "$ERR"
+    printf "\nError during the restore process for domain %s. Error message below:" "${2}"
+    printf "\n%s: %s" "${2}" "${ERR}"
   fi
-  return $BASHERRCODE
+  return "${BASHERRCODE}"
 }
 
 
@@ -270,7 +270,7 @@ function domain_restore()
 function ldap_filter()
 {
   EXIST=
-  if [[ "$LOCK_BACKUP" == "true" ]]; then
+  if [[ "${LOCK_BACKUP}" == "true" ]]; then
     local TODAY YESTERDAY
     if date -d "yesterday" >/dev/null 2>&1; then
       TODAY=$(date +%Y-%m-%dT%H:%M:%S.999 -d "+1 day")
@@ -283,17 +283,17 @@ function ldap_filter()
       YESTERDAY="1970-01-01"
     fi
     local SAFE_EMAIL
-    SAFE_EMAIL=$(safe_sql_value "$1")
+    SAFE_EMAIL=$(safe_sql_value "${1}")
     EXIST=$(session_query \
-      "select email from backup_account where conclusion_date <= '$TODAY' and conclusion_date >= '$YESTERDAY' and email='${SAFE_EMAIL}'" \
-      "grep \"$1:$(date +%m/%d/%y)\" \"$WORKDIR\"/sessions.txt 2>/dev/null | tail -1")
+      "select email from backup_account where conclusion_date <= '${TODAY}' and conclusion_date >= '${YESTERDAY}' and email='${SAFE_EMAIL}'" \
+      "grep \"${1}:$(date +%m/%d/%y)\" \"${WORKDIR}\"/sessions.txt 2>/dev/null | tail -1")
   fi
   local blockedlist="${ZMBACKUP_BLOCKEDLIST:-/etc/zmbackup/blockedlist.conf}"
-  if grep -Fxq "$1" "$blockedlist"; then
-    echo "WARN: $1 found inside blocked list - Nothing to do."
-  elif [[ $EXIST ]]; then
-    echo "WARN: $1 already has backup today. Nothing to do."
+  if grep -Fxq "${1}" "${blockedlist}"; then
+    echo "WARN: ${1} found inside blocked list - Nothing to do."
+  elif [[ -n "${EXIST}" ]]; then
+    echo "WARN: ${1} already has backup today. Nothing to do."
   else
-    echo "$1" >> "$TEMPACCOUNT"
+    echo "${1}" >> "${TEMPACCOUNT}"
   fi
 }
