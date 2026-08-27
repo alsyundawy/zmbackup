@@ -36,16 +36,16 @@ function check_env() {
     fi
   fi
   printf "  Checking OS...	          "
-  which apt > /dev/null 2>&1
+  which apt > /dev/null 2>&1 || which apt-get > /dev/null 2>&1
   BASHERRCODE=$?
   if [[ $BASHERRCODE -eq 0 ]]; then
     printf "[UBUNTU SERVER]\n"
     SO="ubuntu"
   fi
-  which yum > /dev/null 2>&1
+  which yum > /dev/null 2>&1 || which dnf > /dev/null 2>&1
   BASHERRCODE=$?
   if [[ $BASHERRCODE -eq 0 ]]; then
-    printf "[RED HAT ENTERPRISE LINUX]\n"
+    printf "[RED HAT ENTERPRISE LINUX / CENTOS]\n"
     SO="redhat"
   elif [[ -z $SO ]]; then
     printf "[UNSUPPORTED]\n"
