@@ -1,3 +1,4 @@
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
 
 load '../setup'
@@ -47,14 +48,14 @@ teardown() {
 }
 
 @test "ldap_filter: blocked email with plus sign is not added to TEMPACCOUNT" {
-  echo "user+tag@example.com" >> "$BLOCKEDLIST"
+  echo "user+tag@example.com" >>"$BLOCKEDLIST"
   ldap_filter "user+tag@example.com"
   run grep -qx "user+tag@example.com" "$TEMPACCOUNT"
   [ "$status" -ne 0 ]
 }
 
 @test "ldap_filter: only unblocked accounts are added when processing a mixed list" {
-  echo "blocked@example.com" >> "$BLOCKEDLIST"
+  echo "blocked@example.com" >>"$BLOCKEDLIST"
   ldap_filter "blocked@example.com"
   ldap_filter "allowed@example.com"
   grep -qx "allowed@example.com" "$TEMPACCOUNT"
@@ -65,7 +66,7 @@ teardown() {
 @test "ldap_filter: ZMBACKUP_BLOCKEDLIST env var is honored over the default path" {
   local custom_list
   custom_list="$(mktemp)"
-  echo "targeted@example.com" >> "$custom_list"
+  echo "targeted@example.com" >>"$custom_list"
   ZMBACKUP_BLOCKEDLIST="$custom_list"
   ldap_filter "targeted@example.com"
   run grep -qx "targeted@example.com" "$TEMPACCOUNT"
@@ -84,7 +85,7 @@ teardown() {
   for i in 1 2 3 4 5; do
     ldap_filter "user${i}@example.com"
   done
-  [ "$(wc -l < "$TEMPACCOUNT")" -eq 5 ]
+  [ "$(wc -l <"$TEMPACCOUNT")" -eq 5 ]
 }
 
 # ---------------------------------------------------------------------------
@@ -96,7 +97,7 @@ teardown() {
   for i in $(seq 1 50); do
     ldap_filter "user${i}@example.com"
   done
-  [ "$(wc -l < "$TEMPACCOUNT")" -eq 50 ]
+  [ "$(wc -l <"$TEMPACCOUNT")" -eq 50 ]
   grep -qx "user1@example.com" "$TEMPACCOUNT"
   grep -qx "user50@example.com" "$TEMPACCOUNT"
 }
@@ -141,7 +142,7 @@ teardown() {
   # Start a background process whose PID is guaranteed alive during this test
   sleep 30 &
   local bg_pid=$!
-  echo "$bg_pid" > "$pid_file"
+  echo "$bg_pid" >"$pid_file"
   PID="$pid_file"
   run checkpid
   kill "$bg_pid" 2>/dev/null

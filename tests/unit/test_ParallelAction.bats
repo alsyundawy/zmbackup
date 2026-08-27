@@ -1,3 +1,4 @@
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
 
 load '../setup'
@@ -111,9 +112,9 @@ teardown() {
   # Capture the URL argument passed to zmmailbox
   zmmailbox() {
     for arg in "$@"; do
-      echo "$arg" >> "${WORKDIR}/zmmailbox_args.txt"
+      echo "$arg" >>"${WORKDIR}/zmmailbox_args.txt"
     done
-    echo "mock tgz content" > "${TEMPDIR}/new@example.com.tgz"
+    echo "mock tgz content" >"${TEMPDIR}/new@example.com.tgz"
     return 0
   }
   export -f zmmailbox
@@ -127,7 +128,7 @@ teardown() {
 @test "mailbox_backup: incremental with no prior backup performs full pull (SQLITE3 mode)" {
   INC="TRUE"
   SESSION_TYPE="SQLITE3"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   # DB has a session but NO backup_account row for new@example.com — DATE will be empty
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session values('full-20240101120000','2024-01-01T12:00:00.000',
@@ -136,9 +137,9 @@ teardown() {
   MOCK_ZMMAILBOX_EMPTY=0
   zmmailbox() {
     for arg in "$@"; do
-      echo "$arg" >> "${WORKDIR}/zmmailbox_args.txt"
+      echo "$arg" >>"${WORKDIR}/zmmailbox_args.txt"
     done
-    echo "mock tgz content" > "${TEMPDIR}/new@example.com.tgz"
+    echo "mock tgz content" >"${TEMPDIR}/new@example.com.tgz"
     return 0
   }
   export -f zmmailbox
@@ -151,7 +152,7 @@ teardown() {
 @test "mailbox_backup: incremental with TXT session reads date from sessions.txt" {
   INC="TRUE"
   SESSION_TYPE="TXT"
-  echo "inc-20240101:user@example.com:01/01/24" >> "${WORKDIR}/sessions.txt"
+  echo "inc-20240101:user@example.com:01/01/24" >>"${WORKDIR}/sessions.txt"
   MOCK_ZMMAILBOX_FAIL=0
   MOCK_ZMMAILBOX_EMPTY=0
   mailbox_backup "user@example.com"
@@ -161,7 +162,7 @@ teardown() {
 @test "mailbox_backup: incremental with SQLITE3 session reads date from database" {
   INC="TRUE"
   SESSION_TYPE="SQLITE3"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session values('full-20240101120000','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
@@ -182,7 +183,7 @@ teardown() {
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: uid=user@example.com,ou=people,dc=example,dc=com\nobjectClass: top\n" \
-    > "${WORKDIR}/${session}/user@example.com.ldiff"
+    >"${WORKDIR}/${session}/user@example.com.ldiff"
   MOCK_LDAPDELETE_FAIL=0
   MOCK_LDAPADD_FAIL=0
   run ldap_restore "$session" "user@example.com"
@@ -192,7 +193,7 @@ teardown() {
 @test "ldap_restore: returns 1 when ldiff has no DN line" {
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  echo "objectClass: top" > "${WORKDIR}/${session}/user@example.com.ldiff"
+  echo "objectClass: top" >"${WORKDIR}/${session}/user@example.com.ldiff"
   run ldap_restore "$session" "user@example.com"
   [ "$status" -eq 1 ]
   [[ "$output" == *"Could not extract DN"* ]]
@@ -202,7 +203,7 @@ teardown() {
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: uid=user@example.com,ou=people,dc=example,dc=com\nobjectClass: top\n" \
-    > "${WORKDIR}/${session}/user@example.com.ldiff"
+    >"${WORKDIR}/${session}/user@example.com.ldiff"
   MOCK_LDAPADD_FAIL=1
   run ldap_restore "$session" "user@example.com"
   [ "$status" -ne 0 ]
@@ -269,7 +270,7 @@ teardown() {
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: uid=user@example.com,ou=people,dc=example,dc=com\nobjectClass: top\n" \
-    > "${WORKDIR}/${session}/user@example.com.ldiff"
+    >"${WORKDIR}/${session}/user@example.com.ldiff"
   LDAP_FAILFILE=$(mktemp)
   export LDAP_FAILFILE
   MOCK_LDAPADD_FAIL=1
@@ -281,7 +282,7 @@ teardown() {
 @test "ldap_restore: writes account to LDAP_FAILFILE when ldiff has no DN" {
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  echo "objectClass: top" > "${WORKDIR}/${session}/user@example.com.ldiff"
+  echo "objectClass: top" >"${WORKDIR}/${session}/user@example.com.ldiff"
   LDAP_FAILFILE=$(mktemp)
   export LDAP_FAILFILE
   run ldap_restore "$session" "user@example.com"
@@ -293,7 +294,7 @@ teardown() {
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: uid=user@example.com,ou=people,dc=example,dc=com\nobjectClass: top\n" \
-    > "${WORKDIR}/${session}/user@example.com.ldiff"
+    >"${WORKDIR}/${session}/user@example.com.ldiff"
   LDAP_FAILFILE=$(mktemp)
   export LDAP_FAILFILE
   MOCK_LDAPDELETE_FAIL=0
@@ -332,7 +333,7 @@ teardown() {
   local session="domain-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: dc=example,dc=com\nobjectClass: dcObject\nobjectClass: zimbraDomain\n" \
-    > "${WORKDIR}/${session}/example.com.ldiff"
+    >"${WORKDIR}/${session}/example.com.ldiff"
   MOCK_LDAPADD_FAIL=0
   run domain_restore "$session" "example.com"
   [ "$status" -eq 0 ]
@@ -341,7 +342,7 @@ teardown() {
 @test "domain_restore: returns 1 when ldiff has no DN line" {
   local session="domain-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  echo "objectClass: dcObject" > "${WORKDIR}/${session}/example.com.ldiff"
+  echo "objectClass: dcObject" >"${WORKDIR}/${session}/example.com.ldiff"
   run domain_restore "$session" "example.com"
   [ "$status" -eq 1 ]
   [[ "$output" == *"Could not extract DN"* ]]
@@ -351,7 +352,7 @@ teardown() {
   local session="domain-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: dc=example,dc=com\nobjectClass: dcObject\nobjectClass: zimbraDomain\n" \
-    > "${WORKDIR}/${session}/example.com.ldiff"
+    >"${WORKDIR}/${session}/example.com.ldiff"
   MOCK_LDAPADD_EXISTS=1
   run domain_restore "$session" "example.com"
   [ "$status" -eq 0 ]
@@ -361,7 +362,7 @@ teardown() {
   local session="domain-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: dc=example,dc=com\nobjectClass: dcObject\nobjectClass: zimbraDomain\n" \
-    > "${WORKDIR}/${session}/example.com.ldiff"
+    >"${WORKDIR}/${session}/example.com.ldiff"
   MOCK_LDAPADD_FAIL=1
   run domain_restore "$session" "example.com"
   [ "$status" -ne 0 ]
@@ -376,7 +377,7 @@ teardown() {
   # We temporarily redirect the hardcoded path using a bash function override
   grep() {
     if [[ "$*" == *"blockedlist.conf"* ]]; then
-      return 1  # not in blocklist
+      return 1 # not in blocklist
     fi
     command grep "$@"
   }
@@ -388,7 +389,7 @@ teardown() {
 @test "ldap_filter: does not add blocked account to TEMPACCOUNT" {
   grep() {
     if [[ "$*" == *"blockedlist.conf"* ]]; then
-      return 0  # found in blocklist
+      return 0 # found in blocklist
     fi
     command grep "$@"
   }
@@ -405,7 +406,7 @@ teardown() {
   SESSION_TYPE="TXT"
   local today
   today="$(date +%m/%d/%y)"
-  echo "full-20240101:user@example.com:${today}" > "${WORKDIR}/sessions.txt"
+  echo "full-20240101:user@example.com:${today}" >"${WORKDIR}/sessions.txt"
   grep() {
     if [[ "$*" == *"blockedlist.conf"* ]]; then
       return 1
@@ -419,7 +420,7 @@ teardown() {
 @test "ldap_filter: skips account already backed up today (SQLITE3 mode)" {
   LOCK_BACKUP="true"
   SESSION_TYPE="SQLITE3"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   local now
   now="$(date +%Y-%m-%dT%H:%M:%S.%N)"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -446,9 +447,9 @@ teardown() {
   ldapsearch() {
     local args=("$@")
     local i
-    for ((i=0; i<${#args[@]}; i++)); do
-      if [[ "${args[$i]}" == "-LLL" ]] && (( i+1 < ${#args[@]} )); then
-        printf '%s' "${args[$((i+1))]}" > "${WORKDIR}/captured_filter.txt"
+    for ((i = 0; i < ${#args[@]}; i++)); do
+      if [[ "${args[$i]}" == "-LLL" ]] && ((i + 1 < ${#args[@]})); then
+        printf '%s' "${args[$((i + 1))]}" >"${WORKDIR}/captured_filter.txt"
         break
       fi
     done
@@ -467,9 +468,9 @@ teardown() {
   ldapsearch() {
     local args=("$@")
     local i
-    for ((i=0; i<${#args[@]}; i++)); do
-      if [[ "${args[$i]}" == "-LLL" ]] && (( i+1 < ${#args[@]} )); then
-        printf '%s' "${args[$((i+1))]}" > "${WORKDIR}/captured_filter.txt"
+    for ((i = 0; i < ${#args[@]}; i++)); do
+      if [[ "${args[$i]}" == "-LLL" ]] && ((i + 1 < ${#args[@]})); then
+        printf '%s' "${args[$((i + 1))]}" >"${WORKDIR}/captured_filter.txt"
         break
       fi
     done
@@ -487,9 +488,9 @@ teardown() {
   ldapsearch() {
     local args=("$@")
     local i
-    for ((i=0; i<${#args[@]}; i++)); do
-      if [[ "${args[$i]}" == "-LLL" ]] && (( i+1 < ${#args[@]} )); then
-        printf '%s' "${args[$((i+1))]}" > "${WORKDIR}/captured_filter.txt"
+    for ((i = 0; i < ${#args[@]}; i++)); do
+      if [[ "${args[$i]}" == "-LLL" ]] && ((i + 1 < ${#args[@]})); then
+        printf '%s' "${args[$((i + 1))]}" >"${WORKDIR}/captured_filter.txt"
         break
       fi
     done
@@ -509,7 +510,7 @@ teardown() {
 @test "ldap_filter: SQL injection in email does not corrupt database (SQLITE3 mode)" {
   LOCK_BACKUP="true"
   SESSION_TYPE="SQLITE3"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   local now
   now="$(date +%Y-%m-%dT%H:%M:%S.%N)"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -529,7 +530,7 @@ teardown() {
 @test "mailbox_backup: SQL injection in email does not corrupt database (incremental SQLITE3 mode)" {
   INC="TRUE"
   SESSION_TYPE="SQLITE3"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session values('full-20240101120000','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"

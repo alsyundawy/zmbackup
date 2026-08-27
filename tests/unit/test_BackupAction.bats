@@ -1,3 +1,4 @@
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
 
 load '../setup'
@@ -66,7 +67,7 @@ teardown() {
   MOCK_LDAPSEARCH_FAIL=0
   MOCK_ZMMAILBOX_FAIL=0
   MOCK_ZMMAILBOX_EMPTY=0
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   __backupFullInc "user@example.com" "$ACOBJECT"
   local count
   count=$(sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -109,7 +110,7 @@ teardown() {
   SESSION="alias-20240101120000"
   SESSION_TYPE="SQLITE3"
   MOCK_LDAPSEARCH_FAIL=0
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   __backupLdap "alias@example.com" "(objectclass=zimbraAlias)"
   local count
   count=$(sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -142,7 +143,7 @@ teardown() {
   SESSION="domain-20240101120000"
   SESSION_TYPE="SQLITE3"
   MOCK_LDAPSEARCH_FAIL=0
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   __backupDomain "example.com" "(objectclass=zimbraDomain)"
   local count
   count=$(sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -179,7 +180,7 @@ teardown() {
   INC="FALSE"
   MOCK_ZMMAILBOX_FAIL=0
   MOCK_ZMMAILBOX_EMPTY=0
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   __backupMailbox "user@example.com" "$ACOBJECT"
   local count
   count=$(sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -256,7 +257,7 @@ teardown() {
   SESSION="full-20240101120000"
   STYPE="Full Account"
   SESSION_TYPE="SQLITE3"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   MOCK_LDAPSEARCH_FAIL=0
   MOCK_ZMMAILBOX_FAIL=0
   MOCK_ZMMAILBOX_EMPTY=0
@@ -314,7 +315,7 @@ teardown() {
 @test "__backupFullInc: SQL injection in email does not corrupt the database" {
   SESSION="full-20240101120000"
   SESSION_TYPE="SQLITE3"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session(sessionID,initial_date,type,status) \
      values('full-20240101120000','2024-01-01T00:00:00.000','Full Backup','IN PROGRESS')"
@@ -331,7 +332,7 @@ teardown() {
 @test "__backupLdap: SQL injection in email does not corrupt the database" {
   SESSION="alias-20240101120000"
   SESSION_TYPE="SQLITE3"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session(sessionID,initial_date,type,status) \
      values('alias-20240101120000','2024-01-01T00:00:00.000','Alias','IN PROGRESS')"
@@ -345,7 +346,7 @@ teardown() {
 @test "__backupDomain: SQL injection in domain name does not corrupt the database" {
   SESSION="domain-20240101120000"
   SESSION_TYPE="SQLITE3"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session(sessionID,initial_date,type,status) \
      values('domain-20240101120000','2024-01-01T00:00:00.000','Domain','IN PROGRESS')"
@@ -360,7 +361,7 @@ teardown() {
   SESSION="mbox-20240101120000"
   SESSION_TYPE="SQLITE3"
   INC="FALSE"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session(sessionID,initial_date,type,status) \
      values('mbox-20240101120000','2024-01-01T00:00:00.000','Mailbox','IN PROGRESS')"
@@ -380,7 +381,7 @@ teardown() {
   SESSION="full-20240101120000"
   STYPE="Full Account"
   SESSION_TYPE="SQLITE3"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   MOCK_LDAPSEARCH_FAIL=0
   MOCK_ZMMAILBOX_FAIL=0
   MOCK_ZMMAILBOX_EMPTY=0
@@ -395,7 +396,7 @@ teardown() {
   SESSION="full-20240101120000"
   STYPE="Full Account"
   SESSION_TYPE="SQLITE3"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   MOCK_LDAPSEARCH_FAIL=1
   run backup_main "$ACOBJECT" "$ACFILTER" "-a" "user@example.com"
   local status_val
@@ -409,7 +410,7 @@ teardown() {
   STYPE="Mailbox"
   SESSION_TYPE="SQLITE3"
   INC="FALSE"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   MOCK_ZMMAILBOX_FAIL=1
   run backup_main "$ACOBJECT" "$ACFILTER" "-a" "user@example.com"
   local status_val
@@ -422,7 +423,7 @@ teardown() {
   SESSION="domain-20240101120000"
   STYPE="Domain"
   SESSION_TYPE="SQLITE3"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   MOCK_LDAPSEARCH_FAIL=1
   run backup_main "$DOMOBJECT" "$DOMFILTER" "-a" "example.com"
   local status_val
@@ -435,7 +436,7 @@ teardown() {
   SESSION="alias-20240101120000"
   STYPE="Alias"
   SESSION_TYPE="SQLITE3"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   MOCK_LDAPSEARCH_FAIL=1
   run backup_main "(objectclass=zimbraAlias)" "uid" "-a" "alias@example.com"
   local status_val

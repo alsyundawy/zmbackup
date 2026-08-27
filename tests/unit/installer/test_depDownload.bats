@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# shellcheck disable=SC1091,SC2030,SC2031,SC2034,SC2317
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 
 load '../../setup'
 
@@ -60,7 +60,7 @@ setup() {
   # Simulate CentOS 6 detection: override grep for redhat-release
   grep() {
     if [[ "$*" == *"release 6"* && "$*" == *"redhat-release"* ]]; then
-      return 0  # "release 6" found
+      return 0 # "release 6" found
     fi
     command grep "$@"
   }
@@ -75,9 +75,9 @@ setup() {
   # Simulate CentOS 7 detection: "release 6" not found, "release 7" found
   grep() {
     if [[ "$*" == *"release 6"* && "$*" == *"redhat-release"* ]]; then
-      return 1  # Not CentOS 6
+      return 1 # Not CentOS 6
     elif [[ "$*" == *"release 7"* && "$*" == *"redhat-release"* ]]; then
-      return 0  # CentOS 7 detected
+      return 0 # CentOS 7 detected
     fi
     command grep "$@"
   }

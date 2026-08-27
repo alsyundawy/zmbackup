@@ -10,7 +10,7 @@
 #    $2 - The type of object should be backed up. Valid values:
 #        ACOBJECT - User Account;
 ################################################################################
-function __backupFullInc(){
+function __backupFullInc() {
   SDATE=$(date +%Y-%m-%dT%H:%M:%S.%N)
   ldap_backup "$1" "$2"
   if [ "$ERRCODE" -eq 0 ]; then
@@ -38,7 +38,7 @@ function __backupFullInc(){
 #        ALOBJECT - Alias;
 #        SIOBJECT - Signature;
 ################################################################################
-function __backupLdap(){
+function __backupLdap() {
   SDATE=$(date +%Y-%m-%dT%H:%M:%S.%N)
   ldap_backup "$1" "$2"
   if [ "$ERRCODE" -eq 0 ]; then
@@ -59,7 +59,7 @@ function __backupLdap(){
 #    $1 - The domain name (e.g., example.com)
 #    $2 - The LDAP object filter (DOMOBJECT)
 ################################################################################
-function __backupDomain(){
+function __backupDomain() {
   SDATE=$(date +%Y-%m-%dT%H:%M:%S.%N)
   domain_backup "$1" "$2"
   if [ "$ERRCODE" -eq 0 ]; then
@@ -81,7 +81,7 @@ function __backupDomain(){
 #    $2 - The type of object should be backed up. Valid values:
 #        ACOBJECT - User Account;
 ################################################################################
-function __backupMailbox(){
+function __backupMailbox() {
   SDATE=$(date +%Y-%m-%dT%H:%M:%S.%N)
   mailbox_backup "$1" "$2"
   if [ "$ERRCODE" -eq 0 ]; then
@@ -112,14 +112,13 @@ function __backupMailbox(){
 #    $3 - Enable backup per account/domain
 #    $4 - The list of accounts/domains to be backed up
 ################################################################################
-function backup_main()
-{
+function backup_main() {
   # Create a list of all accounts to be backed up
   if [[ -z $3 ]] || [[ "$3" == "-d" ]] || [[ "$3" == "--domain" ]]; then
     build_listBKP "$1" "$2" "$3" "$4"
-  elif  [[ "$3" == "-a" ]] || [[ "$3" == "--account" ]]; then
+  elif [[ "$3" == "-a" ]] || [[ "$3" == "--account" ]]; then
     for i in ${4//,/ }; do
-      echo "$i" >> "$TEMPACCOUNT"
+      echo "$i" >>"$TEMPACCOUNT"
     done
   else
     echo "ERROR - Option $3 is not valid"
@@ -137,13 +136,13 @@ function backup_main()
       "insert into backup_session(sessionID,initial_date,type,status) values ('$SESSION','$DATE','$STYPE','IN PROGRESS')" \
       "echo \"SESSION: $SESSION started on $(date)\" >> \"$TEMPSESSION\""
     if [[ "$SESSION" == "full"* ]] || [[ "$SESSION" == "inc"* ]]; then
-      parallel --jobs "$MAX_PARALLEL_PROCESS" "__backupFullInc '{}' '$1'" < "$TEMPACCOUNT"
+      parallel --jobs "$MAX_PARALLEL_PROCESS" "__backupFullInc '{}' '$1'" <"$TEMPACCOUNT"
     elif [[ "$SESSION" == "mbox"* ]]; then
-      parallel --jobs "$MAX_PARALLEL_PROCESS" "__backupMailbox '{}' '$1'" < "$TEMPACCOUNT"
+      parallel --jobs "$MAX_PARALLEL_PROCESS" "__backupMailbox '{}' '$1'" <"$TEMPACCOUNT"
     elif [[ "$SESSION" == "domain"* ]]; then
-      parallel --jobs "$MAX_PARALLEL_PROCESS" "__backupDomain '{}' '$1'" < "$TEMPACCOUNT"
+      parallel --jobs "$MAX_PARALLEL_PROCESS" "__backupDomain '{}' '$1'" <"$TEMPACCOUNT"
     else
-      parallel --jobs "$MAX_PARALLEL_PROCESS" "__backupLdap '{}' '$1'" < "$TEMPACCOUNT"
+      parallel --jobs "$MAX_PARALLEL_PROCESS" "__backupLdap '{}' '$1'" <"$TEMPACCOUNT"
     fi
     PARALLEL_EXIT=$?
     if mv "$TEMPDIR" "$WORKDIR/$SESSION"; then

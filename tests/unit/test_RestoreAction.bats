@@ -1,3 +1,4 @@
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
 
 load '../setup'
@@ -45,7 +46,7 @@ teardown() {
   SESSION_TYPE="TXT"
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  cat >> "${WORKDIR}/sessions.txt" << EOF
+  cat >>"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${session} started on Mon Jan 01
 ${session}:user@example.com:01/01/24
 EOF
@@ -59,7 +60,7 @@ EOF
   SESSION_TYPE="TXT"
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  cat >> "${WORKDIR}/sessions.txt" << EOF
+  cat >>"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${session} started on Mon Jan 01
 ${session}:user@example.com:01/01/24
 EOF
@@ -73,7 +74,7 @@ EOF
   SESSION_TYPE="TXT"
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  cat >> "${WORKDIR}/sessions.txt" << EOF
+  cat >>"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${session} started on Mon Jan 01
 ${session}:user@example.com:01/01/24
 EOF
@@ -87,7 +88,7 @@ EOF
   SESSION_TYPE="TXT"
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  cat >> "${WORKDIR}/sessions.txt" << EOF
+  cat >>"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${session} started on Mon Jan 01
 ${session}:user@example.com:01/01/24
 EOF
@@ -102,7 +103,7 @@ EOF
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   touch "${WORKDIR}/${session}/user@example.com.tgz"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session values('${session}','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
@@ -120,7 +121,7 @@ EOF
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   touch "${WORKDIR}/${session}/src@example.com.tgz"
-  cat >> "${WORKDIR}/sessions.txt" << EOF
+  cat >>"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${session} started on Mon Jan 01
 ${session}:src@example.com:01/01/24
 EOF
@@ -135,7 +136,7 @@ EOF
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   touch "${WORKDIR}/${session}/src@example.com.tgz"
-  cat >> "${WORKDIR}/sessions.txt" << EOF
+  cat >>"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${session} started on Mon Jan 01
 ${session}:src@example.com:01/01/24
 EOF
@@ -149,7 +150,7 @@ EOF
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   touch "${WORKDIR}/${session}/src@example.com.tgz"
-  cat >> "${WORKDIR}/sessions.txt" << EOF
+  cat >>"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${session} started on Mon Jan 01
 ${session}:src@example.com:01/01/24
 EOF
@@ -168,8 +169,8 @@ EOF
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: uid=user@example.com,ou=people,dc=example,dc=com\nobjectClass: top\n" \
-    > "${WORKDIR}/${session}/user@example.com.ldiff"
-  cat >> "${WORKDIR}/sessions.txt" << EOF
+    >"${WORKDIR}/${session}/user@example.com.ldiff"
+  cat >>"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${session} started on Mon Jan 01
 ${session}:user@example.com:01/01/24
 EOF
@@ -184,8 +185,8 @@ EOF
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: uid=user@example.com,ou=people,dc=example,dc=com\nobjectClass: top\n" \
-    > "${WORKDIR}/${session}/user@example.com.ldiff"
-  cat >> "${WORKDIR}/sessions.txt" << EOF
+    >"${WORKDIR}/${session}/user@example.com.ldiff"
+  cat >>"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${session} started on Mon Jan 01
 ${session}:user@example.com:01/01/24
 EOF
@@ -201,8 +202,8 @@ EOF
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: uid=user@example.com,ou=people,dc=example,dc=com\nobjectClass: top\n" \
-    > "${WORKDIR}/${session}/user@example.com.ldiff"
-  cat >> "${WORKDIR}/sessions.txt" << EOF
+    >"${WORKDIR}/${session}/user@example.com.ldiff"
+  cat >>"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${session} started on Mon Jan 01
 ${session}:user@example.com:01/01/24
 EOF
@@ -217,8 +218,8 @@ EOF
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: uid=user@example.com,ou=people,dc=example,dc=com\nobjectClass: top\n" \
-    > "${WORKDIR}/${session}/user@example.com.ldiff"
-  cat >> "${WORKDIR}/sessions.txt" << EOF
+    >"${WORKDIR}/${session}/user@example.com.ldiff"
+  cat >>"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${session} started on Mon Jan 01
 ${session}:user@example.com:01/01/24
 EOF
@@ -236,7 +237,7 @@ EOF
 
 @test "restore_main_ldap: prints nothing-to-do when session not found in SQLITE3" {
   SESSION_TYPE="SQLITE3"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   run restore_main_ldap "nonexistent-session" ""
   [[ "$output" == *"Nothing to do"* ]]
 }
@@ -256,8 +257,8 @@ EOF
   local session="domain-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: dc=example,dc=com\nobjectClass: dcObject\nobjectClass: zimbraDomain\n" \
-    > "${WORKDIR}/${session}/example.com.ldiff"
-  cat >> "${WORKDIR}/sessions.txt" << EOF
+    >"${WORKDIR}/${session}/example.com.ldiff"
+  cat >>"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${session} started on Mon Jan 01
 ${session}:example.com:01/01/24
 EOF
@@ -272,8 +273,8 @@ EOF
   local session="domain-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: dc=example,dc=com\nobjectClass: dcObject\nobjectClass: zimbraDomain\n" \
-    > "${WORKDIR}/${session}/example.com.ldiff"
-  cat >> "${WORKDIR}/sessions.txt" << EOF
+    >"${WORKDIR}/${session}/example.com.ldiff"
+  cat >>"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${session} started on Mon Jan 01
 ${session}:example.com:01/01/24
 EOF
@@ -288,8 +289,8 @@ EOF
   local session="domain-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: dc=example,dc=com\nobjectClass: dcObject\nobjectClass: zimbraDomain\n" \
-    > "${WORKDIR}/${session}/example.com.ldiff"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+    >"${WORKDIR}/${session}/example.com.ldiff"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session values('${session}','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','1M','Domain','FINISHED')"
@@ -307,8 +308,8 @@ EOF
   local session="domain-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: dc=example,dc=com\nobjectClass: dcObject\nobjectClass: zimbraDomain\n" \
-    > "${WORKDIR}/${session}/example.com.ldiff"
-  cat >> "${WORKDIR}/sessions.txt" << EOF
+    >"${WORKDIR}/${session}/example.com.ldiff"
+  cat >>"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${session} started on Mon Jan 01
 ${session}:example.com:01/01/24
 EOF
@@ -323,8 +324,8 @@ EOF
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: uid=user@example.com,ou=people,dc=example,dc=com\nobjectClass: top\n" \
-    > "${WORKDIR}/${session}/user@example.com.ldiff"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+    >"${WORKDIR}/${session}/user@example.com.ldiff"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session values('${session}','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"

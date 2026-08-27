@@ -1,3 +1,4 @@
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
 
 load '../../setup'

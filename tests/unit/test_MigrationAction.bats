@@ -1,3 +1,4 @@
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
 
 load '../setup'
@@ -18,14 +19,14 @@ teardown() {
 
 _add_txt_sessions() {
   local session="${1:-full-20240101120000}"
-  cat >> "${WORKDIR}/sessions.txt" << EOF
+  cat >>"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${session} started on Mon Jan 01
 ${session}:user@example.com:01/01/24
 SESSION: ${session} completed on Mon Jan 01
 EOF
   mkdir -p "${WORKDIR}/${session}"
-  echo "data" > "${WORKDIR}/${session}/user@example.com.ldiff"
-  echo "data" > "${WORKDIR}/${session}/user@example.com.tgz"
+  echo "data" >"${WORKDIR}/${session}/user@example.com.ldiff"
+  echo "data" >"${WORKDIR}/${session}/user@example.com.tgz"
 }
 
 # ---------------------------------------------------------------------------
@@ -49,7 +50,7 @@ EOF
   # Override the hardcoded library path
   sqlite3() {
     if [[ "$*" == *"database.sql"* ]]; then
-      command sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+      command sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
     else
       command sqlite3 "$@"
     fi
@@ -62,7 +63,7 @@ EOF
   SESSION_TYPE="SQLITE3"
   sqlite3() {
     if [[ "$*" == *"database.sql"* ]]; then
-      command sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+      command sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
     else
       command sqlite3 "$@"
     fi
@@ -84,7 +85,7 @@ EOF
 @test "importsessionSQL: imports full- session from TXT to SQLITE3" {
   SESSION_TYPE="TXT"
   _add_txt_sessions "full-20240101120000"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   importsessionSQL
   local count
   count=$(sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -95,7 +96,7 @@ EOF
 @test "importsessionSQL: imports inc- session from TXT to SQLITE3" {
   SESSION_TYPE="TXT"
   _add_txt_sessions "inc-20240102120000"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   importsessionSQL
   local count
   count=$(sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -106,7 +107,7 @@ EOF
 @test "importsessionSQL: imports distlist- session from TXT to SQLITE3" {
   SESSION_TYPE="TXT"
   _add_txt_sessions "distlist-20240103120000"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   importsessionSQL
   local count
   count=$(sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -117,7 +118,7 @@ EOF
 @test "importsessionSQL: imports alias- session from TXT to SQLITE3" {
   SESSION_TYPE="TXT"
   _add_txt_sessions "alias-20240104120000"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   importsessionSQL
   local count
   count=$(sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -128,7 +129,7 @@ EOF
 @test "importsessionSQL: imports ldap- session from TXT to SQLITE3" {
   SESSION_TYPE="TXT"
   _add_txt_sessions "ldap-20240105120000"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   importsessionSQL
   local count
   count=$(sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -139,7 +140,7 @@ EOF
 @test "importsessionSQL: imports mbox- session from TXT to SQLITE3" {
   SESSION_TYPE="TXT"
   _add_txt_sessions "mbox-20240106120000"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   importsessionSQL
   local count
   count=$(sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -150,7 +151,7 @@ EOF
 @test "importsessionSQL: mbox- session has correct type label" {
   SESSION_TYPE="TXT"
   _add_txt_sessions "mbox-20240106120000"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   importsessionSQL
   local type
   type=$(sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -161,7 +162,7 @@ EOF
 @test "importsessionSQL: imports domain- session from TXT to SQLITE3" {
   SESSION_TYPE="TXT"
   _add_txt_sessions "domain-20240108120000"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   importsessionSQL
   local count
   count=$(sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -172,7 +173,7 @@ EOF
 @test "importsessionSQL: domain- session has correct type label" {
   SESSION_TYPE="TXT"
   _add_txt_sessions "domain-20240108120000"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   importsessionSQL
   local type
   type=$(sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -183,7 +184,7 @@ EOF
 @test "importsessionSQL: imports signature- session from TXT to SQLITE3" {
   SESSION_TYPE="TXT"
   _add_txt_sessions "signature-20240107120000"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   importsessionSQL
   local count
   count=$(sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -194,7 +195,7 @@ EOF
 @test "importsessionSQL: signature- session has correct type label" {
   SESSION_TYPE="TXT"
   _add_txt_sessions "signature-20240107120000"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   importsessionSQL
   local type
   type=$(sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -209,7 +210,7 @@ EOF
 @test "importaccountsSQL: imports accounts for session from TXT to SQLITE3" {
   SESSION_TYPE="TXT"
   _add_txt_sessions "full-20240101120000"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   importsessionSQL
   importaccountsSQL
   local count
@@ -227,7 +228,7 @@ EOF
   _add_txt_sessions "full-20240101120000"
   # Override create_session to use our path
   create_session() {
-    command sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+    command sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
     echo "Session file SQLITE3 recreated"
   }
   migration
@@ -237,7 +238,7 @@ EOF
 
 @test "migration: migrates SQLITE3 to TXT and removes sessions.sqlite3" {
   SESSION_TYPE="TXT"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session values('full-20240101120000','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
@@ -253,7 +254,10 @@ EOF
 
 @test "migration: prints completion message" {
   SESSION_TYPE="TXT"
-  create_session() { touch "${WORKDIR}/sessions.txt"; echo "recreated"; }
+  create_session() {
+    touch "${WORKDIR}/sessions.txt"
+    echo "recreated"
+  }
   importsessionTXT() { :; }
   run migration
   [[ "$output" == *"Migration completed"* ]]

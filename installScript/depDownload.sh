@@ -6,8 +6,8 @@
 ################################################################################
 function install_ubuntu() {
   echo "Installing dependencies. Please wait..."
-  apt update > /dev/null 2>&1
-  apt install -y parallel > /dev/null 2>&1
+  apt update >/dev/null 2>&1
+  apt install -y parallel >/dev/null 2>&1
   BASHERRCODE=$?
   if [[ $BASHERRCODE -eq 0 ]]; then
     echo "Dependencies installed with success!"
@@ -26,23 +26,23 @@ function install_ubuntu() {
 ################################################################################
 function install_redhat() {
   echo "Installing dependencies. Please wait..."
-  if grep -E "release 6" /etc/redhat-release > /dev/null 2>&1; then
-    wget -O "/etc/yum.repos.d/tange.repo" "$OLE_TANGE" > /dev/null 2>&1
+  if grep -E "release 6" /etc/redhat-release >/dev/null 2>&1; then
+    wget -O "/etc/yum.repos.d/tange.repo" "$OLE_TANGE" >/dev/null 2>&1
     BASHERRCODE=$?
     if [[ $BASHERRCODE -ne 0 ]]; then
       echo "Failure - Can't install Tange's repository for Parallel"
       exit "$ERR_NO_CONNECTION"
     fi
-  elif grep -E "release 7" /etc/redhat-release > /dev/null 2>&1; then
-    wget -O "/etc/yum.repos.d/tange.repo" "$OLE_TANGE_RHEL7" > /dev/null 2>&1
+  elif grep -E "release 7" /etc/redhat-release >/dev/null 2>&1; then
+    wget -O "/etc/yum.repos.d/tange.repo" "$OLE_TANGE_RHEL7" >/dev/null 2>&1
     BASHERRCODE=$?
     if [[ $BASHERRCODE -ne 0 ]]; then
       echo "Failure - Can't install Tange's repository for Parallel"
       exit "$ERR_NO_CONNECTION"
     fi
   fi
-  yum install -y epel-release  > /dev/null 2>&1
-  yum install -y parallel  > /dev/null 2>&1
+  yum install -y epel-release >/dev/null 2>&1
+  yum install -y parallel >/dev/null 2>&1
   BASHERRCODE=$?
   if [[ $BASHERRCODE -eq 0 ]]; then
     echo "Dependencies installed with success!"
@@ -61,7 +61,7 @@ function install_redhat() {
 ################################################################################
 function remove_ubuntu() {
   echo "Removing dependencies. Please wait..."
-  apt --purge remove -y parallel > /dev/null 2>&1
+  apt --purge remove -y parallel >/dev/null 2>&1
   BASHERRCODE=$?
   if [[ $BASHERRCODE -eq 0 ]]; then
     echo "Dependencies removed with success!"
@@ -79,12 +79,12 @@ function remove_ubuntu() {
 ################################################################################
 function remove_redhat() {
   echo "Removing dependencies. Please wait..."
-  grep 6 /etc/redhat-release > /dev/null 2>&1
+  grep 6 /etc/redhat-release >/dev/null 2>&1
   BASHERRCODE=$?
   if [[ $BASHERRCODE -eq 0 ]]; then
-    pip uninstall -y curl > /dev/null 2>&1
+    pip uninstall -y curl >/dev/null 2>&1
   fi
-  yum remove -y parallel > /dev/null 2>&1
+  yum remove -y parallel >/dev/null 2>&1
   BASHERRCODE=$?
   if [[ $BASHERRCODE -eq 0 ]]; then
     echo "Dependencies removed with success!"

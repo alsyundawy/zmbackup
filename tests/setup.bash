@@ -57,7 +57,7 @@ load_test_config() {
 }
 
 init_sqlite3_db() {
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
 }
 
 stub_all_temps() {
@@ -85,7 +85,7 @@ stub_all_temps() {
 cleanup_temps() {
   if [[ -z "${WORKDIR:-}" ]]; then
     for f in "${TEMPDIR:-}" "${TEMPACCOUNT:-}" "${TEMPINACCOUNT:-}" \
-              "${MESSAGE:-}" "${FAILURE:-}" "${TEMPSESSION:-}"; do
+      "${MESSAGE:-}" "${FAILURE:-}" "${TEMPSESSION:-}"; do
       [[ -n "${f}" ]] && rm -rf "${f}"
     done
   fi

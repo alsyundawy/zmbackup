@@ -1,3 +1,4 @@
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
 
 load '../../setup'
@@ -217,7 +218,7 @@ user@example.com"
   mkdir -p "$ZMBKP_LIB"
   mkdir -p "$ZMBKP_CONF"
   # Create a minimal zmbackup.conf for source
-  echo "WORKDIR='${DEPLOY_ROOT}/backup'" > "${ZMBKP_CONF}/zmbackup.conf"
+  echo "WORKDIR='${DEPLOY_ROOT}/backup'" >"${ZMBKP_CONF}/zmbackup.conf"
   mkdir -p "${ZMBKP_SRC}"
   MOCK_SU_OUTPUT=""
   echo "N" | uninstall
@@ -227,7 +228,7 @@ user@example.com"
 @test "uninstall: removes zmbackup binary" {
   mkdir -p "$ZMBKP_SRC" "$ZMBKP_CONF" "$ZMBKP_LIB"
   touch "${ZMBKP_SRC}/zmbackup"
-  echo "WORKDIR='${DEPLOY_ROOT}/backup'" > "${ZMBKP_CONF}/zmbackup.conf"
+  echo "WORKDIR='${DEPLOY_ROOT}/backup'" >"${ZMBKP_CONF}/zmbackup.conf"
   MOCK_SU_OUTPUT=""
   echo "N" | uninstall
   [ ! -f "${ZMBKP_SRC}/zmbackup" ]
@@ -235,7 +236,7 @@ user@example.com"
 
 @test "uninstall: deletes backup storage contents when user answers N" {
   mkdir -p "$ZMBKP_CONF" "$ZMBKP_LIB" "${DEPLOY_ROOT}/backup"
-  echo "WORKDIR='${DEPLOY_ROOT}/backup'" > "${ZMBKP_CONF}/zmbackup.conf"
+  echo "WORKDIR='${DEPLOY_ROOT}/backup'" >"${ZMBKP_CONF}/zmbackup.conf"
   touch "${DEPLOY_ROOT}/backup/session.txt"
   MOCK_SU_OUTPUT=""
   echo "N" | uninstall
@@ -244,7 +245,7 @@ user@example.com"
 
 @test "uninstall: deletes backup storage contents when user answers n" {
   mkdir -p "$ZMBKP_CONF" "$ZMBKP_LIB" "${DEPLOY_ROOT}/backup"
-  echo "WORKDIR='${DEPLOY_ROOT}/backup'" > "${ZMBKP_CONF}/zmbackup.conf"
+  echo "WORKDIR='${DEPLOY_ROOT}/backup'" >"${ZMBKP_CONF}/zmbackup.conf"
   touch "${DEPLOY_ROOT}/backup/session.txt"
   MOCK_SU_OUTPUT=""
   echo "n" | uninstall
@@ -253,7 +254,7 @@ user@example.com"
 
 @test "uninstall: preserves backup storage when user answers Y" {
   mkdir -p "$ZMBKP_CONF" "$ZMBKP_LIB" "${DEPLOY_ROOT}/backup"
-  echo "WORKDIR='${DEPLOY_ROOT}/backup'" > "${ZMBKP_CONF}/zmbackup.conf"
+  echo "WORKDIR='${DEPLOY_ROOT}/backup'" >"${ZMBKP_CONF}/zmbackup.conf"
   touch "${DEPLOY_ROOT}/backup/session.txt"
   MOCK_SU_OUTPUT=""
   echo "Y" | uninstall
@@ -262,7 +263,7 @@ user@example.com"
 
 @test "uninstall: preserves backup storage when user answers y" {
   mkdir -p "$ZMBKP_CONF" "$ZMBKP_LIB" "${DEPLOY_ROOT}/backup"
-  echo "WORKDIR='${DEPLOY_ROOT}/backup'" > "${ZMBKP_CONF}/zmbackup.conf"
+  echo "WORKDIR='${DEPLOY_ROOT}/backup'" >"${ZMBKP_CONF}/zmbackup.conf"
   touch "${DEPLOY_ROOT}/backup/session.txt"
   MOCK_SU_OUTPUT=""
   echo "y" | uninstall

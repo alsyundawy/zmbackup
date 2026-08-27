@@ -6,7 +6,7 @@
 ################################################################################
 # show_help: It will show a quick help about each command from install.sh
 ################################################################################
-function show_help (){
+function show_help() {
   printf "usage: install.sh [options]"
 
   # All the basic options.

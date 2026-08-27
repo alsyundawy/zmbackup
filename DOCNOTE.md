@@ -19,13 +19,13 @@
 
 Zimbra Collaboration Suite is strictly supported on enterprise Linux distributions (**Ubuntu Server** and **RHEL / CentOS / Rocky / AlmaLinux**). Zmbackup is engineered to run directly on the Zimbra server host under the `zimbra` system user.
 
-| Zimbra Release | Supported OS Distributions | Package Manager | Shell / Coreutils |
-| :--- | :--- | :--- | :--- |
-| **ZCS 7.0 - 7.2** | Ubuntu 10.04 (Lucid), Ubuntu 12.04 (Precise), CentOS / RHEL 6.x | `apt-get` / `yum` | Bash 4.1+, GNU coreutils |
-| **ZCS 8.0 - 8.6** | Ubuntu 12.04 (Precise), Ubuntu 14.04 (Trusty), CentOS / RHEL 6.x, 7.x | `apt-get` / `yum` | Bash 4.2+, GNU coreutils |
-| **ZCS 8.7 - 8.8.15** | Ubuntu 14.04 (Trusty), Ubuntu 16.04 (Xenial), Ubuntu 18.04 (Bionic), Ubuntu 20.04 (Focal), CentOS / RHEL 7.x, 8.x | `apt-get` / `apt` / `yum` | Bash 4.3+, GNU coreutils |
-| **ZCS 9.0 (FOSS/Network)** | Ubuntu 18.04 (Bionic), Ubuntu 20.04 (Focal), CentOS / RHEL 7.x, 8.x, Rocky / AlmaLinux 8.x | `apt` / `yum` / `dnf` | Bash 4.4+, GNU coreutils |
-| **ZCS 10.0 / 10.1 (Daffodil)** | Ubuntu 20.04 (Focal), Ubuntu 22.04 (Jammy), RHEL / Rocky / AlmaLinux 8.x, 9.x | `apt` / `dnf` | Bash 5.0+, GNU coreutils |
+| Zimbra Release                 | Supported OS Distributions                                                                                        | Package Manager           | Shell / Coreutils        |
+| :----------------------------- | :---------------------------------------------------------------------------------------------------------------- | :------------------------ | :----------------------- |
+| **ZCS 7.0 - 7.2**              | Ubuntu 10.04 (Lucid), Ubuntu 12.04 (Precise), CentOS / RHEL 6.x                                                   | `apt-get` / `yum`         | Bash 4.1+, GNU coreutils |
+| **ZCS 8.0 - 8.6**              | Ubuntu 12.04 (Precise), Ubuntu 14.04 (Trusty), CentOS / RHEL 6.x, 7.x                                             | `apt-get` / `yum`         | Bash 4.2+, GNU coreutils |
+| **ZCS 8.7 - 8.8.15**           | Ubuntu 14.04 (Trusty), Ubuntu 16.04 (Xenial), Ubuntu 18.04 (Bionic), Ubuntu 20.04 (Focal), CentOS / RHEL 7.x, 8.x | `apt-get` / `apt` / `yum` | Bash 4.3+, GNU coreutils |
+| **ZCS 9.0 (FOSS/Network)**     | Ubuntu 18.04 (Bionic), Ubuntu 20.04 (Focal), CentOS / RHEL 7.x, 8.x, Rocky / AlmaLinux 8.x                        | `apt` / `yum` / `dnf`     | Bash 4.4+, GNU coreutils |
+| **ZCS 10.0 / 10.1 (Daffodil)** | Ubuntu 20.04 (Focal), Ubuntu 22.04 (Jammy), RHEL / Rocky / AlmaLinux 8.x, 9.x                                     | `apt` / `dnf`             | Bash 5.0+, GNU coreutils |
 
 > [!NOTE]
 > Zimbra does not officially support Debian, macOS, or FreeBSD. All backup and recovery operations must be executed directly on supported Linux distributions hosting the Zimbra installation.

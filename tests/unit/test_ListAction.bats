@@ -1,3 +1,4 @@
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
 
 load '../setup'
@@ -19,7 +20,7 @@ setup() {
   # Mock /etc/zmbackup/blockedlist.conf for ldap_filter
   grep() {
     if [[ "$*" == *"blockedlist.conf"* ]]; then
-      return 1  # nothing blocked by default
+      return 1 # nothing blocked by default
     fi
     command grep "$@"
   }
@@ -87,7 +88,7 @@ teardown() {
     local prev=""
     for arg in "$@"; do
       if [[ "$prev" == "-b" ]]; then
-        echo "$arg" >> "${bases_file}"
+        echo "$arg" >>"${bases_file}"
       fi
       prev="$arg"
     done
@@ -112,7 +113,7 @@ teardown() {
 @test "build_listRST: reads accounts from sessions.txt in TXT mode" {
   SESSION_TYPE="TXT"
   local session="full-20240101120000"
-  cat >> "${WORKDIR}/sessions.txt" << EOF
+  cat >>"${WORKDIR}/sessions.txt" <<EOF
 SESSION: $session started on Mon Jan 01
 $session:user@example.com:01/01/24
 EOF
@@ -122,7 +123,7 @@ EOF
 
 @test "build_listRST: reads accounts from sqlite3 in SQLITE3 mode" {
   SESSION_TYPE="SQLITE3"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   local session="full-20240101120000"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session values('${session}','2024-01-01T12:00:00.000',
@@ -140,7 +141,7 @@ EOF
 
 @test "build_listRST: SQL injection in session ID does not corrupt database" {
   SESSION_TYPE="SQLITE3"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   local session="full-20240101120000"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session values('${session}','2024-01-01T12:00:00.000',

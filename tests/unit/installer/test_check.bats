@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# shellcheck disable=SC2030,SC2031,SC2034
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 
 load '../../setup'
 
@@ -40,7 +40,7 @@ setup() {
 
 @test "check_env: sets UPGRADE=N and UNINSTALL=N for new install" {
   export MOCK_ID_UID=0
-  export MOCK_SU_FAIL=1   # whereis zmbackup fails -> new install
+  export MOCK_SU_FAIL=1 # whereis zmbackup fails -> new install
   check_env
   [ "$UPGRADE" = "N" ]
   [ "$UNINSTALL" = "N" ]
@@ -48,7 +48,7 @@ setup() {
 
 @test "check_env: sets UNINSTALL=Y with --remove flag when zmbackup exists" {
   export MOCK_ID_UID=0
-  export MOCK_SU_FAIL=0   # whereis zmbackup succeeds -> existing install
+  export MOCK_SU_FAIL=0 # whereis zmbackup succeeds -> existing install
   check_env "--remove"
   [ "$UNINSTALL" = "Y" ]
 }

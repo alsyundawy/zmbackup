@@ -6,7 +6,7 @@
 ################################################################################
 # show_help: It will show a quick help about each command from zmbackup
 ################################################################################
-function show_help (){
+function show_help() {
   printf "usage: zmbackup -f [-m,-dl,-al,-ldp,-dom] [-d,-a] <mail/domain>"
   printf "\n       zmbackup -i <mail>"
   printf "\n       zmbackup -r [-m,-dl,-al,-ldp,-dom] [-d,-a] <session> <mail>"
@@ -39,7 +39,6 @@ function show_help (){
   printf "\n -dom, --domain-backup            : Execute a backup of all Zimbra domain configurations."
   printf "\n -d,   --domain                   : Execute a backup of only a set of domains, comma separated"
   printf "\n -a,   --account                  : Execute a backup of only a set of accounts, comma separated"
-
 
   # All the options related to Restore Backups
   printf "\n\nRestore Backup Options:\n"

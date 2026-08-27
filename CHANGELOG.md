@@ -9,13 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.11] - 2026-08-28
 
-### Security & Hardening
+### Security and Hardening in 1.2.11
 
 - **Comprehensive SQL Injection Elimination**: Applied `safe_sql_value` escaping to `__DELETEBACKUP` (`DeleteAction.sh`) and database migration routines (`importsessionSQL`, `importaccountsSQL`, `importsessionTXT` in `MigrationAction.sh`).
 - **LDAP Subshell & Trapping Resilience**: Enforced strict error trapping `|| true` on LDAP host and DN lookups in `ParallelAction.sh` to prevent script aborts under strict shell execution modes.
 - **Strict Variable Quoting & Bracing**: Standardized on `${VAR}` variable expansions and explicit boolean tests across all shell scripts adhering to Trunk and ShellCheck guidelines.
 
-### Changed & Improved
+### Improvements in 1.2.11
 
 - **Multi-Domain & Domain Option Support (`project/zmbackup` & `ListAction.sh`)**:
   - Fixed domain backup flag handler (`-dom` / `--domain-backup`) in `project/zmbackup` to properly pass domain arguments (`-a`, `-d`, or explicit domain targets) to `backup_main`.
@@ -23,22 +23,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Installer & Uninstall Logic Hardening (`installScript/deploy.sh` & `vars.sh`)**:
   - Removed erroneous re-installation and generation of `blockedlist.conf` during `uninstall()` routine.
   - Hardened hostname detection in `vars.sh` with fallbacks (`hostname --fqdn || hostname -f || hostname`) for BSD/macOS and non-standard Linux environments.
-- **Dynamic Multi-Core BATS Test Acceleration**:
-  - Re-architected BATS testing suite to utilize dynamic multi-core parallelism (`bats -j <cores>`) and eradicated redundant `mktemp` subprocess calls across test setup routines.
+- **Multi-Core BATS Test Acceleration**:
+  - Re-architected BATS testing suite to run multi-core parallel jobs (`bats -j <cores>`) and eradicated redundant `mktemp` subprocess calls across test setup routines.
 
 ---
 
 ## [1.2.10] - 2026-08-27
 
-### Security & Hardening
+### Security and Hardening in 1.2.10
 
 - **SQL Injection Prevention**: Added `safe_sql_value()` across `ListAction.sh` and `RestoreAction.sh` to properly escape single quotes for SQLite3 queries.
-- **LDAP Filter Injection Prevention**: Added `ldap_escape_filter()` to sanitize account, domain, and list arguments according to RFC 4515.
+- **LDAP Filter Injection Prevention**: Added `ldap_escape_filter()` to sanitize all query parameters according to RFC 4515.
 - **Safe Evaluation**: Removed `eval` execution on raw user and session variables in `ListAction.sh` (`list_sessions_sqlite3`) and `RestoreAction.sh` (`restore_main_mailbox`, `restore_main_ldap`, `restore_main_domain`).
 - **Input Validation**: Added strict validation routines (`validate_email`, `validate_domain`, `validate_session_id`, `validate_account_args`) in `MiscAction.sh`.
 - **Blockedlist Security**: Hardened `blockedlist.conf` file parsing to ignore commented and malformed lines.
 
-### Changed & Improved
+### Improvements in 1.2.10
 
 - **Restore Success / Failure Accounting**: Added structured return codes (`0` on full success, `1` on partial failure) and counters to `restore_main_mailbox` and `restore_main_ldap`.
 - **Incremental Backup Account Filter (`ParallelAction.sh`)**: Fixed AFTER date filter logic for newly created accounts with no previous incremental sessions.

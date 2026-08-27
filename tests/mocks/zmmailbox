@@ -20,7 +20,7 @@ for i in "$@"; do
     if [[ "${MOCK_ZMMAILBOX_EMPTY:-0}" == "1" ]]; then
       touch "${i}"
     else
-      echo "mock tgz content" > "${i}"
+      echo "mock tgz content" >"${i}"
     fi
   fi
 done

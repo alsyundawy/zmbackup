@@ -1,3 +1,4 @@
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
 
 load '../setup'
@@ -46,8 +47,8 @@ teardown() {
 @test "zmlog: reads message from file redirect" {
   local tmpfile
   tmpfile="$(mktemp)"
-  echo "file redirect message" > "$tmpfile"
-  zmlog local7.err < "$tmpfile"
+  echo "file redirect message" >"$tmpfile"
+  zmlog local7.err <"$tmpfile"
   grep -q "file redirect message" "$LOGFILE"
   rm -f "$tmpfile"
 }
@@ -57,7 +58,7 @@ teardown() {
   zmlog local7.info "second entry"
   grep -q "first entry" "$LOGFILE"
   grep -q "second entry" "$LOGFILE"
-  [ "$(wc -l < "$LOGFILE")" -eq 2 ]
+  [ "$(wc -l <"$LOGFILE")" -eq 2 ]
 }
 
 @test "zmlog: also invokes logger with the given priority" {
@@ -208,25 +209,29 @@ teardown() {
 }
 
 @test "constant: sets DLOBJECT for distribution lists" {
-  BACKUP_INACTIVE_ACCOUNTS="true"; SSL_ENABLE="false"
+  BACKUP_INACTIVE_ACCOUNTS="true"
+  SSL_ENABLE="false"
   constant
   [[ "$DLOBJECT" == *"zimbraDistributionList"* ]]
 }
 
 @test "constant: sets ALOBJECT for aliases" {
-  BACKUP_INACTIVE_ACCOUNTS="true"; SSL_ENABLE="false"
+  BACKUP_INACTIVE_ACCOUNTS="true"
+  SSL_ENABLE="false"
   constant
   [[ "$ALOBJECT" == *"zimbraAlias"* ]]
 }
 
 @test "constant: sets SIOBJECT for signatures" {
-  BACKUP_INACTIVE_ACCOUNTS="true"; SSL_ENABLE="false"
+  BACKUP_INACTIVE_ACCOUNTS="true"
+  SSL_ENABLE="false"
   constant
   [[ "$SIOBJECT" == *"zimbraSignature"* ]]
 }
 
 @test "constant: sets LDAP filter constants" {
-  BACKUP_INACTIVE_ACCOUNTS="true"; SSL_ENABLE="false"
+  BACKUP_INACTIVE_ACCOUNTS="true"
+  SSL_ENABLE="false"
   constant
   [ "$DLFILTER" = "mail" ]
   [ "$ACFILTER" = "zimbraMailDeliveryAddress" ]
@@ -236,36 +241,40 @@ teardown() {
 }
 
 @test "constant: sets DOMOBJECT for domain entries" {
-  BACKUP_INACTIVE_ACCOUNTS="true"; SSL_ENABLE="false"
+  BACKUP_INACTIVE_ACCOUNTS="true"
+  SSL_ENABLE="false"
   constant
   [[ "$DOMOBJECT" == *"zimbraDomain"* ]]
 }
 
 @test "constant: sets PID path" {
-  BACKUP_INACTIVE_ACCOUNTS="true"; SSL_ENABLE="false"
+  BACKUP_INACTIVE_ACCOUNTS="true"
+  SSL_ENABLE="false"
   constant
   [ "$PID" = "/opt/zimbra/log/zmbackup.pid" ]
 }
 
 @test "constant: constants have readonly attribute" {
-  BACKUP_INACTIVE_ACCOUNTS="true"; SSL_ENABLE="false"
+  BACKUP_INACTIVE_ACCOUNTS="true"
+  SSL_ENABLE="false"
   constant
-  [[ "$(declare -p DLOBJECT)"  == *"-r"* ]]
-  [[ "$(declare -p ALOBJECT)"  == *"-r"* ]]
-  [[ "$(declare -p SIOBJECT)"  == *"-r"* ]]
+  [[ "$(declare -p DLOBJECT)" == *"-r"* ]]
+  [[ "$(declare -p ALOBJECT)" == *"-r"* ]]
+  [[ "$(declare -p SIOBJECT)" == *"-r"* ]]
   [[ "$(declare -p DOMOBJECT)" == *"-r"* ]]
-  [[ "$(declare -p DLFILTER)"  == *"-r"* ]]
-  [[ "$(declare -p ACFILTER)"  == *"-r"* ]]
-  [[ "$(declare -p ALFILTER)"  == *"-r"* ]]
-  [[ "$(declare -p SIFILTER)"  == *"-r"* ]]
+  [[ "$(declare -p DLFILTER)" == *"-r"* ]]
+  [[ "$(declare -p ACFILTER)" == *"-r"* ]]
+  [[ "$(declare -p ALFILTER)" == *"-r"* ]]
+  [[ "$(declare -p SIFILTER)" == *"-r"* ]]
   [[ "$(declare -p DOMFILTER)" == *"-r"* ]]
-  [[ "$(declare -p PID)"       == *"-r"* ]]
-  [[ "$(declare -p ACOBJECT)"  == *"-r"* ]]
-  [[ "$(declare -p WEBPROTO)"  == *"-r"* ]]
+  [[ "$(declare -p PID)" == *"-r"* ]]
+  [[ "$(declare -p ACOBJECT)" == *"-r"* ]]
+  [[ "$(declare -p WEBPROTO)" == *"-r"* ]]
 }
 
 @test "constant: constants are exported" {
-  BACKUP_INACTIVE_ACCOUNTS="true"; SSL_ENABLE="false"
+  BACKUP_INACTIVE_ACCOUNTS="true"
+  SSL_ENABLE="false"
   constant
   export -p | grep -q ' DLOBJECT='
   export -p | grep -q ' PID='
@@ -604,7 +613,7 @@ teardown() {
 @test "checkpid: overwrites stale PID file with current PID" {
   local pid_file
   pid_file="$(mktemp)"
-  echo "99999999" > "$pid_file"
+  echo "99999999" >"$pid_file"
   PID="$pid_file"
   run checkpid
   [ "$status" -eq 0 ]
@@ -615,7 +624,7 @@ teardown() {
 @test "checkpid: exits 4 when another instance is already running" {
   local pid_file
   pid_file="$(mktemp)"
-  echo "$$" > "$pid_file"
+  echo "$$" >"$pid_file"
   PID="$pid_file"
   run checkpid
   [ "$status" -eq 4 ]
@@ -638,7 +647,7 @@ teardown() {
   local dir_with_spaces pid_file
   dir_with_spaces="$(mktemp -d "/tmp/pid dir XXXXXX")"
   pid_file="${dir_with_spaces}/zmbackup.pid"
-  echo "99999999" > "$pid_file"
+  echo "99999999" >"$pid_file"
   PID="$pid_file"
   run checkpid
   [ "$status" -eq 0 ]
@@ -729,7 +738,7 @@ teardown() {
 }
 
 @test "safe_sql_value: result is safe to use in a real SQLite3 query" {
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   local payload safe_val
   payload="'; DELETE FROM backup_session; --@example.com"
   safe_val=$(safe_sql_value "$payload")
@@ -901,12 +910,18 @@ teardown() {
 }
 
 @test "validate_session_id: accepts all valid prefixes" {
-  run validate_session_id "ldap-20240101000000";      [ "$status" -eq 0 ]
-  run validate_session_id "domain-20240101000000";    [ "$status" -eq 0 ]
-  run validate_session_id "distlist-20240101000000";  [ "$status" -eq 0 ]
-  run validate_session_id "alias-20240101000000";     [ "$status" -eq 0 ]
-  run validate_session_id "mbox-20240101000000";      [ "$status" -eq 0 ]
-  run validate_session_id "signature-20240101000000"; [ "$status" -eq 0 ]
+  run validate_session_id "ldap-20240101000000"
+  [ "$status" -eq 0 ]
+  run validate_session_id "domain-20240101000000"
+  [ "$status" -eq 0 ]
+  run validate_session_id "distlist-20240101000000"
+  [ "$status" -eq 0 ]
+  run validate_session_id "alias-20240101000000"
+  [ "$status" -eq 0 ]
+  run validate_session_id "mbox-20240101000000"
+  [ "$status" -eq 0 ]
+  run validate_session_id "signature-20240101000000"
+  [ "$status" -eq 0 ]
 }
 
 @test "validate_session_id: rejects an unknown prefix" {

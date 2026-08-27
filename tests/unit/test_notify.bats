@@ -1,3 +1,4 @@
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
 
 load '../setup'
@@ -38,8 +39,8 @@ teardown() {
   ENABLE_EMAIL_NOTIFY="all"
   EMAIL_SENDER="from@example.com"
   sendmail() {
-    printf '%s\n' "$@" > "${WORKDIR}/sendmail_args.txt"
-    cat > /dev/null
+    printf '%s\n' "$@" >"${WORKDIR}/sendmail_args.txt"
+    cat >/dev/null
   }
   export -f sendmail
   notify_begin "full-20240101120000" "Full Account"
@@ -50,8 +51,8 @@ teardown() {
   ENABLE_EMAIL_NOTIFY="all"
   EMAIL_NOTIFY="admin@example.com"
   sendmail() {
-    printf '%s\n' "$@" > "${WORKDIR}/sendmail_args.txt"
-    cat > /dev/null
+    printf '%s\n' "$@" >"${WORKDIR}/sendmail_args.txt"
+    cat >/dev/null
   }
   export -f sendmail
   notify_begin "full-20240101120000" "Full Account"
@@ -68,8 +69,8 @@ teardown() {
 @test "notify_begin: does not invoke sendmail when ENABLE_EMAIL_NOTIFY is empty" {
   ENABLE_EMAIL_NOTIFY=""
   sendmail() {
-    echo "CALLED" > "${WORKDIR}/sendmail_called.txt"
-    cat > /dev/null
+    echo "CALLED" >"${WORKDIR}/sendmail_called.txt"
+    cat >/dev/null
   }
   export -f sendmail
   notify_begin "full-20240101120000" "Full Account"
@@ -79,8 +80,8 @@ teardown() {
 @test "notify_begin: does not invoke sendmail when ENABLE_EMAIL_NOTIFY is unknown value" {
   ENABLE_EMAIL_NOTIFY="never"
   sendmail() {
-    echo "CALLED" > "${WORKDIR}/sendmail_called.txt"
-    cat > /dev/null
+    echo "CALLED" >"${WORKDIR}/sendmail_called.txt"
+    cat >/dev/null
   }
   export -f sendmail
   notify_begin "full-20240101120000" "Full Account"
@@ -128,7 +129,7 @@ teardown() {
 @test "notify_finish: TEMPSESSION summary content is appended to message body" {
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  echo "SummaryLine42" > "$TEMPSESSION"
+  echo "SummaryLine42" >"$TEMPSESSION"
   ENABLE_EMAIL_NOTIFY="all"
   MOCK_SENDMAIL_FAIL=0
   notify_finish "$session" "Full Account" "SUCCESS"
@@ -148,8 +149,8 @@ teardown() {
   ENABLE_EMAIL_NOTIFY="all"
   EMAIL_SENDER="from@example.com"
   sendmail() {
-    printf '%s\n' "$@" > "${WORKDIR}/sendmail_args.txt"
-    cat > /dev/null
+    printf '%s\n' "$@" >"${WORKDIR}/sendmail_args.txt"
+    cat >/dev/null
   }
   export -f sendmail
   notify_finish "full-20240101120000" "Full Account" "FAILURE"

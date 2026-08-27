@@ -4,11 +4,11 @@
 ################################################################################
 # contract: Print the contract and informations about the project to the user
 ################################################################################
-function contract(){
+function contract() {
   clear
   echo "##################################################################################"
   echo "#                                                                                #"
-  cat << "EOF"
+  cat <<"EOF"
 #  M""""""""`M            dP                         dP                          #
 #  Mmmmmm   .M            88                         88                          #
 #  MMMMP  .MMM 88d8b.d8b. 88d888b. .d8888b. .d8888b. 88  .dP  dP    dP 88d888b.  #
@@ -50,8 +50,8 @@ EOF
   printf "Do you agree with the terms of the software license agreements? [N/y]: "
   read -r -r OPT
   if [[ $OPT != 'Y' && $OPT != 'y' ]]; then
-  	echo "Stoping the installation process..."
-  	exit 0
+    echo "Stoping the installation process..."
+    exit 0
   fi
 }
 
@@ -105,9 +105,9 @@ function set_values() {
 
   # Configure mail alert
   while ! [[ "$TMP" == 'SQLITE3' || "$TMP" == 'TXT' ]]; do
-      printf "\nWhere you want to store Zmbackup's sessions? TXT or SQLITE3 - DEFAULT [%s]:" "$SESSION_TYPE"
-      read -r TMP
-      TMP=${TMP:-$SESSION_TYPE}
+    printf "\nWhere you want to store Zmbackup's sessions? TXT or SQLITE3 - DEFAULT [%s]:" "$SESSION_TYPE"
+    read -r TMP
+    TMP=${TMP:-$SESSION_TYPE}
   done
   SESSION_TYPE=${TMP:-$SESSION_TYPE}
 

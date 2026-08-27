@@ -1,3 +1,4 @@
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
 # Functional tests for zmbackup -m / --migrate
 # SESSION_TYPE is the TARGET format:
@@ -16,7 +17,7 @@ setup() {
   # Override create_session for SQLITE3 mode to avoid the hardcoded install path
   # (/usr/local/lib/zmbackup/sqlite3/database.sql) that does not exist in the repo.
   _create_session_sqlite3() {
-    command sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+    command sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
     echo "Session file SQLITE3 recreated"
   }
 }
@@ -32,18 +33,18 @@ teardown() {
 
 _add_txt_session() {
   local session="$1" account="$2" label="${3:-Mon Jan 01}"
-  cat >> "${WORKDIR}/sessions.txt" << EOF
+  cat >>"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${session} started on ${label}
 ${session}:${account}:$(date +%m/%d/%y)
 SESSION: ${session} completed on ${label}
 EOF
   mkdir -p "${WORKDIR}/${session}"
-  echo "data" > "${WORKDIR}/${session}/${account}.ldiff"
-  echo "data" > "${WORKDIR}/${session}/${account}.tgz"
+  echo "data" >"${WORKDIR}/${session}/${account}.ldiff"
+  echo "data" >"${WORKDIR}/${session}/${account}.tgz"
 }
 
 _init_sqlite3() {
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
 }
 
 _add_sqlite3_session() {
@@ -213,15 +214,15 @@ _add_sqlite3_account() {
   SESSION_TYPE="SQLITE3"
   create_session() { _create_session_sqlite3; }
   # Add session with two accounts
-  cat >> "${WORKDIR}/sessions.txt" << 'EOF'
+  cat >>"${WORKDIR}/sessions.txt" <<'EOF'
 SESSION: full-20240101120000 started on Mon Jan 01
 full-20240101120000:alice@example.com:01/01/24
 full-20240101120000:bob@example.com:01/01/24
 SESSION: full-20240101120000 completed on Mon Jan 01
 EOF
   mkdir -p "${WORKDIR}/full-20240101120000"
-  echo "data" > "${WORKDIR}/full-20240101120000/alice@example.com.ldiff"
-  echo "data" > "${WORKDIR}/full-20240101120000/bob@example.com.ldiff"
+  echo "data" >"${WORKDIR}/full-20240101120000/alice@example.com.ldiff"
+  echo "data" >"${WORKDIR}/full-20240101120000/bob@example.com.ldiff"
   migration
   local count
   count=$(sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -232,11 +233,11 @@ EOF
 @test "migrate TXT→SQLITE3: multiple sessions of different types are all imported" {
   SESSION_TYPE="SQLITE3"
   create_session() { _create_session_sqlite3; }
-  _add_txt_session "full-20240101120000"     "user@example.com"
-  _add_txt_session "inc-20240108120000"      "user@example.com"
+  _add_txt_session "full-20240101120000" "user@example.com"
+  _add_txt_session "inc-20240108120000" "user@example.com"
   _add_txt_session "distlist-20240109120000" "dl@example.com"
-  _add_txt_session "alias-20240110120000"    "al@example.com"
-  _add_txt_session "ldap-20240111120000"     "user@example.com"
+  _add_txt_session "alias-20240110120000" "al@example.com"
+  _add_txt_session "ldap-20240111120000" "user@example.com"
   migration
   local count
   count=$(sqlite3 "${WORKDIR}/sessions.sqlite3" "select count(*) from backup_session")
@@ -263,7 +264,10 @@ EOF
 @test "migrate SQLITE3→TXT: prints starting and completion messages" {
   SESSION_TYPE="TXT"
   _init_sqlite3
-  create_session() { touch "${WORKDIR}/sessions.txt"; echo "Session file TXT recreated"; }
+  create_session() {
+    touch "${WORKDIR}/sessions.txt"
+    echo "Session file TXT recreated"
+  }
   run migration
   [ "$status" -eq 0 ]
   [[ "$output" == *"Starting the migration"* ]]
@@ -275,7 +279,10 @@ EOF
   _init_sqlite3
   _add_sqlite3_session "full-20240101120000" \
     "2024-01-01T12:00:00.000" "2024-01-01T13:00:00.000" "100M" "Full Backup"
-  create_session() { touch "${WORKDIR}/sessions.txt"; echo "Session file TXT recreated"; }
+  create_session() {
+    touch "${WORKDIR}/sessions.txt"
+    echo "Session file TXT recreated"
+  }
   migration
   [ ! -f "${WORKDIR}/sessions.sqlite3" ]
 }
@@ -285,7 +292,10 @@ EOF
   _init_sqlite3
   _add_sqlite3_session "full-20240101120000" \
     "2024-01-01T12:00:00.000" "2024-01-01T13:00:00.000" "100M" "Full Backup"
-  create_session() { touch "${WORKDIR}/sessions.txt"; echo "Session file TXT recreated"; }
+  create_session() {
+    touch "${WORKDIR}/sessions.txt"
+    echo "Session file TXT recreated"
+  }
   migration
   [ -f "${WORKDIR}/sessions.txt" ]
 }
@@ -293,7 +303,10 @@ EOF
 @test "migrate SQLITE3→TXT: empty database removes sqlite3 and creates sessions.txt" {
   SESSION_TYPE="TXT"
   _init_sqlite3
-  create_session() { touch "${WORKDIR}/sessions.txt"; echo "Session file TXT recreated"; }
+  create_session() {
+    touch "${WORKDIR}/sessions.txt"
+    echo "Session file TXT recreated"
+  }
   migration
   [ ! -f "${WORKDIR}/sessions.sqlite3" ]
   [ -f "${WORKDIR}/sessions.txt" ]
@@ -304,7 +317,10 @@ EOF
   _init_sqlite3
   _add_sqlite3_session "full-20240101120000" \
     "2024-01-01T12:00:00.000" "2024-01-01T13:00:00.000" "100M" "Full Backup"
-  create_session() { touch "${WORKDIR}/sessions.txt"; echo "Session file TXT recreated"; }
+  create_session() {
+    touch "${WORKDIR}/sessions.txt"
+    echo "Session file TXT recreated"
+  }
   migration
   grep -q "full-20240101120000" "${WORKDIR}/sessions.txt"
 }
@@ -315,7 +331,10 @@ EOF
   _add_sqlite3_session "full-20240101120000" \
     "2024-01-01T12:00:00.000" "2024-01-01T13:00:00.000" "100M" "Full Backup"
   _add_sqlite3_account "full-20240101120000" "user@example.com" "2024-01-01T12:00:00.000"
-  create_session() { touch "${WORKDIR}/sessions.txt"; echo "Session file TXT recreated"; }
+  create_session() {
+    touch "${WORKDIR}/sessions.txt"
+    echo "Session file TXT recreated"
+  }
   migration
   grep -q "user@example.com" "${WORKDIR}/sessions.txt"
 }
@@ -326,7 +345,10 @@ EOF
   _add_sqlite3_session "full-20240315120000" \
     "2024-03-15T12:00:00.000" "2024-03-15T13:00:00.000" "100M" "Full Backup"
   _add_sqlite3_account "full-20240315120000" "user@example.com" "2024-03-15T12:00:00.000"
-  create_session() { touch "${WORKDIR}/sessions.txt"; echo "Session file TXT recreated"; }
+  create_session() {
+    touch "${WORKDIR}/sessions.txt"
+    echo "Session file TXT recreated"
+  }
   migration
   grep -q "full-20240315120000:user@example.com:03/15/2024" "${WORKDIR}/sessions.txt"
 }
@@ -338,7 +360,10 @@ EOF
     "2024-01-01T12:00:00.000" "2024-01-01T13:00:00.000" "100M" "Full Backup"
   _add_sqlite3_session "inc-20240108120000" \
     "2024-01-08T12:00:00.000" "2024-01-08T12:30:00.000" "20M" "Incremental Backup"
-  create_session() { touch "${WORKDIR}/sessions.txt"; echo "Session file TXT recreated"; }
+  create_session() {
+    touch "${WORKDIR}/sessions.txt"
+    echo "Session file TXT recreated"
+  }
   migration
   grep -q "full-20240101120000" "${WORKDIR}/sessions.txt"
   grep -q "inc-20240108120000" "${WORKDIR}/sessions.txt"

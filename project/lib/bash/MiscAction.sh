@@ -72,8 +72,9 @@ function validate_account_args() {
 #    $1 - syslog priority (e.g. local7.info, local7.err, local7.warn)
 #    $@ - message text; if omitted, reads from stdin
 ###############################################################################
-function zmlog(){
-  local priority="${1}"; shift
+function zmlog() {
+  local priority="${1}"
+  shift
   local message
   if [[ "$#" -gt 0 ]]; then
     message="$*"
@@ -81,7 +82,7 @@ function zmlog(){
     message="$(cat)"
   fi
   logger -i -p "${priority}" "${message}" 2>/dev/null || true
-  echo "$(date '+%Y-%m-%d %T') [${priority}] ${message}" >> "${LOGFILE}"
+  echo "$(date '+%Y-%m-%d %T') [${priority}] ${message}" >>"${LOGFILE}" 2>/dev/null || true
 }
 
 ###############################################################################
@@ -124,7 +125,7 @@ function session_query() {
 ###############################################################################
 # on_exit: Clear all the temporary files and send notification on exit.
 ###############################################################################
-function on_exit(){
+function on_exit() {
   BASHERRCODE=$?
   if [[ -n "${STYPE}" ]]; then
     if [[ ${BASHERRCODE} -ne 0 ]]; then
@@ -144,7 +145,7 @@ trap on_exit TERM INT EXIT
 ###############################################################################
 # create_temp: Create the temporary files used by the script.
 ###############################################################################
-function create_temp(){
+function create_temp() {
   TEMPDIR=$(mktemp -d "${WORKDIR}/XXXX")
   TEMPACCOUNT=$(mktemp)
   TEMPINACCOUNT=$(mktemp)
@@ -157,13 +158,13 @@ function create_temp(){
 ###############################################################################
 # load_config: Load the config file and zimbra's bashrc.
 ###############################################################################
-function load_config(){
+function load_config() {
   local conf="${ZMBACKUP_CONF:-/etc/zmbackup/zmbackup.conf}"
   local bashrc="${ZIMBRA_BASHRC:-/opt/zimbra/.bashrc}"
   local ldaprc="${ZIMBRA_LDAPRC:-/opt/zimbra/.ldaprc}"
   if [[ -f "${conf}" ]]; then
     # shellcheck source=/dev/null
-    source "${conf}" 2> /dev/null
+    source "${conf}" 2>/dev/null
     ZMBACKUP_BLOCKEDLIST="${ZMBACKUP_BLOCKEDLIST:-/etc/zmbackup/blockedlist.conf}"
     export ZMBACKUP_BLOCKEDLIST
   else
@@ -173,7 +174,7 @@ function load_config(){
   fi
   if [[ -f "${bashrc}" ]]; then
     # shellcheck source=/dev/null
-    source "${bashrc}" 2> /dev/null
+    source "${bashrc}" 2>/dev/null
   else
     zmlog local7.err "Zmbackup: zimbra user's .bashrc not found."
     echo "ERROR - zimbra user's .bashrc not found. Can't proceed without the file."
@@ -187,7 +188,7 @@ function load_config(){
 ###############################################################################
 # constants: Initialize all the constants used by the Zmbackup.
 ###############################################################################
-function constant(){
+function constant() {
   # LDAP OBJECT
   if [[ "${BACKUP_INACTIVE_ACCOUNTS}" == "true" ]]; then
     declare -gxr ACOBJECT="(objectclass=zimbraAccount)"
@@ -224,9 +225,9 @@ function constant(){
 #    $1 - The type of session that will be executed
 #    $2 - OPTIONAL: Enable Incremental Backup
 ###############################################################################
-function sessionvars(){
+function sessionvars() {
   INC='FALSE'
-  ls "${WORKDIR}"/full* > /dev/null 2>&1
+  ls "${WORKDIR}"/full* >/dev/null 2>&1
   ERRORCODE=$?
   if [[ ${ERRORCODE} -ne 0 || "${1}" == '--full' || "${1}" == '-f' ]]; then
     STYPE="Full Account"
@@ -260,7 +261,7 @@ function sessionvars(){
 ###############################################################################
 # validate_config: Validate if all the values are informed and set the default if not
 ###############################################################################
-function validate_config(){
+function validate_config() {
 
   ERR="false"
 
@@ -269,7 +270,9 @@ function validate_config(){
     zmlog local7.warn "Zmbackup: BACKUPUSER not informed - setting as user zimbra instead."
   fi
 
-  if [[ "$(whoami)" != "${BACKUPUSER}" ]]; then
+  local current_user
+  current_user=$(whoami 2>/dev/null || echo "")
+  if [[ "${current_user}" != "${BACKUPUSER}" ]]; then
     echo "You need to be ${BACKUPUSER} to run this software."
     zmlog local7.err "Zmbackup: You need to be ${BACKUPUSER} to run this software."
     exit 2
@@ -296,7 +299,7 @@ function validate_config(){
   fi
 
   if [[ -z "${ZMMAILBOX}" ]]; then
-    ZMMAILBOX=$(whereis zmmailbox 2>/dev/null | cut -d" " -f2)
+    ZMMAILBOX=$(whereis zmmailbox 2>/dev/null | cut -d" " -f2 || true)
     zmlog local7.warn "Zmbackup: ZMMAILBOX not defined informed - setting as ${ZMMAILBOX} instead"
   fi
 
@@ -365,7 +368,7 @@ function validate_config(){
 # check_parallel_version: Warn if GNU Parallel is too old (version <= 20160222
 # has a known "pidtable format" bug that causes backup failures).
 ###############################################################################
-function check_parallel_version(){
+function check_parallel_version() {
   local parallel_version
   parallel_version=$(parallel --version 2>/dev/null | head -1 | grep -oE '[0-9]{8}') || true
   if [[ -n "${parallel_version}" ]] && [[ "${parallel_version}" -le "20160222" ]]; then
@@ -382,7 +385,7 @@ function check_parallel_version(){
 ###############################################################################
 # checkpid: Check if the PID file exist. If exist, exit with status 3 and do nothing
 ###############################################################################
-function checkpid(){
+function checkpid() {
   if [[ -f "${PID}" ]]; then
     PIDP=$(cat "${PID}")
     PIDR=$(ps -efa | awk '{print $2}' | grep -c "^${PIDP}$") || true
@@ -393,17 +396,17 @@ function checkpid(){
       exit 4
     else
       echo 'Found stale PID file. Proceeding'
-      echo $$ > "${PID}"
+      echo $$ >"${PID}"
     fi
   else
-    echo $$ > "${PID}"
+    echo $$ >"${PID}"
   fi
 }
 
 ###############################################################################
 # export_function: Export all the functions used by ParallelAction
 ###############################################################################
-function export_function(){
+function export_function() {
   export -f parse_session_name
   export -f validate_email
   export -f validate_domain
@@ -431,7 +434,7 @@ function export_function(){
 ###############################################################################
 # export_vars: Export all the variables used by ParallelAction
 ###############################################################################
-function export_vars(){
+function export_vars() {
   export LDAPSERVER
   export LDAPADMIN
   export LDAPPASS

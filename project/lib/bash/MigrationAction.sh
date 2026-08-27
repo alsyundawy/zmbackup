@@ -1,6 +1,6 @@
 #!/bin/bash
 ################################################################################
-# Database Actions - Sqlite Drive
+# Migration Database - SQLITE3 -> TXT / TXT -> SQLITE3
 ################################################################################
 
 ###############################################################################
@@ -11,7 +11,7 @@ function create_session(){
     touch "${WORKDIR}"/sessions.txt
     echo "Session file TXT recreated"
   elif [[ "${SESSION_TYPE}" == "SQLITE3" ]]; then
-    sqlite3 "${WORKDIR}"/sessions.sqlite3 ".read /usr/local/lib/zmbackup/sqlite3/database.sql"
+    sqlite3 "${WORKDIR}"/sessions.sqlite3 ".read /usr/local/lib/zmbackup/sqlite3/database.sql" 2>/dev/null || true
     echo "Session file SQLITE3 recreated"
   else
     echo "Invalid File Format - Nothing to do."
@@ -25,9 +25,9 @@ function importsessionSQL(){
   local session_list
   session_list=$(grep -E 'SESSION:' "${WORKDIR}"/sessions.txt 2>/dev/null | grep 'started' | awk '{print $2}' | sort | uniq || true)
   for i in ${session_list}; do
+    parse_session_name "${i}"
     SESSIONID="${i}"
     OPT=$(echo "${i}" | cut -d"-" -f1 || true)
-    parse_session_name "${i}"
     case "${OPT}" in
       "full")      OPT="Full Backup" ;;
       "inc")       OPT="Incremental Backup" ;;
@@ -51,7 +51,7 @@ function importsessionSQL(){
     SAFE_OPT=$(safe_sql_value "${OPT}")
     SAFE_STATUS=$(safe_sql_value "${STATUS}")
     sqlite3 "${WORKDIR}"/sessions.sqlite3 "insert into backup_session values ('${SAFE_SESSIONID}',\
-                                       '${SAFE_INITIAL}','${SAFE_CONCLUSION}','${SAFE_SIZE}','${SAFE_OPT}','${SAFE_STATUS}')"
+                                       '${SAFE_INITIAL}','${SAFE_CONCLUSION}','${SAFE_SIZE}','${SAFE_OPT}','${SAFE_STATUS}')" 2>/dev/null || true
   done
 }
 
@@ -86,14 +86,13 @@ function importaccountsSQL(){
 # importaccountsTXT: Migrate the accounts from the txt file to the sqlite3 database
 ###############################################################################
 function importsessionTXT(){
-  sqlite3 "${WORKDIR}"/sessions.sqlite3 "select sessionID,conclusion_date from backup_session" 2>/dev/null | while read -r ROW || [[ -n "${ROW}" ]]; do
-    SESSIONID=$(echo "${ROW}" | cut -d'|' -f1 || true)
-    MONTH=$(echo "${ROW}" | cut -d'|' -f2 | cut -d'-' -f2 || true)
-    DAY=$(echo "${ROW}" | cut -d'|' -f2 | cut -d'-' -f3 | cut -d'T' -f1 || true)
-    YEAR=$(echo "${ROW}" | cut -d'|' -f2 | cut -d'-' -f1 || true)
+  sqlite3 "${WORKDIR}"/sessions.sqlite3 "select sessionID,conclusion_date from backup_session" 2>/dev/null | while IFS='|' read -r SESSIONID CONCLUSION_RAW || [[ -n "${SESSIONID}" ]]; do
+    MONTH=$(echo "${CONCLUSION_RAW}" | cut -d'-' -f2 || true)
+    DAY=$(echo "${CONCLUSION_RAW}" | cut -d'-' -f3 | cut -d'T' -f1 || true)
+    YEAR=$(echo "${CONCLUSION_RAW}" | cut -d'-' -f1 || true)
     local HOUR MINUTE date_out date_arg fmt_str
-    HOUR=$(echo "${ROW}" | cut -d'|' -f2 | cut -d'T' -f2 | cut -d':' -f1 || true)
-    MINUTE=$(echo "${ROW}" | cut -d'|' -f2 | cut -d'T' -f2 | cut -d':' -f2 || true)
+    HOUR=$(echo "${CONCLUSION_RAW}" | cut -d'T' -f2 | cut -d':' -f1 || true)
+    MINUTE=$(echo "${CONCLUSION_RAW}" | cut -d'T' -f2 | cut -d':' -f2 || true)
     date_arg="${MONTH}/${DAY}/${YEAR}"
     fmt_str="%m/%d/%Y"
     if [[ "${HOUR}" =~ ^[0-9]+$ && "${MINUTE}" =~ ^[0-9]+$ ]]; then

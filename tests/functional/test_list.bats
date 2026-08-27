@@ -1,3 +1,4 @@
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
 # Functional tests for zmbackup -l / --list
 # These tests exercise the full list_sessions dispatch chain with realistic
@@ -24,17 +25,17 @@ teardown() {
 
 _add_txt_session() {
   local session="$1" account="$2" label="$3"
-  cat >> "${WORKDIR}/sessions.txt" << EOF
+  cat >>"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${session} started on ${label}
 ${session}:${account}:$(date +%m/%d/%y)
 SESSION: ${session} completed on ${label}
 EOF
   mkdir -p "${WORKDIR}/${session}"
-  echo "data" > "${WORKDIR}/${session}/${account}.ldiff"
+  echo "data" >"${WORKDIR}/${session}/${account}.ldiff"
 }
 
 _init_sqlite3() {
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
 }
 
 _add_sqlite3_session() {
@@ -165,11 +166,11 @@ _add_sqlite3_session() {
 
 @test "list TXT: all five session types listed when all exist" {
   SESSION_TYPE="TXT"
-  _add_txt_session "full-20240101120000"     "user@example.com" "Mon Jan 01"
-  _add_txt_session "inc-20240102120000"      "user@example.com" "Tue Jan 02"
-  _add_txt_session "distlist-20240103120000" "dl@example.com"   "Wed Jan 03"
-  _add_txt_session "alias-20240104120000"    "al@example.com"   "Thu Jan 04"
-  _add_txt_session "ldap-20240105120000"     "user@example.com" "Fri Jan 05"
+  _add_txt_session "full-20240101120000" "user@example.com" "Mon Jan 01"
+  _add_txt_session "inc-20240102120000" "user@example.com" "Tue Jan 02"
+  _add_txt_session "distlist-20240103120000" "dl@example.com" "Wed Jan 03"
+  _add_txt_session "alias-20240104120000" "al@example.com" "Thu Jan 04"
+  _add_txt_session "ldap-20240105120000" "user@example.com" "Fri Jan 05"
   run list_sessions
   [ "$status" -eq 0 ]
   [[ "$output" == *"Full Backup"* ]]
@@ -197,7 +198,7 @@ _add_sqlite3_session() {
 
 @test "list TXT: session in sessions.txt but directory deleted still renders a row" {
   SESSION_TYPE="TXT"
-  cat >> "${WORKDIR}/sessions.txt" << 'EOF'
+  cat >>"${WORKDIR}/sessions.txt" <<'EOF'
 SESSION: full-20240101120000 started on Mon Jan 01
 full-20240101120000:user@example.com:01/01/24
 SESSION: full-20240101120000 completed on Mon Jan 01
@@ -325,11 +326,11 @@ EOF
 @test "list SQLITE3: all five session types listed when all exist" {
   SESSION_TYPE="SQLITE3"
   _init_sqlite3
-  _add_sqlite3_session "full-20240101120000"     "2024-01-01T12:00:00.000" "2024-01-01T13:00:00.000" "100M" "Full Backup"
-  _add_sqlite3_session "inc-20240102120000"      "2024-01-02T12:00:00.000" "2024-01-02T12:30:00.000" "30M"  "Incremental Backup"
-  _add_sqlite3_session "distlist-20240103120000" "2024-01-03T12:00:00.000" "2024-01-03T12:05:00.000" "5M"   "Distribution List Backup"
-  _add_sqlite3_session "alias-20240104120000"    "2024-01-04T12:00:00.000" "2024-01-04T12:03:00.000" "2M"   "Alias Backup"
-  _add_sqlite3_session "ldap-20240105120000"     "2024-01-05T12:00:00.000" "2024-01-05T12:10:00.000" "10M"  "Account Backup - Only LDAP"
+  _add_sqlite3_session "full-20240101120000" "2024-01-01T12:00:00.000" "2024-01-01T13:00:00.000" "100M" "Full Backup"
+  _add_sqlite3_session "inc-20240102120000" "2024-01-02T12:00:00.000" "2024-01-02T12:30:00.000" "30M" "Incremental Backup"
+  _add_sqlite3_session "distlist-20240103120000" "2024-01-03T12:00:00.000" "2024-01-03T12:05:00.000" "5M" "Distribution List Backup"
+  _add_sqlite3_session "alias-20240104120000" "2024-01-04T12:00:00.000" "2024-01-04T12:03:00.000" "2M" "Alias Backup"
+  _add_sqlite3_session "ldap-20240105120000" "2024-01-05T12:00:00.000" "2024-01-05T12:10:00.000" "10M" "Account Backup - Only LDAP"
   run list_sessions
   [ "$status" -eq 0 ]
   [[ "$output" == *"Full Backup"* ]]

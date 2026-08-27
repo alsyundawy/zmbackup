@@ -1,3 +1,4 @@
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
 
 load '../setup'
@@ -73,7 +74,7 @@ teardown() {
   local session="domain-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: dc=sub,dc=example,dc=com\nobjectClass: dcObject\n" \
-    > "${WORKDIR}/${session}/sub.example.com.ldiff"
+    >"${WORKDIR}/${session}/sub.example.com.ldiff"
   MOCK_LDAPADD_FAIL=0
   run domain_restore "$session" "sub.example.com"
   [ "$status" -eq 0 ]
@@ -83,7 +84,7 @@ teardown() {
   local session="domain-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: dc=my-domain,dc=com\nobjectClass: dcObject\n" \
-    > "${WORKDIR}/${session}/my-domain.com.ldiff"
+    >"${WORKDIR}/${session}/my-domain.com.ldiff"
   MOCK_LDAPADD_FAIL=0
   run domain_restore "$session" "my-domain.com"
   [ "$status" -eq 0 ]
@@ -97,7 +98,7 @@ teardown() {
   local session="domain-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: dc=example,dc=com\nobjectClass: dcObject\n" \
-    > "${WORKDIR}/${session}/example.com.ldiff"
+    >"${WORKDIR}/${session}/example.com.ldiff"
   MOCK_LDAPADD_EXISTS=1
   # Use `run` so set -e does not abort when ERR=$(ldapadd...) exits 68 internally
   run domain_restore "$session" "example.com"
@@ -113,7 +114,7 @@ teardown() {
   local session="domain-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: dc=example,dc=com\nobjectClass: dcObject\n" \
-    > "${WORKDIR}/${session}/example.com.ldiff"
+    >"${WORKDIR}/${session}/example.com.ldiff"
   MOCK_LDAPADD_FAIL=1
   run domain_restore "$session" "example.com"
   [ "$status" -ne 0 ]
@@ -123,7 +124,7 @@ teardown() {
 @test "domain_restore: error output describes missing DN when ldiff has no dn: line" {
   local session="domain-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  echo "objectClass: dcObject" > "${WORKDIR}/${session}/example.com.ldiff"
+  echo "objectClass: dcObject" >"${WORKDIR}/${session}/example.com.ldiff"
   run domain_restore "$session" "example.com"
   [ "$status" -eq 1 ]
   [[ "$output" == *"Could not extract DN"* ]]

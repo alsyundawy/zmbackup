@@ -1,3 +1,4 @@
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
 
 load '../setup'
@@ -26,7 +27,7 @@ teardown() {
   SESSION_TYPE="TXT"
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  echo "SESSION: ${session} started on Mon Jan 01" >> "${WORKDIR}/sessions.txt"
+  echo "SESSION: ${session} started on Mon Jan 01" >>"${WORKDIR}/sessions.txt"
   __DELETEBACKUP "$session"
   [ ! -d "${WORKDIR}/${session}" ]
 }
@@ -35,7 +36,7 @@ teardown() {
   SESSION_TYPE="TXT"
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  cat > "${WORKDIR}/sessions.txt" << EOF
+  cat >"${WORKDIR}/sessions.txt" <<EOF
 SESSION: full-20240101120000 started on Mon Jan 01
 SESSION: full-20240202120000 started on Fri Feb 02
 EOF
@@ -48,7 +49,7 @@ EOF
   SESSION_TYPE="SQLITE3"
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session values('${session}','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
@@ -94,7 +95,7 @@ EOF
   SESSION_TYPE="TXT"
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  echo "SESSION: ${session} started on Mon Jan 01" > "${WORKDIR}/sessions.txt"
+  echo "SESSION: ${session} started on Mon Jan 01" >"${WORKDIR}/sessions.txt"
   __DELETEBACKUP "$session"
   [ ! -f "${WORKDIR}/.sessions.txt" ]
 }
@@ -103,7 +104,7 @@ EOF
   SESSION_TYPE="TXT"
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  echo "SESSION: ${session} started on Mon Jan 01" > "${WORKDIR}/sessions.txt"
+  echo "SESSION: ${session} started on Mon Jan 01" >"${WORKDIR}/sessions.txt"
   __DELETEBACKUP "$session"
   [ -f "${WORKDIR}/sessions.txt" ]
 }
@@ -116,7 +117,7 @@ EOF
   SESSION_TYPE="TXT"
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  echo "SESSION: ${session} started on Mon Jan 01" >> "${WORKDIR}/sessions.txt"
+  echo "SESSION: ${session} started on Mon Jan 01" >>"${WORKDIR}/sessions.txt"
   delete_one "$session"
   [ ! -d "${WORKDIR}/${session}" ]
 }
@@ -138,7 +139,7 @@ EOF
   SESSION_TYPE="TXT"
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  echo "SESSION: ${session} started on Mon Jan 01" > "${WORKDIR}/sessions.txt"
+  echo "SESSION: ${session} started on Mon Jan 01" >"${WORKDIR}/sessions.txt"
   run delete_one "$session"
   [ "$status" -eq 0 ]
 }
@@ -147,7 +148,7 @@ EOF
   SESSION_TYPE="SQLITE3"
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session values('${session}','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
@@ -160,14 +161,14 @@ EOF
 
 @test "delete_one: prints not-found when session missing in SQLITE3" {
   SESSION_TYPE="SQLITE3"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   run delete_one "nonexistent-session"
   [[ "$output" == *"not found"* ]]
 }
 
 @test "delete_one: exits 1 when session not found in SQLITE3" {
   SESSION_TYPE="SQLITE3"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   run delete_one "nonexistent-session"
   [ "$status" -eq 1 ]
 }
@@ -176,7 +177,7 @@ EOF
   SESSION_TYPE="SQLITE3"
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session values('${session}','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
@@ -194,7 +195,7 @@ EOF
   local old_session="full-20200101120000"
   local new_session="full-$(date +%Y%m%d%H%M%S)"
   mkdir -p "${WORKDIR}/${old_session}" "${WORKDIR}/${new_session}"
-  cat > "${WORKDIR}/sessions.txt" << EOF
+  cat >"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${old_session} started on Wed Jan 01
 SESSION: ${new_session} started on $(date)
 EOF
@@ -207,7 +208,7 @@ EOF
   ROTATE_TIME="30"
   local new_session="full-$(date +%Y%m%d%H%M%S)"
   mkdir -p "${WORKDIR}/${new_session}"
-  echo "SESSION: ${new_session} started on $(date)" > "${WORKDIR}/sessions.txt"
+  echo "SESSION: ${new_session} started on $(date)" >"${WORKDIR}/sessions.txt"
   delete_old
   [ -d "${WORKDIR}/${new_session}" ]
 }
@@ -217,7 +218,7 @@ EOF
   ROTATE_TIME="30"
   local old_session="full-20200101120000"
   mkdir -p "${WORKDIR}/${old_session}"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session values('${old_session}','2020-01-01T12:00:00.000',
      '2020-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
@@ -236,7 +237,7 @@ EOF
   SESSION_TYPE="TXT"
   local s1="full-20240101120000" s2="inc-20240102120000"
   mkdir -p "${WORKDIR}/${s1}" "${WORKDIR}/${s2}"
-  cat > "${WORKDIR}/sessions.txt" << EOF
+  cat >"${WORKDIR}/sessions.txt" <<EOF
 SESSION: ${s1} started on Mon Jan 01
 SESSION: ${s2} started on Tue Jan 02
 EOF
@@ -249,7 +250,7 @@ EOF
   SESSION_TYPE="SQLITE3"
   local s1="full-20240101120000" s2="inc-20240102120000"
   mkdir -p "${WORKDIR}/${s1}" "${WORKDIR}/${s2}"
-  sqlite3 "${WORKDIR}/sessions.sqlite3" < "${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
+  sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session values('${s1}','2024-01-01T12:00:00.000','2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
@@ -273,7 +274,7 @@ EOF
 
 @test "clean_empty: removes zero-byte files from WORKDIR" {
   touch "${WORKDIR}/empty_file.ldiff"
-  echo "content" > "${WORKDIR}/non_empty_file.ldiff"
+  echo "content" >"${WORKDIR}/non_empty_file.ldiff"
   clean_empty
   [ ! -f "${WORKDIR}/empty_file.ldiff" ]
   [ -f "${WORKDIR}/non_empty_file.ldiff" ]
