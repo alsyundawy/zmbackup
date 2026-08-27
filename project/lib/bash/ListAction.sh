@@ -46,7 +46,7 @@ function build_listBKP()
       echo "ERROR - Can't extract accounts from LDAP - See log for more information"
     fi
   fi
-  grep "^${2}" "${TEMPACCOUNT}" | awk '{print $2}' > "${TEMPINACCOUNT}"
+  grep "^${2}" "${TEMPACCOUNT}" 2>/dev/null | awk '{print $2}' > "${TEMPINACCOUNT}" || true
   true > "${TEMPACCOUNT}"
   parallel --jobs "${MAX_PARALLEL_PROCESS}" "ldap_filter '{}'" < "${TEMPINACCOUNT}"
 }
@@ -66,7 +66,7 @@ function build_listRST()
     done
   else
     if [[ "${SESSION_TYPE}" == 'TXT' ]]; then
-      grep "${1}:" "${WORKDIR}"/sessions.txt | grep -v "SESSION" | cut -d: -f2 > "${TEMPACCOUNT}"
+      grep "${1}:" "${WORKDIR}"/sessions.txt 2>/dev/null | grep -v "SESSION" | cut -d: -f2 > "${TEMPACCOUNT}" || true
     elif [[ "${SESSION_TYPE}" == "SQLITE3" ]]; then
       local SAFE_SESSION
       SAFE_SESSION=$(safe_sql_value "${1}")

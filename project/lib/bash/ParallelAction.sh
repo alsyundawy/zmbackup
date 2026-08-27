@@ -286,7 +286,7 @@ function ldap_filter()
     SAFE_EMAIL=$(safe_sql_value "${1}")
     EXIST=$(session_query \
       "select email from backup_account where conclusion_date <= '${TODAY}' and conclusion_date >= '${YESTERDAY}' and email='${SAFE_EMAIL}'" \
-      "grep \"${1}:$(date +%m/%d/%y)\" \"${WORKDIR}\"/sessions.txt 2>/dev/null | tail -1")
+      "grep \"${1}:$(date +%m/%d/%y)\" \"${WORKDIR}\"/sessions.txt 2>/dev/null | tail -1 || true")
   fi
   local blockedlist="${ZMBACKUP_BLOCKEDLIST:-/etc/zmbackup/blockedlist.conf}"
   if grep -Fxq "${1}" "${blockedlist}"; then

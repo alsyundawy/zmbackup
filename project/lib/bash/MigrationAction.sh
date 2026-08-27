@@ -22,9 +22,11 @@ function create_session(){
 # importsessionSQL: Migrate the sessions from the txt file to the sqlite3 database
 ###############################################################################
 function importsessionSQL(){
-  for i in $(grep -E 'SESSION:' "${WORKDIR}"/sessions.txt | grep 'started' | awk '{print $2}' | sort | uniq); do
+  local session_list
+  session_list=$(grep -E 'SESSION:' "${WORKDIR}"/sessions.txt 2>/dev/null | grep 'started' | awk '{print $2}' | sort | uniq || true)
+  for i in ${session_list}; do
     SESSIONID="${i}"
-    OPT=$(echo "${i}" | cut -d"-" -f1 )
+    OPT=$(echo "${i}" | cut -d"-" -f1 || true)
     parse_session_name "${i}"
     case "${OPT}" in
       "full")      OPT="Full Backup" ;;
@@ -35,10 +37,11 @@ function importsessionSQL(){
       "mbox")      OPT="Mailbox Backup" ;;
       "signature") OPT="Signature Backup" ;;
       "domain")    OPT="Domain Backup" ;;
+      *)           OPT="${OPT} Backup" ;;
     esac
     INITIAL="${YEAR}-${MONTH}-${DAY}T00:00:00.000"
     CONCLUSION="${YEAR}-${MONTH}-${DAY}T00:00:00.000"
-    SIZE=$(du -ch "${WORKDIR}/${i}" | grep total | awk '{print $1}')
+    SIZE=$(du -ch "${WORKDIR}/${i}" 2>/dev/null | grep total | awk '{print $1}' || echo "0B")
     STATUS="FINISHED"
     local SAFE_SESSIONID SAFE_INITIAL SAFE_CONCLUSION SAFE_SIZE SAFE_OPT SAFE_STATUS
     SAFE_SESSIONID=$(safe_sql_value "${SESSIONID}")
@@ -56,21 +59,25 @@ function importsessionSQL(){
 # importaccountsSQL: Migrate the accounts from the txt file to the sqlite3 database
 ###############################################################################
 function importaccountsSQL(){
-  for i in $(grep -E 'SESSION:' "${WORKDIR}"/sessions.txt | grep 'started' | awk '{print $2}' | sort | uniq); do
+  local session_list
+  session_list=$(grep -E 'SESSION:' "${WORKDIR}"/sessions.txt 2>/dev/null | grep 'started' | awk '{print $2}' | sort | uniq || true)
+  for i in ${session_list}; do
     local SAFE_SESS
     SAFE_SESS=$(safe_sql_value "${i}")
-    DATE=$(sqlite3 "${WORKDIR}"/sessions.sqlite3 "select conclusion_date from backup_session where sessionID='${SAFE_SESS}'")
+    DATE=$(sqlite3 "${WORKDIR}"/sessions.sqlite3 "select conclusion_date from backup_session where sessionID='${SAFE_SESS}'" 2>/dev/null || true)
     local SAFE_DATE
     SAFE_DATE=$(safe_sql_value "${DATE}")
-    for j in $(grep -E "${i}" "${WORKDIR}"/sessions.txt | grep -v 'SESSION:' | sort | uniq); do
-      EMAIL=$(echo "${j}" | cut -d":" -f2)
-      SIZE=$(du -ch "${WORKDIR}/${i}/${EMAIL}"* 2>/dev/null | grep total | awk '{print $1}')
+    local account_lines
+    account_lines=$(grep -E "${i}" "${WORKDIR}"/sessions.txt 2>/dev/null | grep -v 'SESSION:' | sort | uniq || true)
+    for j in ${account_lines}; do
+      EMAIL=$(echo "${j}" | cut -d":" -f2 || true)
+      SIZE=$(du -ch "${WORKDIR}/${i}/${EMAIL}"* 2>/dev/null | grep total | awk '{print $1}' || echo "0B")
       local SAFE_EMAIL SAFE_ACC_SIZE
       SAFE_EMAIL=$(safe_sql_value "${EMAIL}")
       SAFE_ACC_SIZE=$(safe_sql_value "${SIZE}")
       sqlite3 "${WORKDIR}"/sessions.sqlite3 "insert into backup_account (email,sessionID,\
                                          account_size,initial_date, conclusion_date) \
-                                         values ('${SAFE_EMAIL}','${SAFE_SESS}','${SAFE_ACC_SIZE}','${SAFE_DATE}','${SAFE_DATE}')" > /dev/null
+                                         values ('${SAFE_EMAIL}','${SAFE_SESS}','${SAFE_ACC_SIZE}','${SAFE_DATE}','${SAFE_DATE}')" > /dev/null 2>&1 || true
     done
   done
 }
@@ -79,14 +86,14 @@ function importaccountsSQL(){
 # importaccountsTXT: Migrate the accounts from the txt file to the sqlite3 database
 ###############################################################################
 function importsessionTXT(){
-  sqlite3 "${WORKDIR}"/sessions.sqlite3 "select sessionID,conclusion_date from backup_session" | while read -r ROW; do
-    SESSIONID=$(echo "${ROW}" | cut -d'|' -f1)
-    MONTH=$(echo "${ROW}" | cut -d'|' -f2 | cut -d'-' -f2)
-    DAY=$(echo "${ROW}" | cut -d'|' -f2 | cut -d'-' -f3 | cut -d'T' -f1)
-    YEAR=$(echo "${ROW}" | cut -d'|' -f2 | cut -d'-' -f1)
+  sqlite3 "${WORKDIR}"/sessions.sqlite3 "select sessionID,conclusion_date from backup_session" 2>/dev/null | while read -r ROW || [[ -n "${ROW}" ]]; do
+    SESSIONID=$(echo "${ROW}" | cut -d'|' -f1 || true)
+    MONTH=$(echo "${ROW}" | cut -d'|' -f2 | cut -d'-' -f2 || true)
+    DAY=$(echo "${ROW}" | cut -d'|' -f2 | cut -d'-' -f3 | cut -d'T' -f1 || true)
+    YEAR=$(echo "${ROW}" | cut -d'|' -f2 | cut -d'-' -f1 || true)
     local HOUR MINUTE date_out date_arg fmt_str
-    HOUR=$(echo "${ROW}" | cut -d'|' -f2 | cut -d'T' -f2 | cut -d':' -f1)
-    MINUTE=$(echo "${ROW}" | cut -d'|' -f2 | cut -d'T' -f2 | cut -d':' -f2)
+    HOUR=$(echo "${ROW}" | cut -d'|' -f2 | cut -d'T' -f2 | cut -d':' -f1 || true)
+    MINUTE=$(echo "${ROW}" | cut -d'|' -f2 | cut -d'T' -f2 | cut -d':' -f2 || true)
     date_arg="${MONTH}/${DAY}/${YEAR}"
     fmt_str="%m/%d/%Y"
     if [[ "${HOUR}" =~ ^[0-9]+$ && "${MINUTE}" =~ ^[0-9]+$ ]]; then
@@ -95,17 +102,17 @@ function importsessionTXT(){
     fi
     if date -d "01/01/2020" >/dev/null 2>&1; then
       # GNU date
-      date_out=$(date -d "${date_arg}")
+      date_out=$(date -d "${date_arg}" 2>/dev/null || echo "${date_arg}")
     elif date -j -f "${fmt_str}" "${date_arg}" >/dev/null 2>&1; then
       # BSD date
-      date_out=$(date -j -f "${fmt_str}" "${date_arg}")
+      date_out=$(date -j -f "${fmt_str}" "${date_arg}" 2>/dev/null || echo "${date_arg}")
     else
       date_out="${YEAR}-${MONTH}-${DAY} ${HOUR:-00}:${MINUTE:-00}"
     fi
     echo "SESSION: ${SESSIONID} started on ${date_out}" >> "${WORKDIR}"/sessions.txt
     local SAFE_SESSIONID
     SAFE_SESSIONID=$(safe_sql_value "${SESSIONID}")
-    sqlite3 "${WORKDIR}"/sessions.sqlite3 "select email from backup_account where sessionID='${SAFE_SESSIONID}'" | while read -r ACCOUNT; do
+    sqlite3 "${WORKDIR}"/sessions.sqlite3 "select email from backup_account where sessionID='${SAFE_SESSIONID}'" 2>/dev/null | while read -r ACCOUNT || [[ -n "${ACCOUNT}" ]]; do
       echo "${SESSIONID}:${ACCOUNT}:${MONTH}/${DAY}/${YEAR}" >> "${WORKDIR}"/sessions.txt
     done
   done
@@ -120,10 +127,10 @@ function migration(){
   if [[ "${SESSION_TYPE}" == "SQLITE3" ]]; then
     importsessionSQL
     importaccountsSQL
-    rm "${WORKDIR}"/sessions.txt
+    rm -f "${WORKDIR}"/sessions.txt
   elif [[ "${SESSION_TYPE}" == "TXT" ]]; then
     importsessionTXT
-    rm "${WORKDIR}"/sessions.sqlite3
+    rm -f "${WORKDIR}"/sessions.sqlite3
   else
     echo "Nothing to do."
   fi

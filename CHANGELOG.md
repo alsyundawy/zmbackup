@@ -1,4 +1,4 @@
-# Changelog
+# [1.2.11] - Changelog
 
 All notable changes to **Zmbackup** will be documented in this file.
 
@@ -23,40 +23,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Installer & Uninstall Logic Hardening (`installScript/deploy.sh` & `vars.sh`)**:
   - Removed erroneous re-installation and generation of `blockedlist.conf` during `uninstall()` routine.
   - Hardened hostname detection in `vars.sh` with fallbacks (`hostname --fqdn || hostname -f || hostname`) for BSD/macOS and non-standard Linux environments.
-  - Multi-distro dependency provisioning for `sqlite3`/`sqlite` and `ldap-utils`/`openldap-clients` across Debian/Ubuntu and RHEL/CentOS/Rocky/Alma.
-- **Cross-Platform Compatibility**: Complete date arithmetic support for both GNU coreutils (`date -d`) and BSD (`date -v`, `date -j`).
+- **Dynamic Multi-Core BATS Test Acceleration**:
+  - Re-architected BATS testing suite to utilize dynamic multi-core parallelism (`bats -j <cores>`) and eradicated redundant `mktemp` subprocess calls across test setup routines.
 
 ---
 
-## [1.2.10] - 2026-07-27
+## [1.2.10] - 2026-08-27
 
-### Added
+### Security & Hardening
 
-- **Multi-Mailbox Server Cluster Support**: Implemented `get_mailbox_url` to query `zimbraMailHost` from LDAP and dynamically target mailbox servers via `http(s)://${mbox_server}:${PORT}`.
-- **Zimbra Domain Backup & Restore**: Added `-dom` / `--domain-backup` CLI flag, supporting full domain configuration LDAP backup (`__backupDomain`) and parent DN restoration (`restore_main_domain`).
-- **Comprehensive Input Validation System**: Added `validate_email`, `validate_domain`, `validate_session_id`, and `validate_account_args` to validate CLI inputs before executing backup/restore operations.
-- **Configurable Blocked List Path**: Added `ZMBACKUP_BLOCKEDLIST` environment variable support to customize the blocked accounts file location.
-- **Expanded BATS Test Suite**: Implemented **468 unit & functional test cases** covering core commands, session database operations, edge cases, installer routines, and error traps with a 100% pass rate.
+- **SQL Injection Prevention**: Added `safe_sql_value()` across `ListAction.sh` and `RestoreAction.sh` to properly escape single quotes for SQLite3 queries.
+- **LDAP Filter Injection Prevention**: Added `ldap_escape_filter()` to sanitize account, domain, and list arguments according to RFC 4515.
+- **Safe Evaluation**: Removed `eval` execution on raw user and session variables in `ListAction.sh` (`list_sessions_sqlite3`) and `RestoreAction.sh` (`restore_main_mailbox`, `restore_main_ldap`, `restore_main_domain`).
+- **Input Validation**: Added strict validation routines (`validate_email`, `validate_domain`, `validate_session_id`, `validate_account_args`) in `MiscAction.sh`.
+- **Blockedlist Security**: Hardened `blockedlist.conf` file parsing to ignore commented and malformed lines.
 
-### Security
+### Changed & Improved
 
-- **LDAP Filter Injection Prevention**: Escaped special characters (`\`, `*`, `(`, `)`) in account and domain LDAP filter strings (`ldap_backup`, `domain_backup`).
-- **SQL Injection Prevention**: Implemented `safe_sql_value` to escape single-quotes across all SQLite3 interpolation routines (`build_listRST`, `restore_main_*`, `delete_*`).
-- **Shell Hardening & Quoting**: Enforced strict variable quoting across all 18 script files to eliminate command injection and globbing vulnerabilities.
-
-### Changed & Refactored
-
-- **Centralized Session Query Dispatcher**: Refactored `session_query` helper to unify TXT file and SQLite3 database operations.
-- **Session Name Parsing Helper**: Extracted `parse_session_name` helper to streamline timestamp parsing (`YEAR`, `MONTH`, `DAY`) across `SessionAction.sh` and `MigrationAction.sh`.
-- **Single Version Source of Truth**: Centralized version reading from `VERSION` file across `vars.sh`, `deploy.sh`, and `zmbackup -v`.
-- **Native Bash Parameter Expansion**: Replaced subshell `echo | sed` with `${4//,/ }` in `BackupAction.sh` for higher performance.
-
-### Fixed
-
-- **Installer Library Loading Order (`install.sh`)**: Moved `source installScript/*.sh` before `--help` flag evaluation to prevent `show_help: command not found` errors.
-- **Exit Code Propagation (`project/zmbackup`)**: Corrected `restore_main_mailbox` error path (`restore_main_mailbox || ERRCODE=$?`) so failures return correct non-zero exit codes.
-- **Parallel Job Failure Tracking (`BackupAction.sh`)**: Captured GNU Parallel exit codes and recorded `FAILED` status in `backup_session` database when parallel jobs or staging directory moves fail.
-- **Exit Trap Failure Handling (`NotifyAction.sh`)**: Updated `on_exit` trap to treat any non-zero exit status as `FAILURE`.
+- **Restore Success / Failure Accounting**: Added structured return codes (`0` on full success, `1` on partial failure) and counters to `restore_main_mailbox` and `restore_main_ldap`.
 - **Incremental Backup Account Filter (`ParallelAction.sh`)**: Fixed AFTER date filter logic for newly created accounts with no previous incremental sessions.
 - **Domain List Splitting (`ListAction.sh`)**: Fixed comma-separated `-d` domain list parsing in `build_listBKP`.
 - **Notification Glob Expansion Fix (`NotifyAction.sh`)**: Replaced raw file globbing with `find -name "*.tgz"` and `find -name "*.ldiff"` in `notify_finish`.
@@ -70,6 +54,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.9] - 2026-07-26 (Original Baseline Release by Lucas Costa Beyeler)
 
 - Baseline release supporting online backup and restore for Zimbra OSE.
-- Support for full, incremental, mailbox, and directory object backup routines.
+- Support for comprehensive backup and restore routines across mailboxes and LDAP directory objects.
 - Multi-threading support powered by GNU Parallel.
 - Dual storage engine support for TXT flat files and SQLite3 relational database.

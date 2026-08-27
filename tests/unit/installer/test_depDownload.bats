@@ -1,10 +1,13 @@
 #!/usr/bin/env bats
+# shellcheck disable=SC1091,SC2030,SC2031,SC2034,SC2317
 
 load '../../setup'
 
 setup() {
   setup_mock_path
+  # shellcheck source=/dev/null
   source "${INSTALLER_DIR}/vars.sh" 2>/dev/null || true
+  # shellcheck source=/dev/null
   source "${INSTALLER_DIR}/depDownload.sh"
 }
 

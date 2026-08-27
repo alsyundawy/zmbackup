@@ -33,7 +33,7 @@ load_test_config() {
   _saved_exit_trap="$(trap -p EXIT)"
   # shellcheck source=/dev/null
   source "${LIB_DIR}/MiscAction.sh"
-  eval "$_saved_exit_trap"
+  eval "${_saved_exit_trap}"
   BACKUPUSER="${USER:-$(/usr/bin/whoami 2>/dev/null || echo root)}"
   LDAPSERVER="ldap://127.0.0.1"
   LDAPADMIN="cn=admin,dc=example,dc=com"
