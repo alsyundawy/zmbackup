@@ -177,7 +177,7 @@ function backup_main() {
 		DATE=$(get_iso_date)
 
 		session_query \
-			"insert into backup_session(sessionID,initial_date,type,status) values ('${SESSION}','${DATE}','${STYPE}','IN PROGRESS')" \
+			"insert into backup_session(sessionID,initial_date,type,status,source_os,zimbra_version) values ('${SESSION}','${DATE}','${STYPE}','IN PROGRESS','${OS_DISTRO:-UNKNOWN}','${SUITE_VERSION:-UNKNOWN}')" \
 			"echo \"SESSION: ${SESSION} started on $(date)\" >> \"${TEMPSESSION}\""
 
 		local PARALLEL_EXIT=0

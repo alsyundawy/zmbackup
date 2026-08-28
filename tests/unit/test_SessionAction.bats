@@ -34,10 +34,10 @@ EOF
 _populate_sqlite3_sessions() {
   sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
-    "insert into backup_session values('full-20240101120000','2024-01-01T12:00:00.000',
+    "insert into backup_session(sessionID,initial_date,conclusion_date,size,type,status) values('full-20240101120000','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
-    "insert into backup_session values('inc-20240202120000','2024-02-02T12:00:00.000',
+    "insert into backup_session(sessionID,initial_date,conclusion_date,size,type,status) values('inc-20240202120000','2024-02-02T12:00:00.000',
      '2024-02-02T12:30:00.000','50M','Incremental Backup','FINISHED')"
   mkdir -p "${WORKDIR}/full-20240101120000"
   mkdir -p "${WORKDIR}/inc-20240202120000"

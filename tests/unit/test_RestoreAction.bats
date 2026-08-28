@@ -105,7 +105,7 @@ EOF
   touch "${WORKDIR}/${session}/user@example.com.tgz"
   sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
-    "insert into backup_session values('${session}','2024-01-01T12:00:00.000',
+    "insert into backup_session(sessionID,initial_date,conclusion_date,size,type,status) values('${session}','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_account(email,sessionID,account_size,initial_date,conclusion_date)
@@ -292,7 +292,7 @@ EOF
     >"${WORKDIR}/${session}/example.com.ldiff"
   sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
-    "insert into backup_session values('${session}','2024-01-01T12:00:00.000',
+    "insert into backup_session(sessionID,initial_date,conclusion_date,size,type,status) values('${session}','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','1M','Domain','FINISHED')"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_account(email,sessionID,account_size,initial_date,conclusion_date)
@@ -327,7 +327,7 @@ EOF
     >"${WORKDIR}/${session}/user@example.com.ldiff"
   sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
-    "insert into backup_session values('${session}','2024-01-01T12:00:00.000',
+    "insert into backup_session(sessionID,initial_date,conclusion_date,size,type,status) values('${session}','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_account(email,sessionID,account_size,initial_date,conclusion_date)

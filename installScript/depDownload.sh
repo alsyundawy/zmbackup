@@ -34,32 +34,47 @@ function install_ubuntu() {
 ################################################################################
 function install_redhat() {
 	echo "Installing dependencies. Please wait..."
-	if grep -E "release 6" /etc/redhat-release >/dev/null 2>&1; then
+	if grep -qE "release 6" /etc/redhat-release 2>/dev/null; then
 		wget -O "/etc/yum.repos.d/tange.repo" "${OLE_TANGE}" >/dev/null 2>&1
 		BASHERRCODE=$?
 		if [[ ${BASHERRCODE} -ne 0 ]]; then
 			echo "Failure - Can't install Tange's repository for Parallel"
 			exit "${ERR_NO_CONNECTION}"
 		fi
-	elif grep -E "release 7" /etc/redhat-release >/dev/null 2>&1; then
+		yum install -y epel-release >/dev/null 2>&1
+		yum install -y parallel >/dev/null 2>&1
+		BASHERRCODE=$?
+	elif grep -qE "release 7" /etc/redhat-release 2>/dev/null; then
 		wget -O "/etc/yum.repos.d/tange.repo" "${OLE_TANGE_RHEL7}" >/dev/null 2>&1
 		BASHERRCODE=$?
 		if [[ ${BASHERRCODE} -ne 0 ]]; then
 			echo "Failure - Can't install Tange's repository for Parallel"
 			exit "${ERR_NO_CONNECTION}"
 		fi
+		yum install -y epel-release >/dev/null 2>&1
+		yum install -y parallel >/dev/null 2>&1
+		BASHERRCODE=$?
+	else
+		# RHEL/CentOS Stream 8/9, Rocky Linux, AlmaLinux, Oracle Linux 8/9 — use dnf
+		if command -v dnf >/dev/null 2>&1; then
+			dnf install -y epel-release >/dev/null 2>&1 || true
+			dnf install -y parallel >/dev/null 2>&1
+			BASHERRCODE=$?
+		else
+			yum install -y epel-release >/dev/null 2>&1
+			yum install -y parallel >/dev/null 2>&1
+			BASHERRCODE=$?
+		fi
 	fi
-	yum install -y epel-release >/dev/null 2>&1
-	yum install -y parallel >/dev/null 2>&1
-	BASHERRCODE=$?
 	if [[ ${BASHERRCODE} -eq 0 ]]; then
 		echo "Dependencies installed with success!"
 	else
 		echo "Dependencies wasn't installed in your server"
-		echo "Please check if you have connection with the internet and yum is"
+		echo "Please check if you have connection with the internet and yum/dnf is"
 		echo "working and try again."
 		echo "Or you can try manual execute the command:"
-		echo "yum install -y epel-release && yum install -y parallel"
+		echo "  RHEL6/7: yum install -y epel-release && yum install -y parallel"
+		echo "  RHEL8/9: dnf install -y epel-release && dnf install -y parallel"
 		exit "${ERR_DEPNOTFOUND}"
 	fi
 }
@@ -83,22 +98,21 @@ function remove_ubuntu() {
 }
 
 ################################################################################
-# remove_redhat: Install all the dependencies in Red Hat and CentOS
+# remove_redhat: Remove dependencies in Red Hat, CentOS, and compatible distros
 ################################################################################
 function remove_redhat() {
 	echo "Removing dependencies. Please wait..."
-	grep 6 /etc/redhat-release >/dev/null 2>&1
-	BASHERRCODE=$?
-	if [[ ${BASHERRCODE} -eq 0 ]]; then
-		pip uninstall -y curl >/dev/null 2>&1
+	if command -v dnf >/dev/null 2>&1; then
+		dnf remove -y parallel >/dev/null 2>&1
+	else
+		yum remove -y parallel >/dev/null 2>&1
 	fi
-	yum remove -y parallel >/dev/null 2>&1
 	BASHERRCODE=$?
 	if [[ ${BASHERRCODE} -eq 0 ]]; then
 		echo "Dependencies removed with success!"
 	else
 		echo "Dependencies wasn't removed in your server"
-		echo "Please check if you have connection with the internet and yum is"
+		echo "Please check if you have connection with the internet and yum/dnf is"
 		echo "working and try again."
 		echo "Or you can try manual execute the command:"
 		echo "yum install -y epel-release && yum install -y parallel"

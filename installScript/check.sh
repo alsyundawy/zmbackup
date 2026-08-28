@@ -13,7 +13,7 @@
 # check_env: Check the environment if everything is okay to begin the install
 ###############################################################################
 function check_env() {
-	printf "  Root Privileges...	          "
+	printf "  Root Privileges...\t          "
 	local current_uid
 	current_uid=$(id -u 2>/dev/null || echo 1000)
 	if [[ ${current_uid} -ne 0 ]]; then
@@ -23,10 +23,8 @@ function check_env() {
 	else
 		printf "[ROOT]\n"
 	fi
-	printf "  Old Zmbackup Install...	  "
-	su -s /bin/bash -c "whereis zmbackup" "${OSE_USER}" >/dev/null 2>&1
-	BASHERRCODE=$?
-	if [[ ${BASHERRCODE} != "0" ]]; then
+	printf "  Old Zmbackup Install...\t  "
+	if ! su -s /bin/bash -c "whereis zmbackup" "${OSE_USER}" >/dev/null 2>&1; then
 		printf "[NEW INSTALL]\n"
 		export UPGRADE="N"
 		export UNINSTALL="N"
@@ -45,22 +43,19 @@ function check_env() {
 			exit 0
 		fi
 	fi
-	printf "  Checking OS...	          "
-	command -v apt >/dev/null 2>&1 || command -v apt-get >/dev/null 2>&1
-	BASHERRCODE=$?
-	if [[ ${BASHERRCODE} -eq 0 ]]; then
+	printf "  Checking OS...\t          "
+	SO=""
+	if command -v apt >/dev/null 2>&1 || command -v apt-get >/dev/null 2>&1; then
 		printf "[UBUNTU SERVER]\n"
 		SO="ubuntu"
-	fi
-	command -v yum >/dev/null 2>&1 || command -v dnf >/dev/null 2>&1
-	BASHERRCODE=$?
-	if [[ ${BASHERRCODE} -eq 0 ]]; then
+	elif command -v dnf >/dev/null 2>&1 || command -v yum >/dev/null 2>&1; then
 		printf "[RED HAT ENTERPRISE LINUX / CENTOS]\n"
 		SO="redhat"
-	elif [[ -z ${SO} ]]; then
+	else
 		printf "[UNSUPPORTED]\n"
 		exit 1
 	fi
+	export SO
 }
 
 ###############################################################################

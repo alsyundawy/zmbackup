@@ -4,7 +4,7 @@
 
 Dokumen Teknis Pengujian Otomatis, Metodologi Mocking, Isolasi Sandbox, dan Pemisahan Komponen Runtime Produksi vs Development (v1.2.12)
 
-Original Project & Architecture by **Lucas Costa Beyeler** (inspired by Zmbkpose by **bggo**)  
+Original Project & Architecture by **Lucas Costa Beyeler** (inspired by Zmbkpose by **bggo**)
 Enterprise Optimization, Security Hardening & Maintenance by **Harry Dertin Sutisna Alsyundawy**
 
 [![Maintenance Status](https://img.shields.io/badge/Maintained%3F-yes-brightgreen.svg)](https://github.com/alsyundawy)

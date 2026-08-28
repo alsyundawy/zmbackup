@@ -11,24 +11,10 @@
 umask 077
 
 ###############################################################################
-# auto_precreate_domains: Check if domains exist in the session and pre-create
-# them in the destination LDAP before account provisioning.
+# NOTE: auto_precreate_domains is defined in MiscAction.sh (canonical version).
+# This file relies on the MiscAction.sh definition loaded via source chain.
 ###############################################################################
-function auto_precreate_domains() {
-	local session_id="${1}"
-	local session_dir="${WORKDIR}/${session_id}"
-	if [[ -d ${session_dir} ]]; then
-		for dom_file in "${session_dir}"/*.ldiff; do
-			if [[ -f ${dom_file} ]]; then
-				local base_dom
-				base_dom=$(basename "${dom_file}" .ldiff)
-				if [[ ${base_dom} != *"@"* && ${base_dom} != "full-"* && ${base_dom} != "inc-"* ]]; then
-					domain_restore "${session_id}" "${base_dom}" >/dev/null 2>&1 || true
-				fi
-			fi
-		done
-	fi
-}
+
 
 ###############################################################################
 # restore_main_mailbox: Manage the restore action for one or all mailbox

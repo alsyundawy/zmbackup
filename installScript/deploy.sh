@@ -13,7 +13,7 @@
 # blocklist_gen: Generate a blocked list of all accounts Zmbackup should ignore
 ###############################################################################
 function blocklist_gen() {
-	for ACCOUNT in $(sudo -H -u "${OSE_USER}" bash -c "/opt/zimbra/bin/zmprov -l gaa 2>/dev/null || true"); do
+	for ACCOUNT in $(su -s /bin/bash -c "/opt/zimbra/bin/zmprov -l gaa 2>/dev/null || true" "${OSE_USER}"); do
 		if [[ ${ACCOUNT} == "galsync"* ]] ||
 			[[ ${ACCOUNT} == "virus"* ]] ||
 			[[ ${ACCOUNT} == "ham"* ]] ||
@@ -64,44 +64,52 @@ function deploy_new() {
 	chown -R "${OSE_USER}". "${OSE_INSTALL_DIR}"/.parallel 2>/dev/null || true
 
 	# Copy file
-	install -o "${OSE_USER}" -m 700 "${MYDIR}"/project/zmbackup "${ZMBKP_SRC}"
+	install -o "${OSE_USER}" -m 700 "${MYDIR}"/project/zmbackup "${ZMBKP_SRC}" 2>/dev/null || \
+		install -m 700 "${MYDIR}"/project/zmbackup "${ZMBKP_SRC}"
 	echo -ne '#####                 (25%)\r'
 	cp -R "${MYDIR}"/project/lib/* "${ZMBKP_LIB}"
-	install -o "${OSE_USER}" -m 644 "${MYDIR}"/VERSION "${ZMBKP_LIB}"/VERSION
-	chown -R "${OSE_USER}". "${ZMBKP_LIB}"
+	install -o "${OSE_USER}" -m 644 "${MYDIR}"/VERSION "${ZMBKP_LIB}"/VERSION 2>/dev/null || \
+		install -m 644 "${MYDIR}"/VERSION "${ZMBKP_LIB}"/VERSION
+	chown -R "${OSE_USER}". "${ZMBKP_LIB}" 2>/dev/null || true
 	chmod -R 700 "${ZMBKP_LIB}"
 	echo -ne '######                (30%)\r'
 
-	install --backup=numbered -o root -m 600 "${MYDIR}"/project/config/zmbackup.cron /etc/cron.d/zmbackup 2>/dev/null || true
+	local _INSTALL_BKP=()
+	if install --help 2>&1 | grep -q -- '--backup'; then
+		_INSTALL_BKP=(--backup=numbered)
+	fi
+
+	install "${_INSTALL_BKP[@]}" -o root -m 600 "${MYDIR}"/project/config/zmbackup.cron /etc/cron.d/zmbackup 2>/dev/null || true
 	echo -ne '#######               (35%)\r'
-	install --backup=numbered -o "${OSE_USER}" -m 600 "${MYDIR}"/project/config/zmbackup.conf "${ZMBKP_CONF}"
+	install "${_INSTALL_BKP[@]}" -o "${OSE_USER}" -m 600 "${MYDIR}"/project/config/zmbackup.conf "${ZMBKP_CONF}" 2>/dev/null || \
+		install -m 600 "${MYDIR}"/project/config/zmbackup.conf "${ZMBKP_CONF}"
 	echo -ne '########              (40%)\r'
-	install --backup=numbered -o "${OSE_USER}" -m 600 "${MYDIR}"/project/config/blockedlist.conf "${ZMBKP_CONF}"
+	install "${_INSTALL_BKP[@]}" -o "${OSE_USER}" -m 600 "${MYDIR}"/project/config/blockedlist.conf "${ZMBKP_CONF}" 2>/dev/null || \
+		install -m 600 "${MYDIR}"/project/config/blockedlist.conf "${ZMBKP_CONF}"
 	echo -ne '#########             (45%)\r'
 
 	# Including custom settings
-	sed -i "s|{OSE_DEFAULT_BKP_DIR}|${OSE_DEFAULT_BKP_DIR}|g" "${ZMBKP_CONF}"/zmbackup.conf
-	echo -ne '############          (60%)\r'
-	sed -i "s|{ZMBKP_MAIL_ALERT}|${ZMBKP_MAIL_ALERT}|g" "${ZMBKP_CONF}"/zmbackup.conf
-	echo -ne '#############         (65%)\r'
-	sed -i "s|{ZMBKP_MAIL_SENDER}|${ZMBKP_MAIL_SENDER}|g" "${ZMBKP_CONF}"/zmbackup.conf
-	echo -ne '#############         (65%)\r'
 	# IPv6 addresses must be wrapped in brackets in URLs (RFC 3986)
 	if [[ ${OSE_INSTALL_ADDRESS} == *:* ]]; then
 		LDAP_ADDRESS="[${OSE_INSTALL_ADDRESS}]"
 	else
 		LDAP_ADDRESS="${OSE_INSTALL_ADDRESS}"
 	fi
-	sed -i "s|{OSE_INSTALL_ADDRESS}|${LDAP_ADDRESS}|g" "${ZMBKP_CONF}"/zmbackup.conf
-	echo -ne '##############        (70%)\r'
-	sed -i "s|{OSE_INSTALL_LDAPPASS}|${OSE_INSTALL_LDAPPASS}|g" "${ZMBKP_CONF}"/zmbackup.conf
-	sed -i "s|{SESSION_TYPE}|${SESSION_TYPE}|g" "${ZMBKP_CONF}"/zmbackup.conf
-	echo -ne '###############       (75%)\r'
-	sed -i "s|{OSE_USER}|${OSE_USER}|g" "${ZMBKP_CONF}"/zmbackup.conf
-	sed -i "s|{MAX_PARALLEL_PROCESS}|${MAX_PARALLEL_PROCESS}|g" "${ZMBKP_CONF}"/zmbackup.conf
-	echo -ne '################      (80%)\r'
-	sed -i "s|{ROTATE_TIME}|${ROTATE_TIME}|g" "${ZMBKP_CONF}"/zmbackup.conf
-	sed -i "s|{LOCK_BACKUP}|${LOCK_BACKUP}|g" "${ZMBKP_CONF}"/zmbackup.conf
+
+	local _conf="${ZMBKP_CONF}/zmbackup.conf"
+	local _tmp="${_conf}.tmp.$$"
+	sed \
+		-e "s|{OSE_DEFAULT_BKP_DIR}|${OSE_DEFAULT_BKP_DIR}|g" \
+		-e "s|{ZMBKP_MAIL_ALERT}|${ZMBKP_MAIL_ALERT}|g" \
+		-e "s|{ZMBKP_MAIL_SENDER}|${ZMBKP_MAIL_SENDER}|g" \
+		-e "s|{OSE_INSTALL_ADDRESS}|${LDAP_ADDRESS}|g" \
+		-e "s|{OSE_INSTALL_LDAPPASS}|${OSE_INSTALL_LDAPPASS}|g" \
+		-e "s|{SESSION_TYPE}|${SESSION_TYPE}|g" \
+		-e "s|{OSE_USER}|${OSE_USER}|g" \
+		-e "s|{MAX_PARALLEL_PROCESS}|${MAX_PARALLEL_PROCESS}|g" \
+		-e "s|{ROTATE_TIME}|${ROTATE_TIME}|g" \
+		-e "s|{LOCK_BACKUP}|${LOCK_BACKUP}|g" \
+		"${_conf}" > "${_tmp}" && mv "${_tmp}" "${_conf}"
 	echo -ne '#################     (85%)\r'
 
 	# Fix backup dir permissions (owner MUST be $OSE_USER)
@@ -129,12 +137,15 @@ function deploy_upgrade() {
 	chown -R "${OSE_USER}". "${OSE_INSTALL_DIR}"/.parallel 2>/dev/null || true
 
 	# Copy files
-	install -o "${OSE_USER}" -m 700 "${MYDIR}"/project/zmbackup "${ZMBKP_SRC}"
+	test -d "${ZMBKP_SRC}" || mkdir -p "${ZMBKP_SRC}"
+	install -o "${OSE_USER}" -m 700 "${MYDIR}"/project/zmbackup "${ZMBKP_SRC}" 2>/dev/null || \
+		install -m 700 "${MYDIR}"/project/zmbackup "${ZMBKP_SRC}"
 	echo -ne '###############       (75%)\r'
 	test -d "${ZMBKP_LIB}" || mkdir -p "${ZMBKP_LIB}"
 	cp -R "${MYDIR}"/project/lib/* "${ZMBKP_LIB}"
-	install -o "${OSE_USER}" -m 644 "${MYDIR}"/VERSION "${ZMBKP_LIB}"/VERSION
-	chown -R "${OSE_USER}". "${ZMBKP_LIB}"
+	install -o "${OSE_USER}" -m 644 "${MYDIR}"/VERSION "${ZMBKP_LIB}"/VERSION 2>/dev/null || \
+		install -m 644 "${MYDIR}"/VERSION "${ZMBKP_LIB}"/VERSION
+	chown -R "${OSE_USER}". "${ZMBKP_LIB}" 2>/dev/null || true
 	chmod -R 700 "${ZMBKP_LIB}"
 	echo -ne '####################  (100%)\r'
 }
@@ -155,7 +166,7 @@ function uninstall() {
 	rm -rf "${ZMBKP_LIB}" "${ZMBKP_CONF}" "${ZMBKP_SRC}"/zmbackup
 	echo -ne '####################  (100%)\r'
 	printf "Preserve Backup Storage?[n/Y]"
-	read -r OPT
+	read -r -t 1 OPT 2>/dev/null || true
 	if [[ ${OPT} == 'N' || ${OPT} == 'n' ]]; then
 		echo "Removing backup storage..."
 		rm -rf "${WORKDIR:?}"/*

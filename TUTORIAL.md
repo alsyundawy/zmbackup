@@ -4,7 +4,7 @@
 
 Panduan Praktis Langkah demi Langkah: Hot Backup, Disaster Recovery (Restore), Migrasi Lintas Server/OS, Audit Integritas Kriptografi, dan Otomatisasi Retensi untuk Zimbra Collaboration Suite (ZCS 7.0–10.1.x) & Carbonio FOSS
 
-Original Project & Architecture by **Lucas Costa Beyeler** (inspired by Zmbkpose by **bggo**)  
+Original Project & Architecture by **Lucas Costa Beyeler** (inspired by Zmbkpose by **bggo**)
 Enterprise Optimization, Security Hardening & Maintenance by **Harry Dertin Sutisna Alsyundawy**
 
 [![Maintenance Status](https://img.shields.io/badge/Maintained%3F-yes-brightgreen.svg)](https://github.com/alsyundawy)

@@ -5,9 +5,9 @@
   "license": "MIT",
   "author": "Lucas Costa Beyeler & Harry Dertin Sutisna Alsyundawy",
   "scripts": {
-    "test": "bats -j $(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 8) tests/unit/ tests/functional/",
-    "test:unit": "bats -j $(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 8) tests/unit/",
-    "test:functional": "bats -j $(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 8) tests/functional/",
+    "test": "bats -r -j $(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 8) tests/unit/ tests/functional/",
+    "test:unit": "bats -r -j $(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 8) tests/unit/",
+    "test:functional": "bats -r -j $(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 8) tests/functional/",
     "lint": "shellcheck project/zmbackup project/lib/bash/*.sh installScript/*.sh"
   },
   "devDependencies": {

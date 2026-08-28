@@ -4,7 +4,7 @@
 
 Enterprise Multi-Threaded Hot Backup, Zero-Timeout Restore, Cross-OS Migration Engine, Cryptographic Integrity Verification, and Security Hardening for Zimbra Collaboration Suite (ZCS 7.0–10.1.x Daffodil) & Carbonio FOSS
 
-Original Project & Architecture by **Lucas Costa Beyeler** (inspired by Zmbkpose by **bggo**)  
+Original Project & Architecture by **Lucas Costa Beyeler** (inspired by Zmbkpose by **bggo**)
 Enterprise Optimization, Security Hardening & Maintenance by **Harry Dertin Sutisna Alsyundawy**
 
 [![Maintenance Status](https://img.shields.io/badge/Maintained%3F-yes-brightgreen.svg)](https://github.com/alsyundawy)

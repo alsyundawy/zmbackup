@@ -4,7 +4,7 @@
 
 Dokumen Spesifikasi Teknis, Desain Arsitektur Hot Backup, Matriks Kompatibilitas Sistem, Hardening Keamanan, dan Rekayasa Database Relasional SQLite3 WAL
 
-Original Project & Architecture by **Lucas Costa Beyeler** (inspired by Zmbkpose by **bggo**)  
+Original Project & Architecture by **Lucas Costa Beyeler** (inspired by Zmbkpose by **bggo**)
 Enterprise Optimization, Security Hardening & Maintenance by **Harry Dertin Sutisna Alsyundawy**
 
 [![Maintenance Status](https://img.shields.io/badge/Maintained%3F-yes-brightgreen.svg)](https://github.com/alsyundawy)
@@ -120,6 +120,21 @@ Skema OpenLDAP legacy membatasi panjang baris LDIF hingga 76 kolom (line-folding
 
 Fungsi `strip_operational_attributes()` secara otomatis menghapus atribut internal sistem (`entryUUID`, `entryCSN`, `createTimestamp`, `modifyTimestamp`, `creatorsName`, `modifiersName`, `structuralObjectClass`) untuk mencegah kegagalan restore akibat konflik skema LDAP antar-versi.
 
+### 4.6. Penamaan Sesi Real-Time & Perekaman Manifest Runtime
+
+1. **Penamaan Folder Sesi Real-Time (`full-YYYYMMDDHHMMSS` / `inc-YYYYMMDDHHMMSS`)**:
+   - Fungsi `sessionvars()` pada `MiscAction.sh` menghasilkan ID dan nama folder sesi secara dinamis menggunakan timestamp saat perintah dieksekusi (`date +%Y%m%d%H%M%S`).
+   - Format penamaan ini menjamin setiap sesi backup memiliki identitas unik, terurut secara kronologis, dan mencerminkan waktu aktual proses backup berjalan.
+   - Contoh string statis seperti `full-20240101120000` pada unit test semata-mata digunakan sebagai fixture/mock agar pengujian bersifat deterministik.
+
+2. **Perekaman Metadata Manifest Sesuai Versi OS & Zimbra Saat Eksekusi**:
+   - Fungsi `generate_session_manifest()` pada `MiscAction.sh` mengekstraksi metadata lingkungan eksekusi aktual:
+     - `source_os`: Terdeteksi otomatis dari `/etc/os-release` (PRETTY_NAME / NAME), `lsb_release`, atau `/etc/redhat-release` (misal: `Ubuntu 22.04.4 LTS` atau `Rocky Linux 9.3`).
+     - `zimbra_version`: Terdeteksi otomatis dari `zmcontrol -v` atau file rilis Zimbra aktual (misal: `ZCS 8.8.15_GA_3862` atau `ZCS 10.0.8`).
+     - `generated_at`: Timestamp standar ISO-8601 (`YYYY-MM-DDTHH:MM:SSZ`) saat sesi selesai.
+     - `files`: Daftar berkas backup (`.ldiff`, `.tgz`) lengkap dengan ukuran byte dan digest kriptografis SHA-256 masing-masing akun.
+   - Metadata ini disimpan dalam file `MANIFEST.json` di dalam folder sesi serta disimpan pada tabel relasional `backup_session` (`source_os`, `zimbra_version`, `manifest_hash`) untuk kebutuhan audit trail migrasi lintas platform.
+
 ---
 
 ## 5. Desain Database Relasional (SQLite3 Schema V2 WAL)
@@ -132,24 +147,33 @@ PRAGMA busy_timeout = 15000;
 PRAGMA synchronous = NORMAL;
 
 CREATE TABLE IF NOT EXISTS backup_session (
-    sessionID TEXT PRIMARY KEY,
-    initial_date TEXT,
-    conclusion_date TEXT,
-    size TEXT,
-    type TEXT,
-    status TEXT
+    sessionID VARCHAR PRIMARY KEY,
+    initial_date TIMESTAMP NOT NULL,
+    conclusion_date TIMESTAMP,
+    size VARCHAR,
+    type VARCHAR NOT NULL,
+    status VARCHAR NOT NULL,
+    source_os VARCHAR,
+    zimbra_version VARCHAR,
+    manifest_hash VARCHAR
 );
 
 CREATE TABLE IF NOT EXISTS backup_account (
-    accountID INTEGER PRIMARY KEY AUTOINCREMENT,
-    sessionID TEXT,
-    email TEXT,
-    date TEXT,
-    FOREIGN KEY(sessionID) REFERENCES backup_session(sessionID)
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sessionID VARCHAR NOT NULL,
+    account_size VARCHAR,
+    email VARCHAR NOT NULL,
+    initial_date TIMESTAMP NOT NULL,
+    conclusion_date TIMESTAMP,
+    status VARCHAR DEFAULT 'PENDING',
+    sha256_hash VARCHAR,
+    retry_count INTEGER DEFAULT 0,
+    FOREIGN KEY (sessionID) REFERENCES backup_session(sessionID) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_session_status ON backup_session(status);
 CREATE INDEX IF NOT EXISTS idx_account_session ON backup_account(sessionID);
+CREATE INDEX IF NOT EXISTS idx_account_status ON backup_account(status);
 CREATE INDEX IF NOT EXISTS idx_account_email ON backup_account(email);
 ```
 
@@ -215,7 +239,7 @@ zmbackup -mg
 
 - **ShellCheck Compliance**: Seluruh skrip shell mematuhi standar ShellCheck dengan basis `.shellcheckrc` (`disable=SC2312`).
 - **Markdownlint Compliance**: Seluruh dokumentasi mematuhi aturan strict markdownlint (`0 error`).
-- **BATS Test Suite**: 14 suite pengujian unit dan fungsional dengan **207+ assertions (100% Pass Rate)**.
+- **BATS Test Suite**: 19 suite pengujian unit, installer, dan fungsional dengan **555 tests (100% Pass Rate)**.
 - **Signal Trapping & Idempotensi**: Pembersihan file sementara dan penanganan exit code status failure terintegrasi pada seluruh modul.
 
 ---

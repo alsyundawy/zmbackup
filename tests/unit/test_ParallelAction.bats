@@ -131,7 +131,7 @@ teardown() {
   sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   # DB has a session but NO backup_account row for new@example.com — DATE will be empty
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
-    "insert into backup_session values('full-20240101120000','2024-01-01T12:00:00.000',
+    "insert into backup_session(sessionID,initial_date,conclusion_date,size,type,status) values('full-20240101120000','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
   MOCK_ZMMAILBOX_FAIL=0
   MOCK_ZMMAILBOX_EMPTY=0
@@ -164,7 +164,7 @@ teardown() {
   SESSION_TYPE="SQLITE3"
   sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
-    "insert into backup_session values('full-20240101120000','2024-01-01T12:00:00.000',
+    "insert into backup_session(sessionID,initial_date,conclusion_date,size,type,status) values('full-20240101120000','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_account(email,sessionID,account_size,initial_date,conclusion_date)
@@ -424,7 +424,7 @@ teardown() {
   local now
   now="$(date +%Y-%m-%dT%H:%M:%S.%N)"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
-    "insert into backup_session values('full-20240101','2024-01-01T00:00:00.000',
+    "insert into backup_session(sessionID,initial_date,conclusion_date,size,type,status) values('full-20240101','2024-01-01T00:00:00.000',
      '${now}','100M','Full Backup','FINISHED')"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_account(email,sessionID,account_size,initial_date,conclusion_date)
@@ -514,7 +514,7 @@ teardown() {
   local now
   now="$(date +%Y-%m-%dT%H:%M:%S.%N)"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
-    "insert into backup_session values('full-20240101','2024-01-01T00:00:00.000',
+    "insert into backup_session(sessionID,initial_date,conclusion_date,size,type,status) values('full-20240101','2024-01-01T00:00:00.000',
      '${now}','100M','Full Backup','FINISHED')"
   grep() {
     if [[ "$*" == *"blockedlist.conf"* ]]; then return 1; fi
@@ -532,7 +532,7 @@ teardown() {
   export SESSION_TYPE="SQLITE3"
   sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
-    "insert into backup_session values('full-20240101120000','2024-01-01T12:00:00.000',
+    "insert into backup_session(sessionID,initial_date,conclusion_date,size,type,status) values('full-20240101120000','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_account(email,sessionID,account_size,initial_date,conclusion_date)

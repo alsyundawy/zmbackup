@@ -286,9 +286,11 @@ function verify_archive_safety() {
 function apply_hostname_rewrite() {
 	local input_file="${1}" old_host="${2}" new_host="${3}"
 	if [[ -n ${old_host} && -n ${new_host} && -f ${input_file} ]]; then
-		local tmp_file
+		local tmp_file escaped_old
 		tmp_file=$(mktemp "${TEMPDIR:-/tmp}/zm_rewrite_XXXXXX")
-		sed "s|${old_host}|${new_host}|g" "${input_file}" >"${tmp_file}" && mv "${tmp_file}" "${input_file}"
+		# Escape old_host metacharacters for safe sed BRE LHS (|, ., *, [, ^, $, \)
+		escaped_old=$(printf '%s' "${old_host}" | sed 's/[\\|.[\^$*]/\\&/g')
+		sed "s|${escaped_old}|${new_host}|g" "${input_file}" >"${tmp_file}" && mv "${tmp_file}" "${input_file}"
 		rm -f "${tmp_file}"
 	fi
 }
@@ -357,7 +359,7 @@ function generate_session_manifest() {
 				local base_target
 				base_target=$(basename "${f}" .sha256)
 				local hash_val
-				hash_val=$(cat "${f}" | tr -d ' \r\n')
+				hash_val=$(tr -d ' \r\n' < "${f}")
 				if [[ ${first} == "true" ]]; then
 					echo "    \"${base_target}\": \"${hash_val}\""
 					first=false
@@ -400,7 +402,7 @@ function check_session_integrity() {
 				continue
 			fi
 			local expected_hash actual_hash
-			expected_hash=$(cat "${sha_file}" | tr -d ' \r\n')
+			expected_hash=$(tr -d ' \r\n' < "${sha_file}")
 			if command -v sha256sum >/dev/null 2>&1; then
 				actual_hash=$(sha256sum "${artifact}" | awk '{print $1}')
 			elif command -v shasum >/dev/null 2>&1; then
@@ -550,9 +552,9 @@ function session_query() {
 # on_exit: Clear all the temporary files and send notification on exit.
 ###############################################################################
 function on_exit() {
-	BASHERRCODE=$?
+	local exit_code=$?
 	if [[ -n ${STYPE} ]]; then
-		if [[ ${BASHERRCODE} -ne 0 ]]; then
+		if [[ ${exit_code} -ne 0 ]]; then
 			notify_finish "${SESSION}" "${STYPE}" "FAILURE"
 		elif [[ -n ${SESSION} ]]; then
 			notify_finish "${SESSION}" "${STYPE}" "SUCCESS"
@@ -571,12 +573,13 @@ trap on_exit TERM INT EXIT
 # create_temp: Create the temporary files used by the script.
 ###############################################################################
 function create_temp() {
-	TEMPDIR=$(mktemp -d "${WORKDIR}/XXXX")
-	TEMPACCOUNT=$(mktemp)
-	TEMPINACCOUNT=$(mktemp)
-	MESSAGE=$(mktemp)
-	FAILURE=$(mktemp)
-	TEMPSESSION=$(mktemp)
+	TEMPDIR=$(mktemp -d "${WORKDIR}/zm_temp_XXXXXX") || { echo "ERROR: Failed to create TEMPDIR in ${WORKDIR}"; exit 1; }
+	# mktemp -p is not portable on all GNU/Linux versions; use explicit path template
+	TEMPACCOUNT=$(mktemp "${TEMPDIR}/account_XXXXXX") || { echo "ERROR: mktemp TEMPACCOUNT failed"; exit 1; }
+	TEMPINACCOUNT=$(mktemp "${TEMPDIR}/inaccount_XXXXXX") || { echo "ERROR: mktemp TEMPINACCOUNT failed"; exit 1; }
+	MESSAGE=$(mktemp "${TEMPDIR}/message_XXXXXX") || { echo "ERROR: mktemp MESSAGE failed"; exit 1; }
+	FAILURE=$(mktemp "${TEMPDIR}/failure_XXXXXX") || { echo "ERROR: mktemp FAILURE failed"; exit 1; }
+	TEMPSESSION=$(mktemp "${TEMPDIR}/session_XXXXXX") || { echo "ERROR: mktemp TEMPSESSION failed"; exit 1; }
 	export TEMPDIR TEMPACCOUNT TEMPINACCOUNT MESSAGE FAILURE TEMPSESSION
 	setup_ldap_credentials
 }
@@ -653,33 +656,38 @@ function constant() {
 ###############################################################################
 function sessionvars() {
 	INC='FALSE'
-	ls "${WORKDIR}"/full* >/dev/null 2>&1
-	ERRORCODE=$?
-	if [[ ${ERRORCODE} -ne 0 || ${1} == '--full' || ${1} == '-f' ]]; then
+	# Use nullglob to handle cases with no matches safely
+	shopt -s nullglob
+	local full_sessions=("${WORKDIR}"/full*)
+	shopt -u nullglob
+
+	local _ts
+	_ts=$(date +%Y%m%d%H%M%S)
+	if [[ ${#full_sessions[@]} -eq 0 || ${1} == '--full' || ${1} == '-f' ]]; then
 		STYPE="Full Account"
-		SESSION="full-"$(date +%Y%m%d%H%M%S)
+		SESSION="full-${_ts}"
 	elif [[ ${1} == '--incremental' || ${1} == '-i' ]]; then
 		STYPE="Incremental Account"
-		SESSION="inc-"$(date +%Y%m%d%H%M%S)
+		SESSION="inc-${_ts}"
 		INC='TRUE'
 	elif [[ ${1} == '--alias' || ${1} == '-al' ]]; then
 		STYPE="Alias"
-		SESSION="alias-"$(date +%Y%m%d%H%M%S)
+		SESSION="alias-${_ts}"
 	elif [[ ${1} == '-dl' || ${1} == '--distributionlist' ]]; then
 		STYPE="Distribution List"
-		SESSION="distlist-"$(date +%Y%m%d%H%M%S)
+		SESSION="distlist-${_ts}"
 	elif [[ ${1} == '-m' || ${1} == '--mail' ]]; then
 		STYPE="Mailbox"
-		SESSION="mbox-"$(date +%Y%m%d%H%M%S)
+		SESSION="mbox-${_ts}"
 	elif [[ ${1} == '--ldap' || ${1} == '-ldp' ]]; then
 		STYPE="Account - Only LDAP"
-		SESSION="ldap-"$(date +%Y%m%d%H%M%S)
+		SESSION="ldap-${_ts}"
 	elif [[ ${1} == '--signature' || ${1} == '-sig' ]]; then
 		STYPE="Signature"
-		SESSION="signature-"$(date +%Y%m%d%H%M%S)
+		SESSION="signature-${_ts}"
 	elif [[ ${1} == '-dom' || ${1} == '--domain-backup' ]]; then
 		STYPE="Domain"
-		SESSION="domain-"$(date +%Y%m%d%H%M%S)
+		SESSION="domain-${_ts}"
 	fi
 	export SESSION STYPE INC
 }
@@ -715,7 +723,9 @@ function validate_config() {
 	fi
 
 	if [[ -z ${EMAIL_SENDER} ]]; then
-		EMAIL_SENDER="root@"$(hostname -d 2>/dev/null || echo "localdomain.com")
+		local _domain
+		_domain=$(hostname -d 2>/dev/null || echo "localdomain.com")
+		EMAIL_SENDER="root@${_domain}"
 		zmlog local7.warn "Zmbackup: EMAIL_SENDER not informed - setting as ${EMAIL_SENDER} instead."
 	fi
 
@@ -725,7 +735,7 @@ function validate_config() {
 	fi
 
 	if [[ -z ${ZMMAILBOX} ]]; then
-		ZMMAILBOX=$(whereis zmmailbox 2>/dev/null | cut -d" " -f2 || true)
+		ZMMAILBOX=$(command -v zmmailbox || echo "/opt/zimbra/bin/zmmailbox")
 		zmlog local7.warn "Zmbackup: ZMMAILBOX not defined informed - setting as ${ZMMAILBOX} instead"
 	fi
 
@@ -811,6 +821,7 @@ function check_parallel_version() {
 ###############################################################################
 function checkpid() {
 	if [[ -f ${PID} ]]; then
+		local PIDP PIDR
 		PIDP=$(cat "${PID}")
 		PIDR=$(ps -efa | awk '{print $2}' | grep -c "^${PIDP}$") || true
 		if [[ ${PIDR} -gt 0 ]]; then
@@ -820,10 +831,10 @@ function checkpid() {
 			exit 4
 		else
 			echo 'Found stale PID file. Proceeding'
-			echo $$ >"${PID}"
+			printf '%s\n' "$$" >"${PID}"
 		fi
 	else
-		echo $$ >"${PID}"
+		printf '%s\n' "$$" >"${PID}"
 	fi
 }
 

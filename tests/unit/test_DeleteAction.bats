@@ -51,7 +51,7 @@ EOF
   mkdir -p "${WORKDIR}/${session}"
   sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
-    "insert into backup_session values('${session}','2024-01-01T12:00:00.000',
+    "insert into backup_session(sessionID,initial_date,conclusion_date,size,type,status) values('${session}','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
   __DELETEBACKUP "$session"
   local count
@@ -150,7 +150,7 @@ EOF
   mkdir -p "${WORKDIR}/${session}"
   sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
-    "insert into backup_session values('${session}','2024-01-01T12:00:00.000',
+    "insert into backup_session(sessionID,initial_date,conclusion_date,size,type,status) values('${session}','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
   delete_one "$session"
   local count
@@ -179,7 +179,7 @@ EOF
   mkdir -p "${WORKDIR}/${session}"
   sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
-    "insert into backup_session values('${session}','2024-01-01T12:00:00.000',
+    "insert into backup_session(sessionID,initial_date,conclusion_date,size,type,status) values('${session}','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
   run delete_one "$session"
   [ "$status" -eq 0 ]
@@ -222,7 +222,7 @@ EOF
   mkdir -p "${WORKDIR}/${old_session}"
   sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
-    "insert into backup_session values('${old_session}','2020-01-01T12:00:00.000',
+    "insert into backup_session(sessionID,initial_date,conclusion_date,size,type,status) values('${old_session}','2020-01-01T12:00:00.000',
      '2020-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
   delete_old
   local count
@@ -254,9 +254,9 @@ EOF
   mkdir -p "${WORKDIR}/${s1}" "${WORKDIR}/${s2}"
   sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
-    "insert into backup_session values('${s1}','2024-01-01T12:00:00.000','2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
+    "insert into backup_session(sessionID,initial_date,conclusion_date,size,type,status) values('${s1}','2024-01-01T12:00:00.000','2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
-    "insert into backup_session values('${s2}','2024-01-02T12:00:00.000','2024-01-02T12:30:00.000','50M','Incremental Backup','FINISHED')"
+    "insert into backup_session(sessionID,initial_date,conclusion_date,size,type,status) values('${s2}','2024-01-02T12:00:00.000','2024-01-02T12:30:00.000','50M','Incremental Backup','FINISHED')"
   leeroy_jenkins
   local count
   count=$(sqlite3 "${WORKDIR}/sessions.sqlite3" "select count(*) from backup_session")

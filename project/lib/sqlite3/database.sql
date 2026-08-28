@@ -8,7 +8,10 @@ CREATE TABLE IF NOT EXISTS backup_session (
     conclusion_date TIMESTAMP,
     size VARCHAR,
     type VARCHAR NOT NULL,
-    status VARCHAR NOT NULL
+    status VARCHAR NOT NULL,
+    source_os VARCHAR,
+    zimbra_version VARCHAR,
+    manifest_hash VARCHAR
 );
 
 CREATE TABLE IF NOT EXISTS backup_account (
@@ -24,6 +27,7 @@ CREATE TABLE IF NOT EXISTS backup_account (
     FOREIGN KEY (sessionID) REFERENCES backup_session(sessionID) ON DELETE CASCADE
 );
 
+CREATE INDEX IF NOT EXISTS idx_session_status ON backup_session(status);
 CREATE INDEX IF NOT EXISTS idx_account_session ON backup_account(sessionID);
 CREATE INDEX IF NOT EXISTS idx_account_status ON backup_account(status);
 CREATE INDEX IF NOT EXISTS idx_account_email ON backup_account(email);

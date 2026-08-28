@@ -50,7 +50,7 @@ _init_sqlite3() {
 _add_sqlite3_session() {
   local session="$1" sdate="$2" edate="$3" size="$4" type="$5"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
-    "insert into backup_session values('${session}','${sdate}','${edate}','${size}','${type}','FINISHED')"
+    "insert into backup_session(sessionID,initial_date,conclusion_date,size,type,status) values('${session}','${sdate}','${edate}','${size}','${type}','FINISHED')"
   mkdir -p "${WORKDIR}/${session}"
 }
 

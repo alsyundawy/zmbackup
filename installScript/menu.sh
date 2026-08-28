@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2312
 ################################################################################
 # zmbackup - Installer Library: Interactive Menu & License Contract
 #
@@ -8,6 +9,8 @@
 # Copyright (c) 2016-2026 Lucas Costa Beyeler & Harry Dertin Sutisna Alsyundawy
 # License: MIT License (see LICENSE)
 ################################################################################
+shopt -s lastpipe 2>/dev/null || true
+set +m 2>/dev/null || true
 
 ################################################################################
 # contract: Print the contract and informations about the project to the user
@@ -42,7 +45,8 @@ EOF
 	echo "##################################################################################"
 	echo "#                                                                                #"
 	echo "# PLEASE READ THIS AGREEMENT CAREFULLY BEFORE USING THE SOFTWARE.                #"
-	echo "# THIS SOFTWARE IS LICENSED UNDER THE TERMS OF THE MIT LICENSE.                  #"
+	echo "# THIS SOFTWARE IS LICENSED UNDER THE TERMS OF THE MIT LICENSE /                 #"
+	echo "# GNU GENERAL PUBLIC LICENCE.                                                    #"
 	echo "#                                                                                #"
 	echo "# THIS SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR    #"
 	echo "# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,      #"
@@ -54,7 +58,7 @@ EOF
 	echo "##################################################################################"
 	echo -e "\n"
 	printf "Do you agree with the terms of the software license agreements? [N/y]: "
-	read -r -r OPT
+	read -r OPT
 	if [[ ${OPT} != 'Y' && ${OPT} != 'y' ]]; then
 		echo "Stoping the installation process..."
 		exit 0
@@ -109,13 +113,13 @@ function set_values() {
 	read -r TMP
 	LOCK_BACKUP=${TMP:-${LOCK_BACKUP}}
 
-	# Configure mail alert
+	# Configure session type
 	while ! [[ ${TMP} == 'SQLITE3' || ${TMP} == 'TXT' ]]; do
 		printf "\nWhere you want to store Zmbackup's sessions? TXT or SQLITE3 - DEFAULT [%s]:" "${SESSION_TYPE}"
 		read -r TMP
-		TMP=${TMP:-${SESSION_TYPE}}
 	done
 	SESSION_TYPE=${TMP:-${SESSION_TYPE}}
+	export OSE_USER OSE_INSTALL_DIR OSE_DEFAULT_BKP_DIR ZMBKP_MAIL_ALERT MAX_PARALLEL_PROCESS ROTATE_TIME LOCK_BACKUP SESSION_TYPE
 
 	echo -e "\n\n"
 	echo "##################################################################################"

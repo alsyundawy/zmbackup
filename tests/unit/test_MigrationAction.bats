@@ -240,7 +240,7 @@ EOF
   SESSION_TYPE="TXT"
   sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
-    "insert into backup_session values('full-20240101120000','2024-01-01T12:00:00.000',
+    "insert into backup_session(sessionID,initial_date,conclusion_date,size,type,status) values('full-20240101120000','2024-01-01T12:00:00.000',
      '2024-01-01T12:30:00.000','100M','Full Backup','FINISHED')"
   # Override create_session to use our path
   create_session() {

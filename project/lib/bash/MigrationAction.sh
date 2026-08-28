@@ -56,7 +56,9 @@ function importsessionSQL() {
 		SAFE_SIZE=$(safe_sql_value "${SIZE}")
 		SAFE_OPT=$(safe_sql_value "${OPT}")
 		SAFE_STATUS=$(safe_sql_value "${STATUS}")
-		sqlite3 "${WORKDIR}"/sessions.sqlite3 "insert into backup_session values ('${SAFE_SESSIONID}',\
+		sqlite3 "${WORKDIR}"/sessions.sqlite3 "insert into backup_session \
+                                       (sessionID,initial_date,conclusion_date,size,type,status) \
+                                       values ('${SAFE_SESSIONID}',\
                                        '${SAFE_INITIAL}','${SAFE_CONCLUSION}','${SAFE_SIZE}','${SAFE_OPT}','${SAFE_STATUS}')" 2>/dev/null || true
 	done
 }

@@ -1221,4 +1221,3 @@ _on_exit_run() {
   [ "$status" -eq 1 ]
   [[ "$output" == *"RESULT: INTEGRITY AUDIT FAILED"* ]]
 }
-

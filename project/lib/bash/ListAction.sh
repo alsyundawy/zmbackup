@@ -26,11 +26,16 @@
 #    $4 - The list of domains to be backed up
 ###############################################################################
 function build_listBKP() {
+	local auth_arg=(-w "${LDAPPASS}")
+	if [[ -n ${LDAP_PASS_FILE:-} && -f ${LDAP_PASS_FILE} ]]; then
+		auth_arg=(-y "${LDAP_PASS_FILE}")
+	fi
 	if [[ ${3} == "-d" || ${3} == "--domain" ]]; then
 		for i in ${4//,/ }; do
+			local DC DOMAIN
 			DC=",dc="
 			DOMAIN="dc=${i//./${DC}}"
-			ERR=$( (ldapsearch -Z -x -H "${LDAPSERVER}" -D "${LDAPADMIN}" -w "${LDAPPASS}" -b "${DOMAIN}" -LLL "${1}" "${2}" >>"${TEMPACCOUNT}") 2>&1)
+			ERR=$( (ldapsearch -Z -x -H "${LDAPSERVER}" -D "${LDAPADMIN}" "${auth_arg[@]}" -b "${DOMAIN}" -LLL "${1}" "${2}" >>"${TEMPACCOUNT}") 2>&1)
 			BASHERRCODE=$?
 			if [[ ${BASHERRCODE} -eq 0 ]]; then
 				echo "Domain ${i} found! - Inserting inside the backup queue."
@@ -43,7 +48,7 @@ function build_listBKP() {
 			fi
 		done
 	else
-		ERR=$( (ldapsearch -Z -x -H "${LDAPSERVER}" -D "${LDAPADMIN}" -w "${LDAPPASS}" -b '' -LLL "${1}" "${2}" >>"${TEMPACCOUNT}") 2>&1)
+		ERR=$( (ldapsearch -Z -x -H "${LDAPSERVER}" -D "${LDAPADMIN}" "${auth_arg[@]}" -b '' -LLL "${1}" "${2}" >>"${TEMPACCOUNT}") 2>&1)
 		BASHERRCODE=$?
 		if [[ ${BASHERRCODE} -ne 0 ]]; then
 			zmlog local7.err "Zmbackup: LDAP - Can't extract accounts from LDAP - Error below:"
@@ -52,7 +57,7 @@ function build_listBKP() {
 		fi
 	fi
 	grep "^${2}" "${TEMPACCOUNT}" 2>/dev/null | awk '{print $2}' >"${TEMPINACCOUNT}" || true
-	true >"${TEMPACCOUNT}"
+	: >"${TEMPACCOUNT}"
 	parallel --jobs "${MAX_PARALLEL_PROCESS}" "ldap_filter '{}'" <"${TEMPINACCOUNT}"
 }
 
