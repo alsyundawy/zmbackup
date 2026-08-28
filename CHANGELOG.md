@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security and Hardening in 1.2.11
 
-- **Comprehensive SQL Injection Elimination**: Applied `safe_sql_value` escaping to `__DELETEBACKUP` (`DeleteAction.sh`) and database migration routines (`importsessionSQL`, `importaccountsSQL`, `importsessionTXT` in `MigrationAction.sh`).
+- **Comprehensive SQL Injection Elimination**: Applied `safe_sql_value` parameter escaping to `__DELETEBACKUP` (`DeleteAction.sh`) and database migration routines (`importsessionSQL`, `importaccountsSQL`, `importsessionTXT` in `MigrationAction.sh`).
 - **LDAP Subshell & Trapping Resilience**: Enforced strict error trapping `|| true` on LDAP host and DN lookups in `ParallelAction.sh` to prevent script aborts under strict shell execution modes.
 - **Strict Variable Quoting & Bracing**: Standardized on `${VAR}` variable expansions and explicit boolean tests across all shell scripts adhering to Trunk and ShellCheck guidelines.
 
@@ -23,8 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Installer & Uninstall Logic Hardening (`installScript/deploy.sh` & `vars.sh`)**:
   - Removed erroneous re-installation and generation of `blockedlist.conf` during `uninstall()` routine.
   - Hardened hostname detection in `vars.sh` with fallbacks (`hostname --fqdn || hostname -f || hostname`) for BSD/macOS and non-standard Linux environments.
-- **Multi-Core BATS Test Acceleration**:
-  - Re-architected BATS testing suite to run multi-core parallel jobs (`bats -j <cores>`) and eradicated redundant `mktemp` subprocess calls across test setup routines.
+  - Resolved command substitution masking and standardized variable bracing across `installScript/` modules.
+
+### Code Quality, Static Analysis & CI in 1.2.11
+
+- **Project-wide ShellCheck & Trunk Compliance**: Added `.shellcheckrc` (`disable=SC2312`) to suppress intentional pipeline exit masking noise; resolved variable bracing, subshell export scopes (`export` for bats subshells), and corrected bats `run !` syntax across test suites.
+- **Shebang Ordering & SC2329**: Corrected shebang positioning to line 1 in all `.bats` files ahead of linter directives and properly documented dynamic callback stubs.
+- **Continuous Integration Hardening**: Pinned CircleCI runner image digest (`cimg/node@sha256:...`) in `.circleci/config.yml` and normalized GitHub issue templates (`MD001`).
+- **Dynamic Multi-Core BATS Test Acceleration**: Re-architected BATS testing suite to utilize dynamic multi-core parallelism (`bats -j <cores>`) and eradicated redundant `mktemp` subprocess calls across test setup routines.
 
 ---
 

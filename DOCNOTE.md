@@ -119,3 +119,31 @@ zmbackup -hp
 # 10. Database Migration (TXT <-> SQLite3)
 zmbackup -mg
 ```
+
+---
+
+## 6. Code Quality & Static Analysis (v1.2.11)
+
+This section documents the static analysis posture introduced in **v1.2.11** to achieve a zero-warning ShellCheck + Trunk baseline.
+
+### ShellCheck Configuration
+
+A project-wide [`.shellcheckrc`](.shellcheckrc) is placed at the repo root:
+
+```ini
+# shellcheck project-wide configuration
+disable=SC2312
+```
+
+This suppresses SC2312 ("pipeline return value masked") repo-wide for both the system shellcheck binary and Trunk's vendored binary. The pattern `VAR=$(cmd | pipe || true)` is intentional throughout the action scripts — the `|| true` already handles the error case at the outer substitution level.
+
+### Trunk Linter Configuration
+
+Trunk (`v1.25.0`) runs `shellcheck@0.11.0` as configured in [`.trunk/trunk.yaml`](.trunk/trunk.yaml). File-level `# shellcheck disable` comments are honoured by the shellcheck binary but Trunk's own diagnostic engine requires `.shellcheckrc` for project-wide disables.
+
+### BATS Test Conventions
+
+- **Shebang on line 1**: All `.bats` files must have `#!/usr/bin/env bats` as the very first line; shellcheck disable comments follow on line 2.
+- **`export` for subshell-visible variables**: Variables set inside a `@test` body and consumed by functions called via `run` must be `export`ed — BATS executes `run` targets in a subshell that only inherits exported environment.
+- **`run !` for negative assertions**: Use `run ! cmd` (BATS ≥ 1.5.0) rather than bare `! cmd` outside of `run` context.
+- **SC2329 suppressed in BATS files**: Helper functions (`ldapsearch`, `sendmail`, `zmmailbox`, etc.) defined inside `.bats` files are invoked by the framework, not by static call-sites, so SC2329 is listed in the per-file disable header.

@@ -1,5 +1,5 @@
-# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 
 load '../setup'
 
@@ -213,7 +213,7 @@ teardown() {
 @test "backup_main: prints nothing-to-do when TEMPACCOUNT is empty" {
   SESSION="full-20240101120000"
   STYPE="Full Account"
-  MOCK_LDAPSEARCH_OUTPUT=""
+  export MOCK_LDAPSEARCH_OUTPUT=""
   # provide empty ldapsearch result so TEMPACCOUNT stays empty
   run backup_main "$ACOBJECT" "$ACFILTER"
   [[ "$output" == *"Nothing to do"* ]]
@@ -434,8 +434,8 @@ teardown() {
 
 @test "backup_main: records FAILED in SQLITE3 mode when parallel jobs fail (ldap/alias session)" {
   SESSION="alias-20240101120000"
-  STYPE="Alias"
-  SESSION_TYPE="SQLITE3"
+  export STYPE="Alias"
+  export SESSION_TYPE="SQLITE3"
   sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   MOCK_LDAPSEARCH_FAIL=1
   run backup_main "(objectclass=zimbraAlias)" "uid" "-a" "alias@example.com"

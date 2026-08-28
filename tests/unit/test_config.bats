@@ -1,5 +1,5 @@
-# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 
 load '../setup'
 
@@ -87,7 +87,7 @@ teardown() {
 }
 
 @test "validate_config: BACKUP_INACTIVE_ACCOUNTS=false is accepted" {
-  BACKUP_INACTIVE_ACCOUNTS="false"
+  export BACKUP_INACTIVE_ACCOUNTS="false"
   run validate_config
   [ "$status" -eq 0 ]
 }
@@ -118,7 +118,7 @@ teardown() {
 # ---------------------------------------------------------------------------
 
 @test "validate_config: reports both LDAPADMIN and LDAPPASS when both are empty" {
-  LDAPADMIN=""
+  export LDAPADMIN=""
   LDAPPASS=""
   run validate_config
   [ "$status" -eq 3 ]
@@ -127,9 +127,9 @@ teardown() {
 }
 
 @test "validate_config: reports LDAPPASS, ROTATE_TIME, and SESSION_TYPE when all are empty" {
-  LDAPPASS=""
-  ROTATE_TIME=""
-  SESSION_TYPE=""
+  export LDAPPASS=""
+  export ROTATE_TIME=""
+  export SESSION_TYPE=""
   run validate_config
   [ "$status" -eq 3 ]
   [[ "$output" == *"LDAPPASS"* ]]
@@ -142,25 +142,25 @@ teardown() {
 # ---------------------------------------------------------------------------
 
 @test "validate_config: logs warning when ENABLE_EMAIL_NOTIFY is defaulted" {
-  ENABLE_EMAIL_NOTIFY=""
+  export ENABLE_EMAIL_NOTIFY=""
   validate_config
   grep -q "\[local7.warn\].*ENABLE_EMAIL_NOTIFY" "$LOGFILE"
 }
 
 @test "validate_config: logs warning when EMAIL_NOTIFY is defaulted" {
-  EMAIL_NOTIFY=""
+  export EMAIL_NOTIFY=""
   validate_config
   grep -q "\[local7.warn\].*EMAIL_NOTIFY" "$LOGFILE"
 }
 
 @test "validate_config: logs warning when MAX_PARALLEL_PROCESS is defaulted" {
-  MAX_PARALLEL_PROCESS=""
+  export MAX_PARALLEL_PROCESS=""
   validate_config
   grep -q "\[local7.warn\].*MAX_PARALLEL_PROCESS" "$LOGFILE"
 }
 
 @test "validate_config: logs warning when LOCK_BACKUP is defaulted" {
-  LOCK_BACKUP=""
+  export LOCK_BACKUP=""
   validate_config
   grep -q "\[local7.warn\].*LOCK_BACKUP" "$LOGFILE"
 }

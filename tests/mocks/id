@@ -1,7 +1,7 @@
 #!/bin/bash
 # id mock - controls root check
-if [[ "$1" == "-u" ]]; then
-  echo "${MOCK_ID_UID:-1000}"
+if [[ $1 == "-u" ]]; then
+	echo "${MOCK_ID_UID:-1000}"
 else
-  /usr/bin/id "$@"
+	/usr/bin/id "$@"
 fi

@@ -1,5 +1,5 @@
-# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 
 load '../setup'
 
@@ -192,7 +192,8 @@ EOF
 @test "delete_old: removes old sessions from TXT based on ROTATE_TIME" {
   SESSION_TYPE="TXT"
   ROTATE_TIME="30"
-  local old_session="full-20200101120000"
+  local old_session
+  old_session="full-20200101120000"
   local new_session="full-$(date +%Y%m%d%H%M%S)"
   mkdir -p "${WORKDIR}/${old_session}" "${WORKDIR}/${new_session}"
   cat >"${WORKDIR}/sessions.txt" <<EOF
@@ -206,7 +207,8 @@ EOF
 @test "delete_old: keeps recent sessions in TXT mode" {
   SESSION_TYPE="TXT"
   ROTATE_TIME="30"
-  local new_session="full-$(date +%Y%m%d%H%M%S)"
+  local new_session
+  new_session="full-$(date +%Y%m%d%H%M%S)"
   mkdir -p "${WORKDIR}/${new_session}"
   echo "SESSION: ${new_session} started on $(date)" >"${WORKDIR}/sessions.txt"
   delete_old
@@ -215,7 +217,7 @@ EOF
 
 @test "delete_old: removes old sessions from SQLITE3" {
   SESSION_TYPE="SQLITE3"
-  ROTATE_TIME="30"
+  export ROTATE_TIME="30"
   local old_session="full-20200101120000"
   mkdir -p "${WORKDIR}/${old_session}"
   sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
@@ -262,7 +264,7 @@ EOF
 }
 
 @test "leeroy_jenkins: prints completion message" {
-  SESSION_TYPE="TXT"
+  export SESSION_TYPE="TXT"
   run leeroy_jenkins
   [[ "$output" == *"LEEROY JENKINS"* ]]
   [[ "$output" == *"deleted"* ]]

@@ -1,5 +1,5 @@
-# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 
 load '../setup'
 
@@ -17,7 +17,7 @@ setup() {
   # Use a controlled temp file as the blockedlist for all ldap_filter tests
   BLOCKEDLIST="$(mktemp)"
   export ZMBACKUP_BLOCKEDLIST="$BLOCKEDLIST"
-  LOCK_BACKUP="false"
+  export LOCK_BACKUP="false"
 }
 
 teardown() {
@@ -114,6 +114,7 @@ teardown() {
 
 @test "mailbox_backup: email with dots in local part creates correct tgz filename" {
   INC="FALSE"
+  export INC
   mailbox_backup "first.last@example.com"
   [ -f "${TEMPDIR}/first.last@example.com.tgz" ]
 }
@@ -143,7 +144,7 @@ teardown() {
   sleep 30 &
   local bg_pid=$!
   echo "$bg_pid" >"$pid_file"
-  PID="$pid_file"
+  export PID="$pid_file"
   run checkpid
   kill "$bg_pid" 2>/dev/null
   wait "$bg_pid" 2>/dev/null || true

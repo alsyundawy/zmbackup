@@ -1,5 +1,5 @@
-# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153,SC2329
 
 load '../setup'
 
@@ -49,7 +49,7 @@ teardown() {
 
 @test "notify_begin: invokes sendmail with EMAIL_NOTIFY as recipient" {
   ENABLE_EMAIL_NOTIFY="all"
-  EMAIL_NOTIFY="admin@example.com"
+  export EMAIL_NOTIFY="admin@example.com"
   sendmail() {
     printf '%s\n' "$@" >"${WORKDIR}/sendmail_args.txt"
     cat >/dev/null
@@ -147,7 +147,7 @@ teardown() {
 
 @test "notify_finish: invokes sendmail with -f EMAIL_SENDER flag" {
   ENABLE_EMAIL_NOTIFY="all"
-  EMAIL_SENDER="from@example.com"
+  export EMAIL_SENDER="from@example.com"
   sendmail() {
     printf '%s\n' "$@" >"${WORKDIR}/sendmail_args.txt"
     cat >/dev/null
@@ -182,8 +182,8 @@ teardown() {
   local session="signature-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   touch "${WORKDIR}/${session}/user@example.com.ldiff"
-  ENABLE_EMAIL_NOTIFY="all"
-  MOCK_SENDMAIL_FAIL=0
+  export ENABLE_EMAIL_NOTIFY="all"
+  export MOCK_SENDMAIL_FAIL=0
   run notify_finish "$session" "Signature" "SUCCESS"
   [ "$status" -eq 0 ]
 }

@@ -1,5 +1,5 @@
-# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 
 load '../setup'
 
@@ -68,7 +68,7 @@ teardown() {
   ENABLE_EMAIL_NOTIFY="all"
   export MOCK_SENDMAIL_FAIL=1
   run notify_begin "full-20240101120000" "Full Account"
-  ! grep -q "\[local7.info\].*Cannot send mail" "$LOGFILE"
+  run ! grep -q "\[local7.info\].*Cannot send mail" "$LOGFILE"
 }
 
 # ---------------------------------------------------------------------------
@@ -235,8 +235,8 @@ teardown() {
 @test "notify_finish: does not log sendmail failure at info level" {
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
-  ENABLE_EMAIL_NOTIFY="all"
+  export ENABLE_EMAIL_NOTIFY="all"
   export MOCK_SENDMAIL_FAIL=1
   run notify_finish "$session" "Full Account" "FAILURE"
-  ! grep -q "\[local7.info\].*Cannot send mail" "$LOGFILE"
+  run ! grep -q "\[local7.info\].*Cannot send mail" "$LOGFILE"
 }

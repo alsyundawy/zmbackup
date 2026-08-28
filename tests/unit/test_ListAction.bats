@@ -1,5 +1,5 @@
-# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153,SC2329
 
 load '../setup'
 
@@ -74,7 +74,7 @@ teardown() {
 }
 
 @test "build_listBKP: splits comma-separated -d list and processes each domain" {
-  MOCK_LDAPSEARCH_OUTPUT=""
+  export MOCK_LDAPSEARCH_OUTPUT=""
   LOCK_BACKUP="false"
   run build_listBKP "(objectclass=zimbraAccount)" "zimbraMailDeliveryAddress" "-d" "example.com,test.com"
   [ "$status" -eq 0 ]
@@ -94,7 +94,7 @@ teardown() {
     done
   }
   export -f ldapsearch
-  LOCK_BACKUP="false"
+  export LOCK_BACKUP="false"
   build_listBKP "(objectclass=zimbraAccount)" "zimbraMailDeliveryAddress" "-d" "example.com,test.com"
   grep -q "dc=example,dc=com" "${bases_file}"
   grep -q "dc=test,dc=com" "${bases_file}"
@@ -140,7 +140,7 @@ EOF
 # ---------------------------------------------------------------------------
 
 @test "build_listRST: SQL injection in session ID does not corrupt database" {
-  SESSION_TYPE="SQLITE3"
+  export SESSION_TYPE="SQLITE3"
   sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   local session="full-20240101120000"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \

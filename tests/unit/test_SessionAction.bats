@@ -1,5 +1,5 @@
-# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 
 load '../setup'
 
@@ -62,7 +62,7 @@ _populate_sqlite3_sessions() {
 }
 
 @test "list_sessions: prints invalid format for unknown SESSION_TYPE" {
-  SESSION_TYPE="UNKNOWN"
+  export SESSION_TYPE="UNKNOWN"
   run list_sessions
   [[ "$output" == *"Invalid File Format"* ]]
 }

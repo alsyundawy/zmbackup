@@ -1,5 +1,5 @@
-# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 
 load '../setup'
 
@@ -412,7 +412,7 @@ teardown() {
 # ---------------------------------------------------------------------------
 
 @test "validate_config: exits 2 when running as wrong user" {
-  BACKUPUSER="nonexistentuser_xyz"
+  export BACKUPUSER="nonexistentuser_xyz"
   run validate_config
   [ "$status" -eq 2 ]
   [[ "$output" == *"nonexistentuser_xyz"* ]]
@@ -420,7 +420,7 @@ teardown() {
 
 @test "validate_config: sets BACKUPUSER default to zimbra when empty" {
   # Run in subprocess with whoami mocked to zimbra so the user check passes
-  MOCK_WHOAMI_USER="zimbra"
+  export MOCK_WHOAMI_USER="zimbra"
   run bash -c "
     export PATH='${MOCKS_DIR}:${PATH}'
     export WORKDIR='${WORKDIR}'
@@ -501,35 +501,35 @@ teardown() {
 }
 
 @test "validate_config: exits 3 when LDAPADMIN is empty" {
-  LDAPADMIN=""
+  export LDAPADMIN=""
   run validate_config
   [ "$status" -eq 3 ]
   [[ "$output" == *"LDAPADMIN"* ]]
 }
 
 @test "validate_config: exits 3 when LDAPPASS is empty" {
-  LDAPPASS=""
+  export LDAPPASS=""
   run validate_config
   [ "$status" -eq 3 ]
   [[ "$output" == *"LDAPPASS"* ]]
 }
 
 @test "validate_config: exits 3 when ROTATE_TIME is empty" {
-  ROTATE_TIME=""
+  export ROTATE_TIME=""
   run validate_config
   [ "$status" -eq 3 ]
   [[ "$output" == *"ROTATE_TIME"* ]]
 }
 
 @test "validate_config: exits 3 when SESSION_TYPE is empty" {
-  SESSION_TYPE=""
+  export SESSION_TYPE=""
   run validate_config
   [ "$status" -eq 3 ]
   [[ "$output" == *"SESSION_TYPE"* ]]
 }
 
 @test "validate_config: exits 3 when BACKUP_INACTIVE_ACCOUNTS is empty" {
-  BACKUP_INACTIVE_ACCOUNTS=""
+  export BACKUP_INACTIVE_ACCOUNTS=""
   run validate_config
   [ "$status" -eq 3 ]
   [[ "$output" == *"BACKUP_INACTIVE_ACCOUNTS"* ]]

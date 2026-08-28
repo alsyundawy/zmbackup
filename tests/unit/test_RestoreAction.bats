@@ -1,5 +1,5 @@
-# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 
 load '../setup'
 
@@ -320,7 +320,7 @@ EOF
 }
 
 @test "restore_main_ldap: runs restore for found SQLITE3 session" {
-  SESSION_TYPE="SQLITE3"
+  export SESSION_TYPE="SQLITE3"
   local session="full-20240101120000"
   mkdir -p "${WORKDIR}/${session}"
   printf "dn: uid=user@example.com,ou=people,dc=example,dc=com\nobjectClass: top\n" \

@@ -20,34 +20,34 @@
 #    $4 - The list of domains to be backed up
 ###############################################################################
 function build_listBKP() {
-  if [[ "${3}" == "-d" || "${3}" == "--domain" ]]; then
-    for i in ${4//,/ }; do
-      DC=",dc="
-      DOMAIN="dc=${i//./${DC}}"
-      ERR=$( (ldapsearch -Z -x -H "${LDAPSERVER}" -D "${LDAPADMIN}" -w "${LDAPPASS}" -b "${DOMAIN}" -LLL "${1}" "${2}" >>"${TEMPACCOUNT}") 2>&1)
-      BASHERRCODE=$?
-      if [[ ${BASHERRCODE} -eq 0 ]]; then
-        echo "Domain ${i} found! - Inserting inside the backup queue."
-        zmlog local7.info "Domain ${i} found! - Inserting inside the backup queue."
-      else
-        zmlog local7.err "Zmbackup: LDAP - Can't extract accounts from LDAP - Error below:"
-        zmlog local7.err "Zmbackup: ${ERR}"
-        echo "ERROR - Can't extract accounts from LDAP - See log for more information"
-        exit 1
-      fi
-    done
-  else
-    ERR=$( (ldapsearch -Z -x -H "${LDAPSERVER}" -D "${LDAPADMIN}" -w "${LDAPPASS}" -b '' -LLL "${1}" "${2}" >>"${TEMPACCOUNT}") 2>&1)
-    BASHERRCODE=$?
-    if [[ ${BASHERRCODE} -ne 0 ]]; then
-      zmlog local7.err "Zmbackup: LDAP - Can't extract accounts from LDAP - Error below:"
-      zmlog local7.err "Zmbackup: ${ERR}"
-      echo "ERROR - Can't extract accounts from LDAP - See log for more information"
-    fi
-  fi
-  grep "^${2}" "${TEMPACCOUNT}" 2>/dev/null | awk '{print $2}' >"${TEMPINACCOUNT}" || true
-  true >"${TEMPACCOUNT}"
-  parallel --jobs "${MAX_PARALLEL_PROCESS}" "ldap_filter '{}'" <"${TEMPINACCOUNT}"
+	if [[ ${3} == "-d" || ${3} == "--domain" ]]; then
+		for i in ${4//,/ }; do
+			DC=",dc="
+			DOMAIN="dc=${i//./${DC}}"
+			ERR=$( (ldapsearch -Z -x -H "${LDAPSERVER}" -D "${LDAPADMIN}" -w "${LDAPPASS}" -b "${DOMAIN}" -LLL "${1}" "${2}" >>"${TEMPACCOUNT}") 2>&1)
+			BASHERRCODE=$?
+			if [[ ${BASHERRCODE} -eq 0 ]]; then
+				echo "Domain ${i} found! - Inserting inside the backup queue."
+				zmlog local7.info "Domain ${i} found! - Inserting inside the backup queue."
+			else
+				zmlog local7.err "Zmbackup: LDAP - Can't extract accounts from LDAP - Error below:"
+				zmlog local7.err "Zmbackup: ${ERR}"
+				echo "ERROR - Can't extract accounts from LDAP - See log for more information"
+				exit 1
+			fi
+		done
+	else
+		ERR=$( (ldapsearch -Z -x -H "${LDAPSERVER}" -D "${LDAPADMIN}" -w "${LDAPPASS}" -b '' -LLL "${1}" "${2}" >>"${TEMPACCOUNT}") 2>&1)
+		BASHERRCODE=$?
+		if [[ ${BASHERRCODE} -ne 0 ]]; then
+			zmlog local7.err "Zmbackup: LDAP - Can't extract accounts from LDAP - Error below:"
+			zmlog local7.err "Zmbackup: ${ERR}"
+			echo "ERROR - Can't extract accounts from LDAP - See log for more information"
+		fi
+	fi
+	grep "^${2}" "${TEMPACCOUNT}" 2>/dev/null | awk '{print $2}' >"${TEMPINACCOUNT}" || true
+	true >"${TEMPACCOUNT}"
+	parallel --jobs "${MAX_PARALLEL_PROCESS}" "ldap_filter '{}'" <"${TEMPINACCOUNT}"
 }
 
 ###############################################################################
@@ -57,17 +57,17 @@ function build_listBKP() {
 #    $2 - The list of accounts to be restored.
 ###############################################################################
 function build_listRST() {
-  if [[ ${2} == *"@"* ]]; then
-    for i in ${2}; do
-      echo "${i}" >>"${TEMPACCOUNT}"
-    done
-  else
-    if [[ "${SESSION_TYPE}" == 'TXT' ]]; then
-      grep "${1}:" "${WORKDIR}"/sessions.txt 2>/dev/null | grep -v "SESSION" | cut -d: -f2 >"${TEMPACCOUNT}" || true
-    elif [[ "${SESSION_TYPE}" == "SQLITE3" ]]; then
-      local SAFE_SESSION
-      SAFE_SESSION=$(safe_sql_value "${1}")
-      sqlite3 "${WORKDIR}"/sessions.sqlite3 "select email from backup_account where sessionID='${SAFE_SESSION}'" >"${TEMPACCOUNT}"
-    fi
-  fi
+	if [[ ${2} == *"@"* ]]; then
+		for i in ${2}; do
+			echo "${i}" >>"${TEMPACCOUNT}"
+		done
+	else
+		if [[ ${SESSION_TYPE} == 'TXT' ]]; then
+			grep "${1}:" "${WORKDIR}"/sessions.txt 2>/dev/null | grep -v "SESSION" | cut -d: -f2 >"${TEMPACCOUNT}" || true
+		elif [[ ${SESSION_TYPE} == "SQLITE3" ]]; then
+			local SAFE_SESSION
+			SAFE_SESSION=$(safe_sql_value "${1}")
+			sqlite3 "${WORKDIR}"/sessions.sqlite3 "select email from backup_account where sessionID='${SAFE_SESSION}'" >"${TEMPACCOUNT}"
+		fi
+	fi
 }

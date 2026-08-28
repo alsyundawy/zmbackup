@@ -1,5 +1,5 @@
-# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153,SC2329
 
 load '../setup'
 
@@ -264,7 +264,7 @@ EOF
 }
 
 @test "migration: handles invalid SESSION_TYPE gracefully" {
-  SESSION_TYPE="INVALID"
+  export SESSION_TYPE="INVALID"
   create_session() { echo "Invalid File Format - Nothing to do."; }
   run migration
   [[ "$output" == *"Migration completed"* ]]

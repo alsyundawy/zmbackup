@@ -1,11 +1,11 @@
 #!/bin/bash
 # ldapadd mock
-if [[ "${MOCK_LDAPADD_EXISTS:-0}" == "1" ]]; then
-  echo "ldap_add: Already exists (68)" >&2
-  exit 68
+if [[ ${MOCK_LDAPADD_EXISTS:-0} == "1" ]]; then
+	echo "ldap_add: Already exists (68)" >&2
+	exit 68
 fi
-if [[ "${MOCK_LDAPADD_FAIL:-0}" == "1" ]]; then
-  echo "ldap_error: invalid syntax" >&2
-  exit 1
+if [[ ${MOCK_LDAPADD_FAIL:-0} == "1" ]]; then
+	echo "ldap_error: invalid syntax" >&2
+	exit 1
 fi
 exit 0

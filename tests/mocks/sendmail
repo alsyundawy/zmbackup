@@ -1,8 +1,8 @@
 #!/bin/bash
 # sendmail mock
-if [[ "${MOCK_SENDMAIL_FAIL:-0}" == "1" ]]; then
-  echo "sendmail: connection refused" >&2
-  exit 1
+if [[ ${MOCK_SENDMAIL_FAIL:-0} == "1" ]]; then
+	echo "sendmail: connection refused" >&2
+	exit 1
 fi
 cat >/dev/null
 exit 0

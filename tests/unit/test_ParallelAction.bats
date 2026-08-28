@@ -1,5 +1,5 @@
-# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153,SC2329
 
 load '../setup'
 
@@ -100,7 +100,7 @@ teardown() {
   INC="FALSE"
   MOCK_ZMMAILBOX_204=1 mailbox_backup "user@example.com"
   grep -q "\[local7.info\]" "${LOGFILE}"
-  ! grep -q "\[local7.err\]" "${LOGFILE}"
+  run ! grep -q "\[local7.err\]" "${LOGFILE}"
 }
 
 @test "mailbox_backup: incremental with no prior backup performs full pull (TXT mode)" {
@@ -508,7 +508,7 @@ teardown() {
 # ---------------------------------------------------------------------------
 
 @test "ldap_filter: SQL injection in email does not corrupt database (SQLITE3 mode)" {
-  LOCK_BACKUP="true"
+  export LOCK_BACKUP="true"
   SESSION_TYPE="SQLITE3"
   sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   local now
@@ -528,8 +528,8 @@ teardown() {
 }
 
 @test "mailbox_backup: SQL injection in email does not corrupt database (incremental SQLITE3 mode)" {
-  INC="TRUE"
-  SESSION_TYPE="SQLITE3"
+  export INC="TRUE"
+  export SESSION_TYPE="SQLITE3"
   sqlite3 "${WORKDIR}/sessions.sqlite3" <"${PROJECT_ROOT}/project/lib/sqlite3/database.sql"
   sqlite3 "${WORKDIR}/sessions.sqlite3" \
     "insert into backup_session values('full-20240101120000','2024-01-01T12:00:00.000',

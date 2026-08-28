@@ -1,27 +1,27 @@
 #!/bin/bash
 # zmmailbox mock
-if [[ "${MOCK_ZMMAILBOX_FAIL:-0}" == "1" ]]; then
-  echo "ERROR: connection refused" >&2
-  exit 1
+if [[ ${MOCK_ZMMAILBOX_FAIL:-0} == "1" ]]; then
+	echo "ERROR: connection refused" >&2
+	exit 1
 fi
-if [[ "${MOCK_ZMMAILBOX_204:-0}" == "1" ]]; then
-  echo "service.FAILURE (system failure: GET failed, status=204.  No Content)" >&2
-  exit 1
+if [[ ${MOCK_ZMMAILBOX_204:-0} == "1" ]]; then
+	echo "service.FAILURE (system failure: GET failed, status=204.  No Content)" >&2
+	exit 1
 fi
-if [[ "${MOCK_ZMMAILBOX_NOFILE:-0}" == "1" ]]; then
-  echo "No such file or directory"
-  exit 0
+if [[ ${MOCK_ZMMAILBOX_NOFILE:-0} == "1" ]]; then
+	echo "No such file or directory"
+	exit 0
 fi
 # For getRestURL, create a non-empty tgz file if output path is specified
 for i in "$@"; do
-  if [[ "${i}" == --output ]]; then
-    : # next arg is the output file
-  elif [[ "${i}" == *.tgz ]]; then
-    if [[ "${MOCK_ZMMAILBOX_EMPTY:-0}" == "1" ]]; then
-      touch "${i}"
-    else
-      echo "mock tgz content" >"${i}"
-    fi
-  fi
+	if [[ ${i} == --output ]]; then
+		: # next arg is the output file
+	elif [[ ${i} == *.tgz ]]; then
+		if [[ ${MOCK_ZMMAILBOX_EMPTY:-0} == "1" ]]; then
+			touch "${i}"
+		else
+			echo "mock tgz content" >"${i}"
+		fi
+	fi
 done
 exit 0

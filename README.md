@@ -218,6 +218,15 @@ The installer script automatically creates a cron config file in `/etc/cron.d/zm
 
 ## Changelog
 
+### v1.2.11 — 28 Agustus 2026 — Security Hardening, Multi-Domain Backup, Code Quality & Test Acceleration
+
+- **[SEC]** **Comprehensive SQL Injection Elimination**: Applied `safe_sql_value` escaping to `__DELETEBACKUP` (`DeleteAction.sh`) and database migration routines (`importsessionSQL`, `importaccountsSQL`, `importsessionTXT` in `MigrationAction.sh`).
+- **[SEC]** **LDAP Subshell & Trapping Resilience**: Enforced strict error trapping `|| true` on LDAP host and DN lookups in `ParallelAction.sh` to prevent script aborts under strict shell execution modes.
+- **[FEAT]** **Multi-Domain & Domain Option Support**: Fixed domain backup flag handler (`-dom` / `--domain-backup`) in `project/zmbackup` and added `--domain` long flag support in `build_listBKP` (`ListAction.sh`).
+- **[FIX]** **Installer & Uninstall Hardening**: Removed erroneous re-installation of `blockedlist.conf` during `uninstall()` and hardened hostname detection in `vars.sh`.
+- **[LINT]** **Zero-Warning ShellCheck & Trunk Standard**: Added repo-wide `.shellcheckrc` configuration, normalized shebang locations, variable bracing (`${VAR}`), and subshell export scopes.
+- **[TEST]** **Dynamic Multi-Core Test Acceleration**: Optimized BATS testing harness for dynamic multi-core parallelism and eradicated subprocess fork overheads.
+
 ### v1.2.10 — 27 Juli 2026 — Multi-Server Cluster Support, Security Hardening & Performance Optimization
 
 - **[FEAT]** **Multi-Mailbox Server Cluster Support**: Added `get_mailbox_url` helper to query `zimbraMailHost` and route REST calls (`getRestURL`/`postRestURL`) across multi-server Zimbra environments.

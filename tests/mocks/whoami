@@ -1,8 +1,8 @@
 #!/bin/bash
 # whoami mock
-if [[ -n "${MOCK_WHOAMI_USER:-}" ]]; then
-  echo "${MOCK_WHOAMI_USER}"
+if [[ -n ${MOCK_WHOAMI_USER:-} ]]; then
+	echo "${MOCK_WHOAMI_USER}"
 else
-  echo "${USER:-root}"
+	echo "${USER:-root}"
 fi
 exit 0

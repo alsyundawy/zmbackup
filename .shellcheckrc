@@ -1,0 +1,3 @@
+# shellcheck project-wide configuration
+# https://github.com/koalaman/shellcheck/wiki/Ignore
+disable=SC2312

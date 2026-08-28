@@ -1,5 +1,5 @@
-# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 #!/usr/bin/env bats
+# shellcheck disable=SC2034,SC2030,SC2031,SC2317,SC2155,SC1091,SC2153
 
 load '../../setup'
 
@@ -265,7 +265,7 @@ user@example.com"
   mkdir -p "$ZMBKP_CONF" "$ZMBKP_LIB" "${DEPLOY_ROOT}/backup"
   echo "WORKDIR='${DEPLOY_ROOT}/backup'" >"${ZMBKP_CONF}/zmbackup.conf"
   touch "${DEPLOY_ROOT}/backup/session.txt"
-  MOCK_SU_OUTPUT=""
+  export MOCK_SU_OUTPUT=""
   echo "y" | uninstall
   [ -f "${DEPLOY_ROOT}/backup/session.txt" ]
 }
