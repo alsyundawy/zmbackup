@@ -31,11 +31,6 @@ Enterprise Optimization, Security Hardening & Maintenance by **Harry Dertin Suti
 - [Installation & Pre-Flight Diagnostics](#installation--pre-flight-diagnostics)
 - [Configuration](#configuration)
 - [Command Reference & Usage](#command-reference--usage)
-  - [Full Backup Operations](#full-backup-operations)
-  - [Incremental Backup Operations](#incremental-backup-operations)
-  - [Disaster Recovery & Restore Modes](#disaster-recovery--restore-modes)
-  - [Session Management & Reporting](#session-management--reporting)
-  - [Cryptographic Integrity Verification](#cryptographic-integrity-verification)
 - [Security Hardening & CVE Defense](#security-hardening--cve-defense)
 - [Database Metadata Engine (TXT & SQLite3 WAL)](#database-metadata-engine-txt--sqlite3-wal)
 - [Running Tests](#running-tests)
@@ -53,7 +48,7 @@ Enterprise Optimization, Security Hardening & Maintenance by **Harry Dertin Suti
 
 Zmbackup berinteraksi langsung dengan REST API Zimbra (`/?fmt=tgz`) dan OpenLDAP tanpa memerlukan penghentian layanan email (*zero downtime*). Seluruh proses dirancang dengan standar keamanan tinggi untuk mencegah kebocoran kredensial, serangan *Zip-Slip* (CVE-2022-27925), serta korupsi data akibat konkurensi database.
 
-### Pilar Utama Keandalan
+**Pilar Utama Keandalan:**
 
 1. **Zero-Downtime Hot Backup**: Seluruh rutinitas backup dieksekusi secara *live* saat server aktif melayani ribuan pengguna.
 2. **Dynamic Concurrency & OOM Shield**: Mengatur beban worker **GNU Parallel** secara adaptif berdasarkan sisa RAM fisik dan ukuran JVM heap Zimbra.
@@ -140,14 +135,14 @@ zmbackup -r full-20260828100000 user@domain.com
 
 ## Dependencies
 
-### 1. Kebutuhan Paket Sistem Operasi
+**1. Kebutuhan Paket Sistem Operasi:**
 
 - **GNU Parallel**: Eksekusi multi-core worker simultan.
 - **SQLite3**: Engine database embedded untuk metadata sesi (Schema V2 WAL).
 - **cURL & Wget**: Interaksi HTTP/HTTPS REST endpoint Zimbra.
 - **GNU Coreutils & Grep**: Utilitas dasar manipulasi stream dan tanggal POSIX.
 
-### 2. Instalasi Dependensi pada Linux
+**2. Instalasi Dependensi pada Linux:**
 
 - **Ubuntu / Debian:**
 
@@ -208,7 +203,7 @@ Konfigurasi utama disimpan di `/etc/zmbackup/zmbackup.conf`. Parameter kunci mel
 
 ## Command Reference & Usage
 
-### Full Backup Operations
+**1. Full Backup Operations:**
 
 ```bash
 # Full Backup seluruh akun (Mailbox + LDAP metadata)
@@ -233,7 +228,7 @@ zmbackup -f -al
 zmbackup -f -sig
 ```
 
-### Incremental Backup Operations
+**2. Incremental Backup Operations:**
 
 ```bash
 # Incremental backup seluruh akun
@@ -243,7 +238,7 @@ zmbackup -i
 zmbackup -i -a user1@domain.com
 ```
 
-### Disaster Recovery & Restore Modes
+**3. Disaster Recovery & Restore Modes:**
 
 ```bash
 # Restore akun lengkap dari sesi tertentu
@@ -265,7 +260,7 @@ zmbackup -r --rewrite-host mail-lama.domain.com=mail-baru.domain.com full-202608
 zmbackup -r --resolve replace full-20260828100000 user1@domain.com
 ```
 
-### Session Management & Reporting
+**4. Session Management & Reporting:**
 
 ```bash
 # Tampilkan tabel visual sesi
@@ -284,7 +279,7 @@ zmbackup -d full-20260801000000
 zmbackup -hp
 ```
 
-### Cryptographic Integrity Verification
+**5. Cryptographic Integrity Verification:**
 
 ```bash
 # Audit integritas hash SHA-256 sesi backup terhadap MANIFEST.json
@@ -359,7 +354,7 @@ Kontribusi berupa perbaikan bug, penambahan fitur kompatibilitas, atau penyempur
 
 ## Changelog
 
-### v1.2.12 — Enterprise Universal Release (ZCS 7.0–10.1 & Carbonio)
+**v1.2.12 — Enterprise Universal Release (ZCS 7.0–10.1 & Carbonio):**
 
 - **[SEC]** **Zero-Plaintext Credential Shielding**: Autentikasi OpenLDAP aman via `-y "$LDAP_PASS_FILE"` (mode 0600) dengan automatic trap cleanup.
 - **[SEC]** **Zip-Slip Defense (CVE-2022-27925)**: Integrasi `verify_archive_safety()` untuk inspeksi path traversal pada arsip tarball.

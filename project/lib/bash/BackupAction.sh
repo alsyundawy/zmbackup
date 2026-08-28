@@ -1,6 +1,4 @@
 #!/bin/bash
-# shellcheck disable=SC2312
-# trunk-ignore-all(shellcheck/SC2312)
 ################################################################################
 # zmbackup - Backup Session Library (LDAP/Mailbox/DistList/Alias)
 #

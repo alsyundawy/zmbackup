@@ -56,7 +56,7 @@ Dalam rekayasa perangkat lunak enterprise, terdapat batas tegas antara **Kode Ru
 
 ### B. Peran `package.json` dan Ekosistem NPM
 
-Keberadaan berkas `package.json` dalam repositori Zmbackup **bukan** berarti Zmbackup dibuat menggunakan JavaScript/Node.js. Zmbackup adalah 100% Bash script murni. `package.json` digunakan secara khusus untuk:
+Keberadaan berkas `package.json` dalam repositori Zmbackup **bukan** berarti Zmbackup dibuat menggunakan JavaScript/Node.js. Seluruh komponen logika Zmbackup dibangun secara menyeluruh menggunakan Bash script POSIX murni. `package.json` digunakan secara khusus untuk:
 
 1. **Multi-Core Task Runner**: Mengorkestrasi perintah paralel multi-core seperti `npm test` yang secara otomatis memanggil `bats -j $(nproc || sysctl -n hw.ncpu) tests/**/*.bats`.
 2. **Linter Runner**: Menyediakan jalan pintas `npm run lint` untuk mengeksekusi ShellCheck dan Markdownlint secara simultan.

@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD013 MD024 MD033 MD034 MD028 MD031 -->
 
-# ZMBACKUP RELEASE CHANGELOG (v1.2.12)
+# [1.2.12] - Changelog
 
 All notable changes, security enhancements, architectural optimizations, and bug fixes for **Zmbackup** will be documented in this file.
 
@@ -98,7 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.9] — Original Baseline Release
 
 - **Original Architecture**: Developed by [Lucas Costa Beyeler](https://github.com/lucascbeyeler) based on [Zmbkpose](https://github.com/bggo/Zmbkpose) by [bggo](https://github.com/bggo).
-- Baseline release with full, incremental, mailbox, LDAP, alias, and distribution list backup/restore commands in TXT/SQLite3 formats.
+- Baseline release supporting mailbox and LDAP directory object backup/restore operations in TXT/SQLite3 formats.
 
 ---
 
