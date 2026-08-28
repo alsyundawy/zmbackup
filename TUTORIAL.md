@@ -1,63 +1,97 @@
-# Panduan Lengkap & Tutorial Operasional Zmbackup v1.2.12
+<!-- markdownlint-disable MD013 MD024 MD033 MD034 MD028 MD031 -->
 
-Selamat datang di **Panduan Resmi & Tutorial Operasional Zmbackup v1.2.12 (Enterprise Universal Release)**. Dokumen ini dirancang sebagai referensi teknis komprehensif, langkah demi langkah, untuk memandu System Administrator dan DevOps Engineer dalam mengelola proses **Hot Backup**, **Disaster Recovery (Restore)**, **Migrasi Lintas Server/OS**, serta **Otomatisasi Retensi** pada **Zimbra Collaboration Suite (ZCS 7.0–10.1 / Daffodil)** dan **Carbonio FOSS**.
+# PANDUAN LENGKAP & MASTERCLASS TUTORIAL OPERASIONAL ZMBACKUP (v1.2.12)
 
----
+Panduan Praktis Langkah demi Langkah: Hot Backup, Disaster Recovery (Restore), Migrasi Lintas Server/OS, Audit Integritas Kriptografi, dan Otomatisasi Retensi untuk Zimbra Collaboration Suite (ZCS 7.0–10.1.x) & Carbonio FOSS
 
-## 1. Ikhtisar & Arsitektur Sistem
+By **Harry Dertin Sutisna Alsyundawy**
 
-Zmbackup adalah perangkat otomatisasi backup berbasis shell script modern yang berinteraksi langsung dengan OpenLDAP dan Zimbra Mailbox REST API (`/?fmt=tgz`).
-
-### Karakteristik Utama
-
-* **Zero Downtime (Hot Backup)**: Backup berlangsung tanpa perlu mematikan service Zimbra (`zmcontrol status` tetap running).
-* **Multi-Threading Berkecepatan Tinggi**: Menggunakan **GNU Parallel** dengan sistem *Dynamic Resource Governance* untuk mencegah *Out-of-Memory (OOM)* pada JVM Zimbra.
-* **Dual Storage Backend**:
-  * **TXT Mode**: Format flat-file `sessions.txt` yang mudah dibaca langsung oleh teks editor.
-  * **SQLITE3 Mode**: Database relasional embedded berkinerja tinggi dengan mode **WAL (Write-Ahead Logging)** untuk ribuan mailbox.
-* **Proteksi Keamanan Enterprise**:
-  * **Anti Zip-Slip (CVE-2022-27925)**: Validasi path traversal pada setiap arsip tarball sebelum di-restore.
-  * **Zero Plaintext Credential**: Autentikasi OpenLDAP menggunakan file descriptor sementara berizin `0600` (tidak terekspos di `ps aux`).
-  * **Integritas Kriptografi**: Pembuatan otomatis checksum **SHA-256** dan `MANIFEST.json`.
+[![Maintenance Status](https://img.shields.io/badge/Maintained%3F-yes-brightgreen.svg)](https://github.com/alsyundawy)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](http://www.gnu.org/licenses/gpl.html)
+[![Release](<https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2Falsyundawy%2Fzmbackup%2F1.2-version%2FVERSION&search=%5E(.%2B)&replace=%241&label=Release&color=green>)](https://github.com/alsyundawy/zmbackup/releases)
+[![Build Status](https://circleci.com/gh/alsyundawy/zmbackup.svg?style=shield)](https://circleci.com/gh/alsyundawy/zmbackup)
+[![WhatsApp](https://img.shields.io/badge/WhatsApp-Chat%20%26%20Call-25D366?style=flat&logo=whatsapp&logoColor=white)](https://wa.me/6285658515212)
+[![Telegram](https://img.shields.io/badge/Telegram-@alsyundawy-2CA5E0?style=flat&logo=telegram&logoColor=white)](https://t.me/alsyundawy)
+[![Donate with PayPal](https://img.shields.io/badge/PayPal-donate-orange)](https://www.paypal.me/alsyundawy)
+[![Donate with Ko-fi](https://img.shields.io/badge/Ko--fi-donate-ff5e5b?logo=ko-fi&logoColor=white)](https://ko-fi.com/alsyundawy)
+[![Sponsor with GitHub](https://img.shields.io/badge/GitHub-sponsor-orange)](https://github.com/sponsors/alsyundawy)
 
 ---
 
-## 2. Prasyarat & Persiapan Server
+## Table of Contents
 
-### 2.1. Matriks Kompatibilitas Sistem Operasi
+- [1. Ikhtisar & Filosofi Hot Backup](#1-ikhtisar--filosofi-hot-backup)
+- [2. Prasyarat & Persiapan Server Linux](#2-prasyarat--persiapan-server-linux)
+- [3. Panduan Instalasi & Pre-Flight Health Audit](#3-panduan-instalasi--pre-flight-health-audit)
+- [4. Konfigurasi Operasional (`/etc/zmbackup/zmbackup.conf`)](#4-konfigurasi-operasional-etczmbackupzmbackupconf)
+- [5. Panduan Praktis Operasional Backup](#5-panduan-praktis-operasional-backup)
+  - [5.1. Full Backup (Backup Penuh)](#51-full-backup-backup-penuh)
+  - [5.2. Incremental Backup (Backup Delta)](#52-incremental-backup-backup-delta)
+  - [5.3. Manajemen Konkurensi & Alokasi Memori](#53-manajemen-konkurensi--alokasi-memori)
+- [6. Manajemen Sesi & Verifikasi Integritas SHA-256](#6-manajemen-sesi--verifikasi-integritas-sha-256)
+- [7. Panduan Masterclass Disaster Recovery (Restore)](#7-panduan-masterclass-disaster-recovery-restore)
+  - [7.1. Skenario 1: Restore Akun Lengkap](#71-skenario-1-restore-akun-lengkap)
+  - [7.2. Skenario 2: Simulasi Restore Non-Destruktif (Dry-Run Mode)](#72-skenario-2-simulasi-restore-non-destruktif-dry-run-mode)
+  - [7.3. Skenario 3: Restore-On-Account (Cross-Account Recovery)](#73-skenario-3-restore-on-account-cross-account-recovery)
+  - [7.4. Skenario 4: Migrasi Cross-Server & Hostname Remapping](#74-skenario-4-migrasi-cross-server--hostname-remapping)
+  - [7.5. Matriks Strategi Penanganan Konflik Item (`--resolve`)](#75-matriks-strategi-penanganan-konflik-item---resolve)
+- [8. Pemeliharaan Retensi & Migrasi Database Metadata](#8-pemeliharaan-retensi--migrasi-database-metadata)
+- [9. Penjadwalan Otomatisasi Produksi (Cron Templates)](#9-penjadwalan-otomatisasi-produksi-cron-templates)
+- [10. Diagnostik Error & FAQ](#10-diagnostik-error--faq)
+- [11. Ekosistem Tools Pendukung](#11-ekosistem-tools-pendukung)
+- [12. Kontak Resmi & Donasi](#12-kontak-resmi--donasi)
+- [13. Lisensi](#13-lisensi)
 
-| Sistem Operasi | Rilis yang Didukung | Package Manager |
+---
+
+## 1. Ikhtisar & Filosofi Hot Backup
+
+Zmbackup adalah engine otomatisasi backup dan recovery yang dirancang khusus untuk memecahkan kelemahan backup snapshot level VM (yang lambat dan mengharuskan rollback seluruh server). Zmbackup berinteraksi secara cerdas pada level granular (per-akun, per-mailbox, per-domain) langsung melalui **Zimbra Mailbox REST API** (`/?fmt=tgz`) dan **OpenLDAP** tanpa perlu mematikan service Zimbra (*Zero Downtime*).
+
+### Keunggulan Desain Zmbackup v1.2.12
+
+- **Zero Downtime Hot Backup**: Pengguna dapat terus mengirim dan menerima email selama proses backup berlangsung.
+- **Granular Restoration**: Kemampuan memulihkan hanya 1 email, 1 folder, 1 akun, atau seluruh domain tanpa mengganggu akun lain.
+- **Proteksi OOM (Out-of-Memory)**: Mengkalkulasi kapasitas RAM bebas secara real-time sebelum menjalankan worker thread GNU Parallel.
+- **Keamanan Anti-Eksploitasi**: Kebal terhadap path traversal (CVE-2022-27925), zero-plaintext credentials, dan sanitasi query SQL/LDAP.
+
+---
+
+## 2. Prasyarat & Persiapan Server Linux
+
+### 2.1. Matriks Distribusi Linux yang Didukung
+
+| Sistem Operasi | Rilis yang Terverifikasi | Package Manager |
 | :--- | :--- | :--- |
 | **Ubuntu Server** | 10.04, 12.04, 14.04, 16.04, 18.04, 20.04, 22.04, 24.04 LTS | `apt-get` / `apt` |
 | **RHEL / CentOS** | 6.x, 7.x, 8.x | `yum` / `dnf` |
 | **Rocky / Alma / Oracle Linux** | 8.x, 9.x | `dnf` / `yum` |
 
-### 2.2. Instalasi Paket Dependensi
+### 2.2. Instalasi Paket Dependensi Sistem
 
-Jalankan perintah berikut sebagai user `root` sebelum menginstal Zmbackup:
+Eksekusi perintah berikut sebagai user `root`:
 
-* **Pada Ubuntu / Debian:**
+- **Pada Ubuntu / Debian:**
 
   ```bash
   apt-get update
   apt-get install -y parallel sqlite3 curl wget
   ```
 
-* **Pada RHEL / CentOS / Rocky / AlmaLinux:**
+- **Pada RHEL / CentOS / Rocky Linux / AlmaLinux:**
 
   ```bash
-  # Khusus CentOS/RHEL, aktifkan repository EPEL terlebih dahulu
   yum install -y epel-release
   yum install -y parallel sqlite3 curl wget
   ```
 
 ---
 
-## 3. Instalasi & Verifikasi Awal
+## 3. Panduan Instalasi & Pre-Flight Health Audit
 
 ### 3.1. Langkah Instalasi
 
-1. Clone repositori Zmbackup atau ekstrak file tarball rilis ke server Zimbra:
+1. Masuk sebagai user `root`, clone repositori Zmbackup ke server Zimbra:
 
    ```bash
    cd /root
@@ -65,39 +99,39 @@ Jalankan perintah berikut sebagai user `root` sebelum menginstal Zmbackup:
    cd zmbackup
    ```
 
-2. Jalankan skrip installer interaktif:
+2. Jalankan skrip instalasi interaktif:
 
    ```bash
    ./install.sh
    ```
 
-   *Installer akan secara otomatis mendeteksi konfigurasi Zimbra (LDAP port, domain utama, direktori backup) dan menyalin file binary ke `/usr/local/bin/zmbackup` serta modul library ke `/usr/local/lib/zmbackup/`.*
+   *Skrip akan mendeteksi path instalasi Zimbra (`/opt/zimbra`), membuat file konfigurasi di `/etc/zmbackup/`, menyalin executable ke `/usr/local/bin/zmbackup`, dan menginisialisasi skema database relasional.*
 
 ### 3.2. Menjalankan Pre-Flight Health Diagnostic
 
-Setelah instalasi selesai, berpindahlah ke user `zimbra` dan jalankan pemeriksaan kesehatan lingkungan sistem:
+Setelah instalasi selesai, berpindahlah ke user `zimbra` dan jalankan verifikasi kesehatan sistem:
 
 ```bash
 su - zimbra
 zmbackup --health
 ```
 
-Output diagnostik akan memvalidasi dependensi, koneksi OpenLDAP, izin direktori, dan kesiapan service:
+Contoh keluaran diagnostik sistem:
 
 ```text
 [HEALTH CHECK] Zimbra User: zimbra (OK)
 [HEALTH CHECK] Zimbra Mailboxd Service: RUNNING (OK)
 [HEALTH CHECK] OpenLDAP Socket: ldap://127.0.0.1:389 (REACHABLE)
-[HEALTH CHECK] Backup Storage: /opt/zimbra/backup (WRITABLE, 85GB Free)
+[HEALTH CHECK] Backup Storage: /opt/zimbra/backup (WRITABLE, 120GB Free)
 [HEALTH CHECK] System Memory: 16384 MB (Safe Parallel Concurrency: 4 jobs)
 [HEALTH CHECK] Overall System Status: READY
 ```
 
 ---
 
-## 4. Konfigurasi Zmbackup (`/etc/zmbackup/zmbackup.conf`)
+## 4. Konfigurasi Operasional (`/etc/zmbackup/zmbackup.conf`)
 
-Konfigurasi operasional disimpan pada file `/etc/zmbackup/zmbackup.conf`. Parameter kunci yang dapat Anda sesuaikan:
+Seluruh parameter operasional disimpan dalam berkas `/etc/zmbackup/zmbackup.conf`. Parameter penting yang dapat Anda sesuaikan:
 
 ```ini
 # Direktori penyimpanan file backup
@@ -130,46 +164,45 @@ EMAIL_SENDER=zmbackup@domain.com
 
 ---
 
-## 5. Panduan Operasional Backup
+## 5. Panduan Praktis Operasional Backup
 
-> [!NOTE]
+> [!IMPORTANT]
 > Seluruh perintah `zmbackup` **wajib** dijalankan sebagai user `zimbra` (`su - zimbra`).
 
 ### 5.1. Full Backup (Backup Penuh)
 
-* **Backup Seluruh Akun Mailbox & LDAP:**
+- **Backup Seluruh Akun Mailbox & Entri LDAP:**
 
   ```bash
   zmbackup -f
   ```
 
-* **Backup Akun Tertentu (Daftar Akun Dipisahkan Koma):**
+- **Backup Akun Tertentu (Dipisahkan Koma):**
 
   ```bash
-  zmbackup -f -a user1@domain.com,user2@domain.com,direksi@domain.com
+  zmbackup -f -a direktur@domain.com,finance@domain.com,it@domain.com
   ```
 
-* **Backup Domain Tertentu (Seluruh Akun dalam Domain):**
+- **Backup Seluruh Akun dalam Domain Spesifik:**
 
   ```bash
-  zmbackup -f -dom -d domainutama.com,domainsatelit.com
+  zmbackup -f -dom -d perusahaan.com,anakperusahaan.co.id
   ```
 
-* **Backup Khusus Mailbox Saja (Tanpa Entri LDAP):**
+- **Backup Khusus Mailbox Saja (Tanpa Entri LDAP):**
 
   ```bash
   zmbackup -f -m
   zmbackup -f -m -a user1@domain.com
   ```
 
-* **Backup Khusus Metadata LDAP Akun (Tanpa Isi Email):**
+- **Backup Khusus Entri LDAP Metadata Saja:**
 
   ```bash
   zmbackup -f -ldp
-  zmbackup -f -ldp -a user1@domain.com
   ```
 
-* **Backup Objek Khusus (Distribution List & Alias):**
+- **Backup Objek Zimbra Lainnya:**
 
   ```bash
   # Backup seluruh Distribution List
@@ -182,95 +215,88 @@ EMAIL_SENDER=zmbackup@domain.com
   zmbackup -f -sig
   ```
 
-### 5.2. Incremental Backup (Backup Perubahan)
+### 5.2. Incremental Backup (Backup Delta)
 
-Incremental backup hanya menyalin email, kontak, dan kalender yang bertambah atau berubah sejak sesi backup terakhir:
+Incremental backup mengekspor hanya email, dokumen, dan kalender yang berubah atau baru masuk sejak sesi backup terakhir:
 
 ```bash
-# Menjalankan incremental backup untuk seluruh akun
+# Incremental backup untuk seluruh akun
 zmbackup -i
 
-# Menjalankan incremental backup untuk akun spesifik
+# Incremental backup untuk akun spesifik
 zmbackup -i -a user1@domain.com
 ```
 
+### 5.3. Manajemen Konkurensi & Alokasi Memori
+
+Zmbackup v1.2.12 dilengkapi fungsi `calculate_safe_concurrency()` yang secara otomatis mengestimasi alokasi RAM per-worker (~384MB per koneksi REST). Jika RAM server menipis akibat lonjakan trafik email, jumlah proses paralel akan diturunkan secara dinamis untuk mencegah terjadinya OOM Killer pada Zimbra JVM.
+
 ---
 
-## 6. Manajemen Sesi & Verifikasi Integritas
+## 6. Manajemen Sesi & Verifikasi Integritas SHA-256
 
-### 6.1. Melihat Daftar Sesi Backup
+### 6.1. Menampilkan Daftar Sesi
 
-* **Format Tabel Standar:**
+- **Tampilan Tabel Konsol Standar:**
 
   ```bash
   zmbackup -l
   ```
 
-  Output:
-
-  ```text
-  +---------------------------+--------------+--------------+----------+----------------------------+
-  |       Session Name        |    Start     |    Ending    |   Size   |        Description         |
-  +---------------------------+--------------+--------------+----------+----------------------------+
-  | full-20260828100000       |  08/28/2026  |  08/28/2026  | 14.2G    | Full Account               |
-  | inc-20260828150000        |  08/28/2026  |  08/28/2026  | 420M     | Incremental Account        |
-  +---------------------------+--------------+--------------+----------+----------------------------+
-  ```
-
-* **Format JSON (Untuk Monitoring / API / Dashboard):**
+- **Format JSON Terstruktur (Untuk Integrasi API / Dashboard Monitoring):**
 
   ```bash
   zmbackup -l --json
   ```
 
-* **Format CSV (Untuk Rekapitulasi / Spreadsheet):**
+- **Format CSV (Untuk Pengolahan Spreadsheet):**
 
   ```bash
   zmbackup -l --csv
   ```
 
-### 6.2. Verifikasi Integritas Checksum SHA-256
+### 6.2. Verifikasi Integritas Checksum Kriptografi
 
-Untuk memastikan data backup di disk tidak mengalami *bit-rot*, *ransomware corruption*, atau modifikasi tidak sah, lakukan uji integritas:
+Untuk memastikan file backup di disk tidak rusak (*disk bit-rot*) atau dimanipulasi oleh malware/ransomware, jalankan verifikasi:
 
 ```bash
 zmbackup -c full-20260828100000
 ```
 
-Output:
+Hasil verifikasi:
 
 ```text
-[INTEGRITY] Checking cryptographic digests for session full-20260828100000...
-[VERIFIED] admin@domain.com.tgz (SHA-256 Matches Manifest)
-[VERIFIED] admin@domain.com.ldiff (SHA-256 Matches Manifest)
-[VERIFIED] user1@domain.com.tgz (SHA-256 Matches Manifest)
-[RESULT] Session full-20260828100000 integrity check passed: 100% OK (0 corruptions)
+[INTEGRITY] Verifying cryptographic checksums for session full-20260828100000...
+[VERIFIED] admin@domain.com.tgz (SHA-256 Valid)
+[VERIFIED] admin@domain.com.ldiff (SHA-256 Valid)
+[VERIFIED] user1@domain.com.tgz (SHA-256 Valid)
+[RESULT] Session integrity check passed: 100% OK (0 corruptions)
 ```
 
 ---
 
-## 7. Panduan Disaster Recovery & Restore
+## 7. Panduan Masterclass Disaster Recovery (Restore)
 
-### 7.1. Skenario 1: Restore Akun Lengkap (LDAP + Mailbox)
+### 7.1. Skenario 1: Restore Akun Lengkap
 
-Jika sebuah akun terhapus atau emailnya hilang, lakukan restore dari ID sesi terkait:
+Jika sebuah akun email terhapus secara tidak sengaja:
 
 ```bash
-# Restore akun spesifik
+# Restore akun dari ID sesi terkait
 zmbackup -r full-20260828100000 user1@domain.com
 ```
 
-### 7.2. Skenario 2: Simulasi Restore (Dry-Run Mode)
+### 7.2. Skenario 2: Simulasi Restore Non-Destruktif (Dry-Run Mode)
 
-Sebelum mengeksekusi restore data berukuran ratusan gigabyte, jalankan simulasi untuk memeriksa validitas data:
+Gunakan flag `--dry-run` untuk memverifikasi kesiapan arsip dan kelayakan restore tanpa menulis data apa pun ke mailbox:
 
 ```bash
 zmbackup -r --dry-run full-20260828100000 user1@domain.com
 ```
 
-### 7.3. Skenario 3: Cross-Account Restore (`-ro / --restoreOnAccount`)
+### 7.3. Skenario 3: Restore-On-Account (Cross-Account Recovery)
 
-Fitur ini berguna ketika email dari mantan karyawan (misal `budi@domain.com`) ingin dipulihkan ke mailbox manajer penggantinya (`manager@domain.com`):
+Memulihkan seluruh arsip email dari satu akun ke akun tujuan lain (misalnya email mantan staf `budi@domain.com` dimasukkan ke dalam mailbox manajer `manager@domain.com`):
 
 ```bash
 zmbackup -r -ro full-20260828100000 budi@domain.com manager@domain.com
@@ -278,24 +304,22 @@ zmbackup -r -ro full-20260828100000 budi@domain.com manager@domain.com
 
 ### 7.4. Skenario 4: Migrasi Cross-Server & Hostname Remapping
 
-Saat memulihkan data dari server lama (`mail-old.perusahaan.com`) ke server baru (`mail-new.perusahaan.com`), gunakan switch `--rewrite-host`:
+Saat memulihkan backup dari server lama (`mail-lama.domain.com`) ke server baru (`mail-baru.domain.com`), gunakan switch `--rewrite-host`:
 
 ```bash
-zmbackup -r --rewrite-host mail-old.perusahaan.com=mail-new.perusahaan.com full-20260828100000 user1@domain.com
+zmbackup -r --rewrite-host mail-lama.domain.com=mail-baru.domain.com full-20260828100000 user1@domain.com
 ```
 
-### 7.5. Pilihan Strategi Penanganan Konflik Item (`--resolve`)
+### 7.5. Matriks Strategi Penanganan Konflik Item (`--resolve`)
 
-Anda dapat menentukan bagaimana Zmbackup menangani email/kalender yang sudah ada di kotak surat:
-
-| Strategi | Perilaku Saat Restore |
+| Opsi Strategi | Perilaku Saat Menemukan Item yang Sudah Ada di Mailbox |
 | :--- | :--- |
-| **`skip`** *(Default)* | Melewati item yang sudah ada (tidak menimpa email yang sama). |
-| **`modify`** | Memperbarui item yang ada jika terdapat perubahan metadata. |
-| **`reset`** | Menghapus seluruh folder tujuan dan menggantinya persis seperti isi backup. |
+| **`skip`** *(Default)* | Melewati item tersebut (mencegah duplikasi email). |
+| **`modify`** | Memperbarui item yang ada jika terdapat perbedaan metadata. |
+| **`reset`** | Menghapus folder tujuan terlebih dahulu, kemudian mengisinya dengan isi backup. |
 | **`replace`** | Menimpa (*overwrite*) item yang ada secara paksa. |
 
-Contoh penggunaan:
+Contoh eksekusi:
 
 ```bash
 zmbackup -r --resolve replace full-20260828100000 user1@domain.com
@@ -303,43 +327,41 @@ zmbackup -r --resolve replace full-20260828100000 user1@domain.com
 
 ---
 
-## 8. Pemeliharaan, Rotasi, & Migrasi Database
+## 8. Pemeliharaan Retensi & Migrasi Database Metadata
 
-### 8.1. Menghapus Sesi Tertentu
+### 8.1. Menghapus Sesi Spesifik
 
 ```bash
 zmbackup -d full-20260801000000
 ```
 
-### 8.2. Menjalankan Housekeeping (Pembersihan Sesi Kedaluwarsa)
+### 8.2. Menjalankan Housekeeping Otomatis
 
-Perintah ini akan memeriksa seluruh sesi backup dan menghapus sesi yang usianya melebihi parameter `ROTATE_TIME` pada konfigurasi:
+Menghapus seluruh sesi backup yang usianya melebihi nilai konfigurasi `ROTATE_TIME`:
 
 ```bash
 zmbackup -hp
 ```
 
-### 8.3. Migrasi Database Metadata (TXT $\leftrightarrow$ SQLite3)
+### 8.3. Migrasi Format Metadata (TXT $\leftrightarrow$ SQLite3 WAL)
 
-Jika sebelumnya Anda menggunakan format `TXT` dan ingin beralih ke database `SQLITE3` berkinerja tinggi:
+Untuk beralih dari format flat-file `sessions.txt` ke database relasional `sessions.sqlite3`:
 
-1. Ubah nilai `SESSION_TYPE=SQLITE3` pada `/etc/zmbackup/zmbackup.conf`.
+1. Atur `SESSION_TYPE=SQLITE3` pada file `/etc/zmbackup/zmbackup.conf`.
 2. Jalankan perintah migrasi:
 
    ```bash
    zmbackup -mg
    ```
 
-   *Seluruh catatan sesi lama di `sessions.txt` akan diimpor ke tabel relasional `sessions.sqlite3`.*
-
 ---
 
-## 9. Penjadwalan Otomatis (Cron Schedule)
+## 9. Penjadwalan Otomatisasi Produksi (Cron Templates)
 
-Untuk menjaga keberlangsungan backup harian tanpa intervensi manual, pasang konfigurasi cron pada `/etc/cron.d/zmbackup`:
+Simpan konfigurasi berikut pada `/etc/cron.d/zmbackup` untuk otomatisasi enterprise:
 
 ```cron
-# /etc/cron.d/zmbackup — Penjadwalan Otomatis Zmbackup
+# /etc/cron.d/zmbackup — Penjadwalan Otomatis Zmbackup v1.2.12
 SHELL=/bin/bash
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/opt/zimbra/bin
 
@@ -354,18 +376,18 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/opt/zimbra/bin
 15 3 * * * zimbra /usr/local/bin/zmbackup -f -dl >/dev/null 2>&1
 30 3 * * * zimbra /usr/local/bin/zmbackup -f -al >/dev/null 2>&1
 
-# 4. Pembersihan Sesi Kedaluwarsa (Housekeeping) setiap hari pukul 04:30 WIB
+# 4. Housekeeping pembersihan sesi kedaluwarsa setiap hari pukul 04:30 WIB
 30 4 * * * zimbra /usr/local/bin/zmbackup -hp >/dev/null 2>&1
 ```
 
 ---
 
-## 10. Tanya Jawab & Troubleshooting (FAQ)
+## 10. Diagnostik Error & FAQ
 
-### Q1: Muncul error `Lock file exists /opt/zimbra/log/zmbackup.pid`
+### Q1: Muncul pesan error `Lock file exists /opt/zimbra/log/zmbackup.pid`
 
-* **Penyebab**: Terdapat sesi backup lain yang sedang berjalan atau sesi sebelumnya terhenti mendadak (server restart).
-* **Solusi**: Pastikan tidak ada proses `zmbackup` yang aktif via `ps -ef | grep zmbackup`. Jika tidak ada, hapus file lock secara manual:
+- **Penyebab**: Sesi backup sebelumnya belum selesai atau terhenti mendadak (misal: server mati listrik).
+- **Solusi**: Periksa apakah ada proses aktif dengan `ps -ef | grep zmbackup`. Jika tidak ada, hapus file lock:
 
   ```bash
   rm -f /opt/zimbra/log/zmbackup.pid
@@ -373,8 +395,49 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/opt/zimbra/bin
 
 ### Q2: Apakah password akun user akan berubah saat restore LDAP?
 
-* **Penjelasan**: Entri LDAP backup memuat atribut `userPassword` (hash password pada saat sesi backup dibuat). Jika Anda me-restore akun LDAP dengan `zmbackup -r -ldp` atau `zmbackup -r full-*`, password akun tersebut akan kembali ke password saat backup dilakukan. Jika Anda hanya ingin me-restore isi kotak masuk tanpa mengubah password user, gunakan opsi restore mailbox: `zmbackup -r -m <session> <email>`.
+- **Penjelasan**: Entri LDAP backup memuat atribut `userPassword` (hash password saat backup dibuat). Jika me-restore via `zmbackup -r -ldp` atau `zmbackup -r full-*`, password akun akan kembali ke password saat sesi backup berlangsung. Jika hanya ingin memulihkan pesan email tanpa menyentuh password akun, gunakan restore khusus mailbox: `zmbackup -r -m <session> <email>`.
 
-### Q3: Bagaimana cara mengecualikan akun tertentu dari backup?
+### Q3: Bagaimana cara mengecualikan akun spam/sistem dari proses backup?
 
-* Tambahkan alamat email akun tersebut (satu baris per akun) ke dalam file `/etc/zmbackup/blockedlist.conf`.
+- Masukkan alamat email yang ingin diabaikan (satu baris per email) ke dalam file `/etc/zmbackup/blockedlist.conf`.
+
+---
+
+## 11. Ekosistem Tools Pendukung
+
+- 🛡️ **[eradicate-zimbra-malware](https://github.com/alsyundawy/eradicate-zimbra-malware)** — Enterprise Forensic Incident Response, Anti-Ransomware, Polyglot Webshell Quarantine & Zimbra Permission Healing Suite.
+- 📦 **[Zimbra-Link-Installer](https://github.com/alsyundawy/Zimbra-Link-Installer)** — The Complete Zimbra Collaboration Archive, Binary Downloader & Automated Suite (ZCS 4.5.x – 10.1.x).
+- 🔄 **[Z2C (Zimbra to Carbonio Migration Tool)](https://github.com/alsyundawy/Z2C)** — Tool otomatisasi ekspor akun, alias, dan mailbox secara paralel tanpa risiko kebocoran biner sistem.
+- 🧹 **[Zimbra-Clean-Spam](https://github.com/alsyundawy/Zimbra-Clean-Spam)** — Utilitas pemindaian dan pembersihan antrean spam massal (*mailq purge*).
+- 🗑️ **[uninstall-zimbra](https://github.com/alsyundawy/uninstall-zimbra)** — Skrip pembersih instalasi Zimbra secara total dan bersih.
+
+---
+
+## 12. Kontak Resmi & Donasi
+
+Repositori ini dikelola dan diperbarui secara berkala oleh:
+
+- **Author & Maintainer**: Harry Dertin Sutisna Alsyundawy
+- **Email**: [alsyundawy@gmail.com](mailto:alsyundawy@gmail.com)
+- **WhatsApp (Chat & Call)**: [+62 856-5851-5212](https://wa.me/6285658515212)
+- **Telepon / Voice Call**: [+62 856-5851-5212](tel:+6285658515212)
+- **Telegram**: [@alsyundawy](https://t.me/alsyundawy)
+- **GitHub**: [https://github.com/alsyundawy](https://github.com/alsyundawy)
+- **Website**: [https://alsyundawy.com](https://alsyundawy.com)
+
+**Dukungan Donasi & Riset:**
+
+- **PayPal**: [paypal.me/alsyundawy](https://www.paypal.me/alsyundawy)
+- **Ko-fi**: [ko-fi.com/alsyundawy](https://ko-fi.com/alsyundawy)
+- **GitHub Sponsor**: [github.com/sponsors/alsyundawy](https://github.com/sponsors/alsyundawy)
+- **QRIS**:
+
+![Donasi QRIS](https://github.com/user-attachments/assets/a0126f28-6dde-43da-ba14-d7c9a27de0df)
+
+---
+
+## 13. Lisensi
+
+Didistribusikan di bawah lisensi **GNU General Public License v3.0 (GPLv3)**. Lihat berkas [LICENSE](LICENSE) untuk informasi hukum selengkapnya.
+
+Copyright (c) 2016-2026 **Lucas Costa Beyeler** & **Harry Dertin Sutisna Alsyundawy**. All rights reserved.
