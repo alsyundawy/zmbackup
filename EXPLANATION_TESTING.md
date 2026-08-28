@@ -4,7 +4,8 @@
 
 Dokumen Teknis Pengujian Otomatis, Metodologi Mocking, Isolasi Sandbox, dan Pemisahan Komponen Runtime Produksi vs Development (v1.2.12)
 
-By **Harry Dertin Sutisna Alsyundawy**
+Original Project & Architecture by **Lucas Costa Beyeler** (inspired by Zmbkpose by **bggo**)  
+Enterprise Optimization, Security Hardening & Maintenance by **Harry Dertin Sutisna Alsyundawy**
 
 [![Maintenance Status](https://img.shields.io/badge/Maintained%3F-yes-brightgreen.svg)](https://github.com/alsyundawy)
 [![Testing Suite](https://img.shields.io/badge/Test%20Suite-BATS%20(14%20Suites)-success.svg)](https://github.com/alsyundawy/zmbackup)
@@ -24,7 +25,7 @@ By **Harry Dertin Sutisna Alsyundawy**
 - [5. Standar DevSecOps & Otomatisasi CI/CD](#5-standar-devsecops--otomatisasi-cicd)
 - [6. Panduan Menjalankan & Menambah Kasus Uji](#6-panduan-menjalankan--menambah-kasus-uji)
 - [7. Struktur Direktori Repositori](#7-struktur-direktori-repositori)
-- [8. Kontak Resmi & Donasi](#8-kontak-resmi--donasi)
+- [8. Credits, Kontak Resmi & Donasi](#8-credits-kontak-resmi--donasi)
 - [9. Lisensi](#9-lisensi)
 
 ---
@@ -204,11 +205,13 @@ zmbackup/
 
 ---
 
-## 8. Kontak Resmi & Donasi
+## 8. Credits, Kontak Resmi & Donasi
 
-Repositori ini dikelola dan diperbarui secara berkala oleh:
+Zmbackup adalah proyek open source kolaboratif:
 
-- **Author & Maintainer**: Harry Dertin Sutisna Alsyundawy
+- **Original Creator & Lead Architect**: [Lucas Costa Beyeler](https://github.com/lucascbeyeler)
+- **Foundational Project Inspiration**: [Zmbkpose](https://github.com/bggo/Zmbkpose) oleh [bggo](https://github.com/bggo)
+- **Enterprise Optimizer & Lead Maintainer**: **Harry Dertin Sutisna Alsyundawy** ([@alsyundawy](https://github.com/alsyundawy))
 - **Email**: [alsyundawy@gmail.com](mailto:alsyundawy@gmail.com)
 - **WhatsApp (Chat & Call)**: [+62 856-5851-5212](https://wa.me/6285658515212)
 - **Telepon / Voice Call**: [+62 856-5851-5212](tel:+6285658515212)

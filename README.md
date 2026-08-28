@@ -4,7 +4,8 @@
 
 Enterprise Multi-Threaded Hot Backup, Zero-Timeout Restore, Cross-OS Migration Engine, Cryptographic Integrity Verification, and Security Hardening for Zimbra Collaboration Suite (ZCS 7.0–10.1.x Daffodil) & Carbonio FOSS
 
-By **Harry Dertin Sutisna Alsyundawy**
+Original Project & Architecture by **Lucas Costa Beyeler** (inspired by Zmbkpose by **bggo**)  
+Enterprise Optimization, Security Hardening & Maintenance by **Harry Dertin Sutisna Alsyundawy**
 
 [![Maintenance Status](https://img.shields.io/badge/Maintained%3F-yes-brightgreen.svg)](https://github.com/alsyundawy)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](http://www.gnu.org/licenses/gpl.html)
@@ -41,7 +42,7 @@ By **Harry Dertin Sutisna Alsyundawy**
 - [Ecosystem Tools & Repositories](#ecosystem-tools--repositories)
 - [Contributing](#contributing)
 - [Changelog](#changelog)
-- [Official Contact & Author](#official-contact--author)
+- [Credits & Author Information](#credits--author-information)
 - [License](#license)
 
 ---
@@ -372,12 +373,13 @@ Kontribusi berupa perbaikan bug, penambahan fitur kompatibilitas, atau penyempur
 
 ---
 
-## Official Contact & Author
+## Credits & Author Information
 
-Repositori ini dikelola dan diperbarui secara berkala oleh:
+Zmbackup adalah proyek open source kolaboratif:
 
-- **Original Creator**: [Lucas Costa Beyeler](https://github.com/lucascbeyeler)
-- **Lead Maintainer & Optimizer**: **Harry Dertin Sutisna Alsyundawy**
+- **Original Creator & Lead Architect**: [Lucas Costa Beyeler](https://github.com/lucascbeyeler)
+- **Foundational Project Inspiration**: [Zmbkpose](https://github.com/bggo/Zmbkpose) oleh [bggo](https://github.com/bggo)
+- **Enterprise Optimizer & Current Maintainer**: **Harry Dertin Sutisna Alsyundawy** ([@alsyundawy](https://github.com/alsyundawy))
 - **Email**: [alsyundawy@gmail.com](mailto:alsyundawy@gmail.com)
 - **WhatsApp (Chat & Call)**: [+62 856-5851-5212](https://wa.me/6285658515212)
 - **Telepon / Voice Call**: [+62 856-5851-5212](tel:+6285658515212)

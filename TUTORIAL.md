@@ -4,7 +4,8 @@
 
 Panduan Praktis Langkah demi Langkah: Hot Backup, Disaster Recovery (Restore), Migrasi Lintas Server/OS, Audit Integritas Kriptografi, dan Otomatisasi Retensi untuk Zimbra Collaboration Suite (ZCS 7.0–10.1.x) & Carbonio FOSS
 
-By **Harry Dertin Sutisna Alsyundawy**
+Original Project & Architecture by **Lucas Costa Beyeler** (inspired by Zmbkpose by **bggo**)  
+Enterprise Optimization, Security Hardening & Maintenance by **Harry Dertin Sutisna Alsyundawy**
 
 [![Maintenance Status](https://img.shields.io/badge/Maintained%3F-yes-brightgreen.svg)](https://github.com/alsyundawy)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](http://www.gnu.org/licenses/gpl.html)
@@ -39,7 +40,7 @@ By **Harry Dertin Sutisna Alsyundawy**
 - [9. Penjadwalan Otomatisasi Produksi (Cron Templates)](#9-penjadwalan-otomatisasi-produksi-cron-templates)
 - [10. Diagnostik Error & FAQ](#10-diagnostik-error--faq)
 - [11. Ekosistem Tools Pendukung](#11-ekosistem-tools-pendukung)
-- [12. Kontak Resmi & Donasi](#12-kontak-resmi--donasi)
+- [12. Credits, Kontak Resmi & Donasi](#12-credits-kontak-resmi--donasi)
 - [13. Lisensi](#13-lisensi)
 
 ---
@@ -413,11 +414,13 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/opt/zimbra/bin
 
 ---
 
-## 12. Kontak Resmi & Donasi
+## 12. Credits, Kontak Resmi & Donasi
 
-Repositori ini dikelola dan diperbarui secara berkala oleh:
+Zmbackup adalah proyek open source kolaboratif:
 
-- **Author & Maintainer**: Harry Dertin Sutisna Alsyundawy
+- **Original Creator & Lead Architect**: [Lucas Costa Beyeler](https://github.com/lucascbeyeler)
+- **Foundational Project Inspiration**: [Zmbkpose](https://github.com/bggo/Zmbkpose) oleh [bggo](https://github.com/bggo)
+- **Enterprise Optimizer & Lead Maintainer**: **Harry Dertin Sutisna Alsyundawy** ([@alsyundawy](https://github.com/alsyundawy))
 - **Email**: [alsyundawy@gmail.com](mailto:alsyundawy@gmail.com)
 - **WhatsApp (Chat & Call)**: [+62 856-5851-5212](https://wa.me/6285658515212)
 - **Telepon / Voice Call**: [+62 856-5851-5212](tel:+6285658515212)
