@@ -232,6 +232,6 @@ Zmbackup adalah proyek open source kolaboratif:
 
 ## 9. Lisensi
 
-Didistribusikan di bawah lisensi **GNU General Public License v3.0 (GPLv3)**. Lihat berkas [LICENSE](LICENSE) untuk informasi hukum selengkapnya.
+Didistribusikan di bawah lisensi **MIT License**. Lihat berkas [LICENSE](LICENSE) untuk informasi hukum selengkapnya.
 
 Copyright (c) 2016-2026 **Lucas Costa Beyeler** & **Harry Dertin Sutisna Alsyundawy**. All rights reserved.

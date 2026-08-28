@@ -1,10 +1,12 @@
 #!/bin/bash
 ################################################################################
-# install - Install script to help you install zmbackup in your server. You can
-#           simply ignore this file and move the files to the correctly place, but
-#           the chance for this goes wrong is big. So, this script made everything
-#           for you easy.
+# install - Automated Installer for Zmbackup
 #
+# Original Creator: Lucas Costa Beyeler (based on Zmbkpose by bggo)
+# Enterprise Optimization & Maintainer: Harry Dertin Sutisna Alsyundawy
+#
+# Copyright (c) 2016-2026 Lucas Costa Beyeler & Harry Dertin Sutisna Alsyundawy
+# License: MIT License (see LICENSE)
 ################################################################################
 # INSTALL MAIN CODE
 ################################################################################

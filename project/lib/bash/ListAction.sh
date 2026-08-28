@@ -1,6 +1,12 @@
 #!/bin/bash
 ################################################################################
-# Ldap Build List - No ldapadd or ldapdelete here
+# zmbackup - LDAP Build List Library
+#
+# Original Creator: Lucas Costa Beyeler (based on Zmbkpose by bggo)
+# Enterprise Optimization & Maintainer: Harry Dertin Sutisna Alsyundawy
+#
+# Copyright (c) 2016-2026 Lucas Costa Beyeler & Harry Dertin Sutisna Alsyundawy
+# License: MIT License (see LICENSE)
 ################################################################################
 
 ###############################################################################

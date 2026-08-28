@@ -1,7 +1,13 @@
 #!/bin/bash
 # shellcheck disable=SC2312
 ################################################################################
-# SET INTERNAL VARIABLE
+# zmbackup - Installer Library: Internal Constants & Variable Definitions
+#
+# Original Creator: Lucas Costa Beyeler (based on Zmbkpose by bggo)
+# Enterprise Optimization & Maintainer: Harry Dertin Sutisna Alsyundawy
+#
+# Copyright (c) 2016-2026 Lucas Costa Beyeler & Harry Dertin Sutisna Alsyundawy
+# License: MIT License (see LICENSE)
 ################################################################################
 
 # shellcheck disable=SC2034

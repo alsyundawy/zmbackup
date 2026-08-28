@@ -1,5 +1,13 @@
 #!/bin/bash
 ################################################################################
+# zmbackup - Installer Library: Environment & Pre-Requisite Check
+#
+# Original Creator: Lucas Costa Beyeler (based on Zmbkpose by bggo)
+# Enterprise Optimization & Maintainer: Harry Dertin Sutisna Alsyundawy
+#
+# Copyright (c) 2016-2026 Lucas Costa Beyeler & Harry Dertin Sutisna Alsyundawy
+# License: MIT License (see LICENSE)
+################################################################################
 
 ###############################################################################
 # check_env: Check the environment if everything is okay to begin the install

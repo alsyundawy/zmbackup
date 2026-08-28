@@ -3,8 +3,11 @@
 # zmbackup - Enterprise Hot Backup & Restore for Zimbra Collaboration Suite
 #            and Carbonio Community Edition
 #
-# Copyright (C) 2021-2026 Lucas Costa Beyeler & The Zimbra Community
-# License: GNU General Public License v2
+# Original Creator & Lead Architect: Lucas Costa Beyeler (based on Zmbkpose by bggo)
+# Enterprise Optimization & Maintainer: Harry Dertin Sutisna Alsyundawy
+#
+# Copyright (c) 2016-2026 Lucas Costa Beyeler & Harry Dertin Sutisna Alsyundawy
+# License: MIT License (see LICENSE)
 ################################################################################
 umask 077
 

@@ -1,5 +1,13 @@
 #!/bin/bash
 ################################################################################
+# zmbackup - Installer Library: Interactive Menu & License Contract
+#
+# Original Creator: Lucas Costa Beyeler (based on Zmbkpose by bggo)
+# Enterprise Optimization & Maintainer: Harry Dertin Sutisna Alsyundawy
+#
+# Copyright (c) 2016-2026 Lucas Costa Beyeler & Harry Dertin Sutisna Alsyundawy
+# License: MIT License (see LICENSE)
+################################################################################
 
 ################################################################################
 # contract: Print the contract and informations about the project to the user
@@ -33,17 +41,15 @@ EOF
 	echo -e "\n"
 	echo "##################################################################################"
 	echo "#                                                                                #"
-	echo "# PLEASE, read -r THIS AGREEMENT CAREFULLY BEFORE USING THE SOFTWARE. THIS PROGRAM  #"
-	echo "# IS FREE SOFTWARE; YOU CAN REDISTRIBUTE IT AND/OR MODIFY IT UNDER THE TERMS OF  #"
-	echo "# VERSION 3 OF THE GNU GENERAL PUBLIC LICENCE AS PUBLISHED BY THE FREE SOFTWARE  #"
-	echo "# FOUNDATION.                                                                    #"
+	echo "# PLEASE READ THIS AGREEMENT CAREFULLY BEFORE USING THE SOFTWARE.                #"
+	echo "# THIS SOFTWARE IS LICENSED UNDER THE TERMS OF THE MIT LICENSE.                  #"
 	echo "#                                                                                #"
-	echo "# THIS PROGRAM IS DISTRIBUTED IN THE HOPE THAT IT WILL BE USEFUL, BUT WITHOUT    #"
-	echo "# ANY WARRANT; WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS   #"
-	echo "# FOR A PARTICULAR PURPOSE. SEE THE GNU GENERAL PUBLIC LICENCE FOR MORE DETAILS. #"
+	echo "# THIS SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR    #"
+	echo "# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,      #"
+	echo "# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.                          #"
 	echo "#                                                                                #"
 	echo "# LICENSE TERMS FOR THIS ZMBACKUP SOFTWARE:                                      #"
-	echo "# https://www.gnu.org/licenses/gpl.md                                            #"
+	echo "# https://opensource.org/licenses/MIT                                            #"
 	echo "#                                                                                #"
 	echo "##################################################################################"
 	echo -e "\n"

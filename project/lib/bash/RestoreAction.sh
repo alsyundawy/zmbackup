@@ -2,7 +2,13 @@
 # shellcheck disable=SC2312
 # trunk-ignore-all(shellcheck/SC2312)
 ################################################################################
-# Restore Session - LDAP/Mailbox/DistList/Alias
+# zmbackup - Restore Session & Disaster Recovery Library
+#
+# Original Creator: Lucas Costa Beyeler (based on Zmbkpose by bggo)
+# Enterprise Optimization & Maintainer: Harry Dertin Sutisna Alsyundawy
+#
+# Copyright (c) 2016-2026 Lucas Costa Beyeler & Harry Dertin Sutisna Alsyundawy
+# License: MIT License (see LICENSE)
 ################################################################################
 umask 077
 

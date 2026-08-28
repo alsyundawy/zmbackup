@@ -1,6 +1,12 @@
 #!/bin/bash
 ################################################################################
-# Repeatable Actions
+# zmbackup - Parallel Worker Engine & Repeatable Actions Library
+#
+# Original Creator: Lucas Costa Beyeler (based on Zmbkpose by bggo)
+# Enterprise Optimization & Maintainer: Harry Dertin Sutisna Alsyundawy
+#
+# Copyright (c) 2016-2026 Lucas Costa Beyeler & Harry Dertin Sutisna Alsyundawy
+# License: MIT License (see LICENSE)
 ################################################################################
 umask 077
 
