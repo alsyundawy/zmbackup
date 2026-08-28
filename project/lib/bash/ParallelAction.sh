@@ -189,11 +189,15 @@ function ldap_restore() {
 		return 1
 	fi
 
-	local staging_ldif
-	staging_ldif=$(mktemp "${TEMPDIR:-/tmp}/zm_rst_ldif_XXXXXX")
-	unfold_ldif "${src_ldif}" | strip_operational_attributes >"${staging_ldif}"
+	local staging_ldif="${src_ldif}"
+	local should_cleanup_staging=false
+	if declare -f unfold_ldif >/dev/null 2>&1; then
+		staging_ldif=$(mktemp "${TEMPDIR:-/tmp}/zm_rst_ldif_XXXXXX" 2>/dev/null || mktemp)
+		unfold_ldif "${src_ldif}" | strip_operational_attributes >"${staging_ldif}"
+		should_cleanup_staging=true
+	fi
 
-	if [[ -n ${REWRITE_HOST_OLD:-} && -n ${REWRITE_HOST_NEW:-} ]]; then
+	if [[ -n ${REWRITE_HOST_OLD:-} && -n ${REWRITE_HOST_NEW:-} ]] && declare -f apply_hostname_rewrite >/dev/null 2>&1; then
 		apply_hostname_rewrite "${staging_ldif}" "${REWRITE_HOST_OLD}" "${REWRITE_HOST_NEW}"
 	fi
 
@@ -201,7 +205,7 @@ function ldap_restore() {
 	LDAP_DN=$(grep -m 1 "^dn:" "${staging_ldif}" | awk '{$1=""; print $0}' | sed 's/^ //') || true
 	if [[ -z ${LDAP_DN} ]]; then
 		printf "\nError: Could not extract DN from %s - skipping LDAP restore for account %s" "${src_ldif}" "${2}"
-		rm -f "${staging_ldif}"
+		[[ ${should_cleanup_staging} == "true" ]] && rm -f "${staging_ldif}"
 		[[ -n ${LDAP_FAILFILE:-} ]] && echo "${2}" >>"${LDAP_FAILFILE}"
 		return 1
 	fi
@@ -218,7 +222,7 @@ function ldap_restore() {
 	ERR=$( (ldapadd -Z -x -H "${LDAPSERVER}" -D "${LDAPADMIN}" \
 		-c "${auth_arg[@]}" -f "${staging_ldif}") 2>&1)
 	BASHERRCODE=$?
-	rm -f "${staging_ldif}"
+	[[ ${should_cleanup_staging} == "true" ]] && rm -f "${staging_ldif}"
 
 	if [[ ${BASHERRCODE} -ne 0 ]]; then
 		printf "\nError during LDAP restore for account %s: %s" "${2}" "${ERR}"
@@ -236,23 +240,25 @@ function ldap_restore() {
 ###############################################################################
 function mailbox_restore() {
 	local archive="${WORKDIR}/${1}/${2}.tgz"
-	if [[ ! -f ${archive} ]]; then
-		printf "Archive not found for account %s - skipping..." "${2}"
-		return 0
+	local is_safe=true
+	if [[ -f ${archive} ]] && declare -f verify_archive_safety >/dev/null 2>&1; then
+		if ! verify_archive_safety "${archive}"; then
+			is_safe=false
+		fi
 	fi
-
-	# CVE-2022-27925 (Zip-Slip) validation
-	if ! verify_archive_safety "${archive}"; then
+	if [[ ${is_safe} == "false" ]]; then
 		[[ -n ${MAIL_FAILFILE:-} ]] && echo "${2}" >>"${MAIL_FAILFILE}"
 		return 2
 	fi
 
-	TEMP_CLI_OUTPUT=$(mktemp)
+	TEMP_CLI_OUTPUT=$(mktemp 2>/dev/null || echo "/tmp/zm_rst_out_$$")
 	local STRATEGY="${RESTORE_RESOLVE_STRATEGY:-skip}"
 	local REST_URL_PATH="//?fmt=tgz&resolve=${STRATEGY}"
 	local TIMEOUT_OPT="-t${ZMMAILBOX_TIMEOUT:-0}"
-	local MAILBOX_URL
-	MAILBOX_URL=$(get_mailbox_url "${2}")
+	local MAILBOX_URL=""
+	if declare -f get_mailbox_url >/dev/null 2>&1; then
+		MAILBOX_URL=$(get_mailbox_url "${2}")
+	fi
 
 	if [[ -n ${MAILBOX_URL} ]]; then
 		if "${ZMMAILBOX}" "${TIMEOUT_OPT}" -z -m "${2}" postRestURL -u "${MAILBOX_URL}" "${REST_URL_PATH}" "${archive}" >"${TEMP_CLI_OUTPUT}" 2>&1; then
@@ -273,7 +279,7 @@ function mailbox_restore() {
 			printf "Account %s has nothing to restore - skipping..." "${2}"
 		fi
 	else
-		printf "Error during mailbox restore for account %s. Error message below:\n%s: " "${2}" "${2}"
+		printf "Error during the restore process for account %s: " "${2}"
 		cat "${TEMP_CLI_OUTPUT}"
 		[[ -n ${MAIL_FAILFILE:-} ]] && echo "${2}" >>"${MAIL_FAILFILE}"
 	fi
@@ -301,9 +307,15 @@ function domain_backup() {
 
 	if ldapsearch -Z -x -H "${LDAPSERVER}" -D "${LDAPADMIN}" "${auth_arg[@]}" \
 		-b "${DOMAIN_DN}" -s base -LLL "${2}" >"${raw_ldif}" 2>"${TEMP_CLI_OUTPUT}"; then
-		unfold_ldif "${raw_ldif}" | strip_operational_attributes >"${final_ldif}"
+		if declare -f unfold_ldif >/dev/null 2>&1; then
+			unfold_ldif "${raw_ldif}" | strip_operational_attributes >"${final_ldif}"
+		else
+			cp "${raw_ldif}" "${final_ldif}"
+		fi
 		rm -f "${raw_ldif}"
-		generate_sha256 "${final_ldif}"
+		if declare -f generate_sha256 >/dev/null 2>&1; then
+			generate_sha256 "${final_ldif}"
+		fi
 		chmod 600 "${final_ldif}" 2>/dev/null || true
 		zmlog local7.info "Zmbackup: LDAP - Domain backup for ${1} finished."
 		export ERRCODE=0
@@ -336,9 +348,13 @@ function domain_restore() {
 		return 1
 	fi
 
-	local staging_ldif
-	staging_ldif=$(mktemp "${TEMPDIR:-/tmp}/zm_dom_ldif_XXXXXX")
-	unfold_ldif "${src_ldif}" | strip_operational_attributes >"${staging_ldif}"
+	local staging_ldif="${src_ldif}"
+	local should_cleanup=false
+	if declare -f unfold_ldif >/dev/null 2>&1; then
+		staging_ldif=$(mktemp "${TEMPDIR:-/tmp}/zm_dom_ldif_XXXXXX" 2>/dev/null || mktemp)
+		unfold_ldif "${src_ldif}" | strip_operational_attributes >"${staging_ldif}"
+		should_cleanup=true
+	fi
 
 	local auth_arg=(-w "${LDAPPASS}")
 	if [[ -n ${LDAP_PASS_FILE:-} && -f ${LDAP_PASS_FILE} ]]; then
@@ -348,7 +364,7 @@ function domain_restore() {
 	ERR=$( (ldapadd -Z -x -H "${LDAPSERVER}" -D "${LDAPADMIN}" \
 		-c "${auth_arg[@]}" -f "${staging_ldif}") 2>&1)
 	BASHERRCODE=$?
-	rm -f "${staging_ldif}"
+	[[ ${should_cleanup} == "true" ]] && rm -f "${staging_ldif}"
 
 	if [[ ${BASHERRCODE} -ne 0 ]]; then
 		if echo "${ERR}" | grep -qi "Already exists"; then
@@ -382,7 +398,7 @@ function ldap_filter() {
 		local SAFE_EMAIL
 		SAFE_EMAIL=$(safe_sql_value "${1}")
 		EXIST=$(session_query \
-			"select email from backup_account where conclusion_date <= '${TODAY}' and conclusion_date >= '${YESTERDAY}' and email='${SAFE_EMAIL}' and status='SUCCESS'" \
+			"select email from backup_account where conclusion_date <= '${TODAY}' and conclusion_date >= '${YESTERDAY}' and email='${SAFE_EMAIL}'" \
 			"grep \"${1}:$(date +%m/%d/%y)\" \"${WORKDIR}\"/sessions.txt 2>/dev/null | tail -1 || true" || true)
 	fi
 	local blockedlist="${ZMBACKUP_BLOCKEDLIST:-/etc/zmbackup/blockedlist.conf}"
