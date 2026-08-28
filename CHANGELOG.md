@@ -1,6 +1,4 @@
-<!-- markdownlint-disable MD013 MD024 MD033 MD034 MD028 MD031 -->
-
-# [1.2.12] - Changelog
+# [1.2.12] - 2026-08-28
 
 All notable changes, security enhancements, architectural optimizations, and bug fixes for **Zmbackup** will be documented in this file.
 
