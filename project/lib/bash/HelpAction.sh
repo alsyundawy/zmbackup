@@ -33,7 +33,7 @@ function show_help() {
 	printf " -v,   --version                  : Display zmbackup version.\n"
 	printf " -h,   --help                     : Display this help message.\n"
 
-	printf "\nFull / Incremental Backup Modifiers:\n"
+	printf "\nFull Backup Options:\n"
 	printf " -m,   --mail                     : Backup only mailbox data (TGZ REST export).\n"
 	printf " -dl,  --distributionlist         : Backup distribution lists.\n"
 	printf " -al,  --alias                    : Backup account aliases.\n"
@@ -43,7 +43,7 @@ function show_help() {
 	printf " -d,   --domain <dom1,dom2>       : Target specific domains (comma-separated).\n"
 	printf " -a,   --account <user1,user2>    : Target specific accounts (comma-separated).\n"
 
-	printf "\nRestore Modifiers & Cross-OS Migration:\n"
+	printf "\nRestore Backup Options:\n"
 	printf " -m,   --mail                     : Restore only mailbox content.\n"
 	printf " -dl,  --distributionlist         : Restore distribution lists.\n"
 	printf " -al,  --alias                    : Restore account aliases.\n"

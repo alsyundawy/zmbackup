@@ -14,7 +14,7 @@ umask 077
 #        ACOBJECT - User Account;
 ################################################################################
 function __backupFullInc() {
-	local SDATE EDATE SIZE SAFE_EMAIL STATUS SHA_VAL
+	local SDATE EDATE SIZE SAFE_EMAIL
 	SDATE=$(get_iso_date)
 	SAFE_EMAIL=$(safe_sql_value "${1}" || true)
 
@@ -25,20 +25,16 @@ function __backupFullInc() {
 
 	EDATE=$(get_iso_date)
 	SIZE=$(du -ch "${TEMPDIR}/${1}"* 2>/dev/null | grep total | cut -f1 || echo "0")
+
 	if [[ "${ERRCODE}" -eq 0 ]]; then
-		STATUS="SUCCESS"
-	else
-		STATUS="FAILED"
+		local SHA_VAL=""
+		if [[ -f "${TEMPDIR}/${1}.tgz.sha256" ]]; then
+			SHA_VAL=$(cat "${TEMPDIR}/${1}.tgz.sha256" | tr -d ' \r\n')
+		fi
+		session_query \
+			"insert into backup_account (email,sessionID,account_size,initial_date,conclusion_date,status,sha256_hash) values ('${SAFE_EMAIL}','${SESSION}','${SIZE}','${SDATE}','${EDATE}','SUCCESS','${SHA_VAL}');" \
+			"echo \"${SESSION}:${1}:$(date +%m/%d/%y)\" >> \"${TEMPSESSION}\""
 	fi
-
-	SHA_VAL=""
-	if [[ -f "${TEMPDIR}/${1}.tgz.sha256" ]]; then
-		SHA_VAL=$(cat "${TEMPDIR}/${1}.tgz.sha256" | tr -d ' \r\n')
-	fi
-
-	session_query \
-		"insert into backup_account (email,sessionID,account_size,initial_date,conclusion_date,status,sha256_hash) values ('${SAFE_EMAIL}','${SESSION}','${SIZE}','${SDATE}','${EDATE}','${STATUS}','${SHA_VAL}');" \
-		"echo \"${SESSION}:${1}:$(date +%m/%d/%y):${STATUS}\" >> \"${TEMPSESSION}\""
 
 	return "${ERRCODE}"
 }
@@ -54,7 +50,7 @@ function __backupFullInc() {
 #        SIOBJECT - Signature;
 ################################################################################
 function __backupLdap() {
-	local SDATE EDATE SIZE SAFE_EMAIL STATUS SHA_VAL
+	local SDATE EDATE SIZE SAFE_EMAIL
 	SDATE=$(get_iso_date)
 	SAFE_EMAIL=$(safe_sql_value "${1}" || true)
 
@@ -62,20 +58,16 @@ function __backupLdap() {
 
 	EDATE=$(get_iso_date)
 	SIZE=$(du -ch "${TEMPDIR}/${1}"* 2>/dev/null | grep total | cut -f1 || echo "0")
+
 	if [[ "${ERRCODE}" -eq 0 ]]; then
-		STATUS="SUCCESS"
-	else
-		STATUS="FAILED"
+		local SHA_VAL=""
+		if [[ -f "${TEMPDIR}/${1}.ldiff.sha256" ]]; then
+			SHA_VAL=$(cat "${TEMPDIR}/${1}.ldiff.sha256" | tr -d ' \r\n')
+		fi
+		session_query \
+			"insert into backup_account (email,sessionID,account_size,initial_date,conclusion_date,status,sha256_hash) values ('${SAFE_EMAIL}','${SESSION}','${SIZE}','${SDATE}','${EDATE}','SUCCESS','${SHA_VAL}');" \
+			"echo \"${SESSION}:${1}:$(date +%m/%d/%y)\" >> \"${TEMPSESSION}\""
 	fi
-
-	SHA_VAL=""
-	if [[ -f "${TEMPDIR}/${1}.ldiff.sha256" ]]; then
-		SHA_VAL=$(cat "${TEMPDIR}/${1}.ldiff.sha256" | tr -d ' \r\n')
-	fi
-
-	session_query \
-		"insert into backup_account (email,sessionID,account_size,initial_date,conclusion_date,status,sha256_hash) values ('${SAFE_EMAIL}','${SESSION}','${SIZE}','${SDATE}','${EDATE}','${STATUS}','${SHA_VAL}');" \
-		"echo \"${SESSION}:${1}:$(date +%m/%d/%y):${STATUS}\" >> \"${TEMPSESSION}\""
 
 	return "${ERRCODE}"
 }
@@ -87,7 +79,7 @@ function __backupLdap() {
 #    $2 - The LDAP object filter (DOMOBJECT)
 ################################################################################
 function __backupDomain() {
-	local SDATE EDATE SIZE SAFE_EMAIL STATUS SHA_VAL
+	local SDATE EDATE SIZE SAFE_EMAIL
 	SDATE=$(get_iso_date)
 	SAFE_EMAIL=$(safe_sql_value "${1}" || true)
 
@@ -95,20 +87,16 @@ function __backupDomain() {
 
 	EDATE=$(get_iso_date)
 	SIZE=$(du -ch "${TEMPDIR}/${1}"* 2>/dev/null | grep total | cut -f1 || echo "0")
+
 	if [[ "${ERRCODE}" -eq 0 ]]; then
-		STATUS="SUCCESS"
-	else
-		STATUS="FAILED"
+		local SHA_VAL=""
+		if [[ -f "${TEMPDIR}/${1}.ldiff.sha256" ]]; then
+			SHA_VAL=$(cat "${TEMPDIR}/${1}.ldiff.sha256" | tr -d ' \r\n')
+		fi
+		session_query \
+			"insert into backup_account (email,sessionID,account_size,initial_date,conclusion_date,status,sha256_hash) values ('${SAFE_EMAIL}','${SESSION}','${SIZE}','${SDATE}','${EDATE}','SUCCESS','${SHA_VAL}');" \
+			"echo \"${SESSION}:${1}:$(date +%m/%d/%y)\" >> \"${TEMPSESSION}\""
 	fi
-
-	SHA_VAL=""
-	if [[ -f "${TEMPDIR}/${1}.ldiff.sha256" ]]; then
-		SHA_VAL=$(cat "${TEMPDIR}/${1}.ldiff.sha256" | tr -d ' \r\n')
-	fi
-
-	session_query \
-		"insert into backup_account (email,sessionID,account_size,initial_date,conclusion_date,status,sha256_hash) values ('${SAFE_EMAIL}','${SESSION}','${SIZE}','${SDATE}','${EDATE}','${STATUS}','${SHA_VAL}');" \
-		"echo \"${SESSION}:${1}:$(date +%m/%d/%y):${STATUS}\" >> \"${TEMPSESSION}\""
 
 	return "${ERRCODE}"
 }
@@ -121,7 +109,7 @@ function __backupDomain() {
 #        ACOBJECT - User Account;
 ################################################################################
 function __backupMailbox() {
-	local SDATE EDATE SIZE SAFE_EMAIL STATUS SHA_VAL
+	local SDATE EDATE SIZE SAFE_EMAIL
 	SDATE=$(get_iso_date)
 	SAFE_EMAIL=$(safe_sql_value "${1}" || true)
 
@@ -129,20 +117,16 @@ function __backupMailbox() {
 
 	EDATE=$(get_iso_date)
 	SIZE=$(du -ch "${TEMPDIR}/${1}"* 2>/dev/null | grep total | cut -f1 || echo "0")
+
 	if [[ "${ERRCODE}" -eq 0 ]]; then
-		STATUS="SUCCESS"
-	else
-		STATUS="FAILED"
+		local SHA_VAL=""
+		if [[ -f "${TEMPDIR}/${1}.tgz.sha256" ]]; then
+			SHA_VAL=$(cat "${TEMPDIR}/${1}.tgz.sha256" | tr -d ' \r\n')
+		fi
+		session_query \
+			"insert into backup_account (email,sessionID,account_size,initial_date,conclusion_date,status,sha256_hash) values ('${SAFE_EMAIL}','${SESSION}','${SIZE}','${SDATE}','${EDATE}','SUCCESS','${SHA_VAL}');" \
+			"echo \"${SESSION}:${1}:$(date +%m/%d/%y)\" >> \"${TEMPSESSION}\""
 	fi
-
-	SHA_VAL=""
-	if [[ -f "${TEMPDIR}/${1}.tgz.sha256" ]]; then
-		SHA_VAL=$(cat "${TEMPDIR}/${1}.tgz.sha256" | tr -d ' \r\n')
-	fi
-
-	session_query \
-		"insert into backup_account (email,sessionID,account_size,initial_date,conclusion_date,status,sha256_hash) values ('${SAFE_EMAIL}','${SESSION}','${SIZE}','${SDATE}','${EDATE}','${STATUS}','${SHA_VAL}');" \
-		"echo \"${SESSION}:${1}:$(date +%m/%d/%y):${STATUS}\" >> \"${TEMPSESSION}\""
 
 	return "${ERRCODE}"
 }
@@ -188,12 +172,8 @@ function backup_main() {
 		local DATE
 		DATE=$(get_iso_date)
 
-		local SAFE_OS SAFE_VER
-		SAFE_OS=$(safe_sql_value "${OS_DISTRO:-UNKNOWN}")
-		SAFE_VER=$(safe_sql_value "${SUITE_VERSION:-UNKNOWN}")
-
 		session_query \
-			"insert into backup_session(sessionID,initial_date,type,status,source_os,zimbra_version) values ('${SESSION}','${DATE}','${STYPE}','IN PROGRESS','${SAFE_OS}','${SAFE_VER}')" \
+			"insert into backup_session(sessionID,initial_date,type,status) values ('${SESSION}','${DATE}','${STYPE}','IN PROGRESS')" \
 			"echo \"SESSION: ${SESSION} started on $(date)\" >> \"${TEMPSESSION}\""
 
 		local PARALLEL_EXIT=0
