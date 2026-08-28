@@ -55,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Project-wide ShellCheck & Trunk Compliance**: Added `.shellcheckrc` (`disable=SC2312`) to suppress intentional pipeline exit masking noise; resolved variable bracing, subshell export scopes (`export` for bats subshells), and corrected bats `run !` syntax across test suites.
 - **Shebang Ordering & SC2329**: Corrected shebang positioning to line 1 in all `.bats` files ahead of linter directives and properly documented dynamic callback stubs.
 - **Continuous Integration Hardening**: Pinned CircleCI runner image digest (`cimg/node@sha256:...`) in `.circleci/config.yml` and normalized GitHub issue templates (`MD001`).
-- **Dynamic Multi-Core BATS Test Acceleration**: Re-architected BATS testing suite to utilize dynamic multi-core parallelism (`bats -j <cores>`) and eradicated redundant `mktemp` subprocess calls across test setup routines.
+- **Parallel BATS Test Execution**: Re-architected BATS testing suite to use multi-core execution (`bats -j <cores>`) and eliminated redundant `mktemp` subprocess calls across test setup routines.
 
 ---
 

@@ -7,6 +7,26 @@ Zmbackup is a reliable Bash shell script developed to help you in your daily tas
 ![Release](<https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2Flucascbeyeler%2Fzmbackup%2F1.2-version%2FVERSION&search=%5E(.%2B)&replace=%241&label=Release&color=green>)
 [![Build Status](https://circleci.com/gh/lucascbeyeler/zmbackup.svg?style=shield)](https://circleci.com/gh/lucascbeyeler/zmbackup)
 
+## Overview
+
+Zmbackup provides online hot backup and disaster recovery automation designed specifically for **Zimbra Collaboration Suite (ZCS 7.x through 10.1.x / Carbonio FOSS)**. It interacts with Zimbra's native REST export API (`/?fmt=tgz&resolve=skip`) and OpenLDAP without requiring downtime or service restarts.
+
+## Quickstart
+
+```bash
+# Run a full backup of all accounts
+zmbackup -f
+
+# Run an incremental backup
+zmbackup -i
+
+# List available backup sessions
+zmbackup -l
+
+# Restore a specific account from a backup session
+zmbackup -r <session_id> user@example.com
+```
+
 ## Features
 
 - Online Backup and Restore - no need to stop the server to do;
@@ -45,9 +65,9 @@ The table below documents what zmbackup covers and what falls outside its scope.
 - Restore-on-account (`zmbackup -r -ro <session> origin@domain dest@domain`) dumps one account's backup into a different destination account.
 - Use `zmbackup -l` to list available session IDs before running a restore.
 - **LDAP restores include password hashes.** The LDAP backup dumps the full LDAP entry via `ldapsearch` as the LDAP admin, which includes the `userPassword` attribute (the hashed password). Restoring an LDAP entry with `zmbackup -r -ldp` (or `zmbackup -r full-*`) will therefore overwrite the account's current password with whatever hash was stored at backup time. Be aware of this before running a restore in production.
-- Server-level configuration, certificates, and Zimbra component passwords are **never read or written** by zmbackup. Back these up independently (e.g. etckeeper for `/etc` directories).
+- Server-level system configurations and service certificates are **never read or written** by zmbackup. Back these up independently (e.g. etckeeper for `/etc` directories).
 
-## Requirements
+## Dependencies
 
 - **GNU Parallel** - a shell tool for executing jobs in parallel using one or more CPU;
 - **GNU grep** - a command-line utility for searching plain-text data sets for lines matching a regular expression;
@@ -208,11 +228,39 @@ zmbackup -m
 
 **REMEMBER:** at this moment, this migration activity is a only one way road. There is no rollback, and, if you try to do a rollback, you will lost your sessions file.
 
+## Configuration
+
+Zmbackup reads its operational settings from `/etc/zmbackup/zmbackup.conf`. Key directives include:
+
+- `WORKDIR`: Directory where backup sessions are stored (defaults to `/opt/zimbra/backup`).
+- `SESSION_TYPE`: Metadata storage driver (`TXT` or `SQLITE3`).
+- `MAX_PARALLEL_PROCESS`: Worker concurrency limit.
+- `ROTATE_TIME`: Retention window in days for automated housekeeping.
+- `RESTORE_RESOLVE_STRATEGY`: Restore conflict behavior (`skip`, `modify`, `reset`, `replace`).
+
+## Running Tests
+
+Automated unit and functional test suites are built with BATS:
+
+```bash
+# Run all unit and functional test suites in parallel
+npm test
+
+# Run unit tests only
+npm run test:unit
+
+# Run functional tests only
+npm run test:functional
+
+# Run static analysis and linting
+npm run lint
+```
+
 ## Scheduling backups
 
 The installer script automatically creates a cron config file in `/etc/cron.d/zmbackup`. You can customize backup routines editing that file.
 
-## Want to contribute to the project?
+## Contributing
 
 - Please help us contributing the Waddles project instead - Zmbackup will be deprecated and the only thing we will do here will be bugfixes.
 
@@ -238,13 +286,13 @@ The installer script automatically creates a cron config file in `/etc/cron.d/zm
 - **[FEAT]** **Multi-Domain & Domain Option Support**: Fixed domain backup flag handler (`-dom` / `--domain-backup`) in `project/zmbackup` and added `--domain` long flag support in `build_listBKP` (`ListAction.sh`).
 - **[FIX]** **Installer & Uninstall Hardening**: Removed erroneous re-installation of `blockedlist.conf` during `uninstall()` and hardened hostname detection in `vars.sh`.
 - **[LINT]** **Zero-Warning ShellCheck & Trunk Standard**: Added repo-wide `.shellcheckrc` configuration, normalized shebang locations, variable bracing (`${VAR}`), and subshell export scopes.
-- **[TEST]** **Dynamic Multi-Core Test Acceleration**: Optimized BATS testing harness for dynamic multi-core parallelism and eradicated subprocess fork overheads.
+- **[TEST]** **Parallel Test Execution**: Improved BATS testing harness for multi-core execution.
 
 ### v1.2.10 — 27 Juli 2026 — Multi-Server Cluster Support, Security Hardening & Performance Optimization
 
 - **[FEAT]** **Multi-Mailbox Server Cluster Support**: Added `get_mailbox_url` helper to query `zimbraMailHost` and route REST calls (`getRestURL`/`postRestURL`) across multi-server Zimbra environments.
 - **[FEAT]** **Zimbra Domain Backup & Restore**: Added `-dom` / `--domain-backup` CLI flag supporting full Zimbra domain configuration backup (`__backupDomain`) and restoration (`restore_main_domain`).
-- **[SEC]** **LDAP & SQL Injection Protection**: Implemented LDAP filter escaping (`\`, `*`, `(`, `)`) and SQL input escaping (`safe_sql_value`) for emails, domains, and session IDs.
+- **[SEC]** **LDAP & SQL Injection Protection**: Implemented LDAP filter escaping (`\`, `*`, `(`, `)`) and SQL input escaping (`safe_sql_value`) for target identifiers.
 - **[SEC]** **Comprehensive Input Validation**: Implemented validation regex helpers (`validate_email`, `validate_domain`, `validate_session_id`, `validate_account_args`) before CLI execution.
 - **[REF]** **Centralized Session Query Engine**: Refactored `session_query` helper to unify TXT file and SQLite3 database operations into a single dispatcher.
 - **[REF]** **Session Timestamp Parsing**: Extracted `parse_session_name` helper to streamline timestamp parsing (`YEAR`, `MONTH`, `DAY`) across action libraries.
@@ -256,12 +304,12 @@ The installer script automatically creates a cron config file in `/etc/cron.d/zm
 - **[FIX]** **Cross-Platform BSD Support**: Added BSD `date -v -1d` fallbacks for macOS/FreeBSD and sanitized `wc -l` outputs (`tr -d ' '`).
 - **[FIX]** **Domain List Splitting**: Fixed comma-separated `-d` domain list parsing in `build_listBKP`.
 - **[OPT]** **Native Bash Parameter Expansion**: Replaced subshell `echo | sed` string manipulation with `${4//,/ }`.
-- **[TEST]** **468 BATS Test Cases**: 100% pass rate across unit and functional test suites (468 passed, 0 failed).
-- **[LINT]** **100% ShellCheck Certified**: All 18 shell scripts pass ShellCheck without warnings or errors.
+- **[TEST]** **BATS Test Suite Coverage**: Passed all automated unit and functional test suites.
+- **[LINT]** **ShellCheck Certified**: All 18 shell scripts pass ShellCheck without warnings or errors in clean CI runs.
 
 ### v1.2.9 — Original Baseline Release (by Lucas Costa Beyeler)
 
-- Baseline release with full, incremental, mailbox, LDAP, alias, and distribution list backup/restore commands in TXT/SQLite3 formats.
+- Baseline release with full and incremental mailbox backup/restore commands in TXT/SQLite3 formats.
 
 ## License
 
