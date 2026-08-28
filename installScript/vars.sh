@@ -54,7 +54,7 @@ if [[ -f "${_ver_file}" ]]; then
 elif [[ -f "${_ver_sys}" ]]; then
 	ZMBKP_VERSION="zmbackup version: $(cat "${_ver_sys}")"
 else
-	ZMBKP_VERSION="zmbackup version: 1.2.11"
+	ZMBKP_VERSION="zmbackup version: 1.2.12"
 fi
 unset _ver_file _ver_sys
 

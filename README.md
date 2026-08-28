@@ -218,6 +218,19 @@ The installer script automatically creates a cron config file in `/etc/cron.d/zm
 
 ## Changelog
 
+### v1.2.12 — 28 Agustus 2026 — Enterprise Universal Release (ZCS 7.0–10.1 & Carbonio)
+
+- **[SEC]** **Zero-Plaintext Credential Shielding**: Switched OpenLDAP auth from CLI `-w` plaintext flag to secure temporary file `-y "$LDAP_PASS_FILE"` (mode 0600) with automatic trap cleanup, preventing password exposure via `ps aux`.
+- **[SEC]** **Zip-Slip Defense (CVE-2022-27925)**: Added `verify_archive_safety()` to inspect `.tgz` archives for illegal path traversal sequences prior to REST import.
+- **[SEC]** **RFC 2849 Stream LDIF Unfolding**: Implemented pure AWK `unfold_ldif()` stream processor resolving 76-column line folds in legacy OpenLDAP schemas and multi-line base64 attributes.
+- **[SEC]** **Operational Attribute Sanitization**: Added `strip_operational_attributes()` removing internal OpenLDAP operational attributes (`entryUUID`, `entryCSN`, etc.) to prevent restore collisions.
+- **[PERF]** **SQLite3 WAL Mode & Locking Concurrency**: Configured Schema V2 with `PRAGMA journal_mode = WAL;`, `busy_timeout = 15000`, and composite indexing for lock-free parallel execution.
+- **[PERF]** **Dynamic Resource Governance**: Integrated `calculate_safe_concurrency()` to dynamically scale worker threads based on available physical RAM and Zimbra JVM heap sizing.
+- **[FEAT]** **Pre-Flight Health Diagnostics (`--health`)**: Added `system_health_check()` inspecting environment, permissions, disk space, and daemon status.
+- **[FEAT]** **Cryptographic Integrity Verification (`-c / --check-integrity`)**: Automatically generates `MANIFEST.json` and per-account `.sha256` checksums.
+- **[FEAT]** **Cross-OS & Migration Hostname Remapping (`--rewrite-host <old>=<new>`)**: Stream-sed translator remapping old mail host FQDN references during cross-server migrations.
+- **[FEAT]** **Dry-Run Mode (`--dry-run`) & Structured Output (`-l --json` / `-l --csv`)**: Non-destructive restore simulation and machine-readable output for monitoring pipelines.
+
 ### v1.2.11 — 28 Agustus 2026 — Security Hardening, Multi-Domain Backup, Code Quality & Test Acceleration
 
 - **[SEC]** **Comprehensive SQL Injection Elimination**: Applied `safe_sql_value` escaping to `__DELETEBACKUP` (`DeleteAction.sh`) and database migration routines (`importsessionSQL`, `importaccountsSQL`, `importsessionTXT` in `MigrationAction.sh`).

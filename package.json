@@ -1,6 +1,6 @@
 {
   "name": "zmbackup",
-  "version": "1.2.11",
+  "version": "1.2.12",
   "scripts": {
     "test": "bats -j $(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 8) tests/unit/ tests/functional/",
     "test:unit": "bats -j $(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 8) tests/unit/",

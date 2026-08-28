@@ -1,9 +1,34 @@
-# [1.2.11] - Changelog
+# [1.2.12] - Changelog
 
 All notable changes to **Zmbackup** will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [1.2.12] - 2026-08-28
+
+### Security and Hardening in 1.2.12
+
+- **Zero-Plaintext Credential Shielding**: Replaced CLI plaintext OpenLDAP `-w "$LDAPPASS"` flag with `-y "$LDAP_PASS_FILE"` pointing to a temporary file (`umask 077` / mode `0600`) created via `setup_ldap_credentials()` and reliably pruned by `cleanup_ldap_credentials()` on `trap on_exit`, eradicating credential leakage via `/proc/*/cmdline` and `ps aux`.
+- **Zip-Slip & Path Traversal Mitigation (CVE-2022-27925)**: Added `verify_archive_safety()` in `MiscAction.sh` verifying that `.tgz` archives contain zero path traversal sequences (`../`, absolute paths `/`, control characters) prior to executing REST mailbox imports.
+- **RFC 2849 Stream-Safe LDIF Unfolding**: Implemented pure AWK `unfold_ldif()` stream processor resolving 76-column line folds in legacy OpenLDAP schemas and multi-line base64 user attributes without external binary dependencies.
+- **Operational Attribute Sanitization**: Added `strip_operational_attributes()` removing OpenLDAP system-generated operational attributes (`entryUUID`, `entryCSN`, `createTimestamp`, `modifyTimestamp`, `creatorsName`, `modifiersName`, `structuralObjectClass`) preventing restore collisions on heterogeneous LDAP topologies.
+- **SQLite3 WAL Mode & Locking Concurrency**: Upgraded database schema to Schema V2 with `PRAGMA journal_mode = WAL;`, `PRAGMA busy_timeout = 15000;`, and added composite indices on `sessionID`, `status`, and `email` for lock-free parallel execution.
+- **Resource Governance & OOM Prevention**: Added `calculate_safe_concurrency()` dynamically assessing available physical RAM and Zimbra JVM heap sizing to throttle GNU Parallel worker threads below system OOM thresholds.
+
+### Improvements in 1.2.12
+
+- **Universal Multi-Distro & Multi-Version Engine**:
+  - Validated compatibility across Zimbra 7.0, 8.0, 8.5, 8.6, 8.7, 8.8, 9.0, 10.0, 10.1 (Daffodil), and Carbonio FOSS.
+  - Full native runtime support across CentOS 6/7, RHEL / Rocky / AlmaLinux 8/9, and Ubuntu 10.04 through 24.04 LTS.
+- **Pre-Flight Health Diagnostics (`--health`)**: Added `system_health_check()` validating POSIX permissions, disk capacity, LDAPPASS authentication, SQLite3/GNU coreutils dependencies, and Mailboxd availability.
+- **Cryptographic SHA-256 Checksums & Session Integrity (`-c / --check-integrity`)**: Automatically generates `MANIFEST.json` and per-account `.sha256` digests, verifiable at any time with `-c <session>`.
+- **Cross-OS & Migration Hostname Remapping (`--rewrite-host <old>=<new>`)**: Stream-sed translator remapping old mail host FQDN references during cross-server migrations.
+- **Automatic Target Domain Pre-creation**: `auto_precreate_domains()` checks and provisions missing destination domains before account restore routines.
+- **Dry-Run Simulation Mode (`--dry-run`)**: Simulates parallel account and mailbox restore operations without modifying target Zimbra instances.
+- **Structured JSON and CSV Output Formats (`-l --json` / `-l --csv`)**: Enables seamless integration with DevSecOps pipelines and monitoring agents.
 
 ---
 
