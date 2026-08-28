@@ -1,4 +1,4 @@
-# [1.2.12] - 2026-08-28
+# Changelog
 
 All notable changes, security enhancements, architectural optimizations, and bug fixes for **Zmbackup** will be documented in this file.
 
