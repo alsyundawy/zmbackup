@@ -1,18 +1,29 @@
-  create table backup_session(
-    sessionID varchar primary key,
-    initial_date timestamp not null,
-    conclusion_date timestamp,
-    size varchar,
-    type varchar not null,
-    status varchar not null
-  );
+PRAGMA journal_mode = WAL;
+PRAGMA busy_timeout = 15000;
+PRAGMA synchronous = NORMAL;
 
-  create table backup_account(
-    id integer primary key autoincrement,
-    sessionID varchar not null,
-    account_size varchar not null,
-    email varchar not null,
-    initial_date timestamp not null,
-    conclusion_date timestamp,
-    foreign key (sessionID) references backup_session(sessionID)
-  );
+CREATE TABLE IF NOT EXISTS backup_session (
+    sessionID VARCHAR PRIMARY KEY,
+    initial_date TIMESTAMP NOT NULL,
+    conclusion_date TIMESTAMP,
+    size VARCHAR,
+    type VARCHAR NOT NULL,
+    status VARCHAR NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS backup_account (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sessionID VARCHAR NOT NULL,
+    account_size VARCHAR,
+    email VARCHAR NOT NULL,
+    initial_date TIMESTAMP NOT NULL,
+    conclusion_date TIMESTAMP,
+    status VARCHAR DEFAULT 'PENDING',
+    sha256_hash VARCHAR,
+    retry_count INTEGER DEFAULT 0,
+    FOREIGN KEY (sessionID) REFERENCES backup_session(sessionID) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_account_session ON backup_account(sessionID);
+CREATE INDEX IF NOT EXISTS idx_account_status ON backup_account(status);
+CREATE INDEX IF NOT EXISTS idx_account_email ON backup_account(email);

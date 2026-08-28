@@ -2,6 +2,7 @@
 ################################################################################
 # Delete Session
 ################################################################################
+umask 077
 
 ###############################################################################
 # delete_one: Delete only one session from zmbackup
@@ -51,7 +52,7 @@ function delete_old() {
 		while read -r LINE || [[ -n ${LINE} ]]; do
 			__DELETEBACKUP "${LINE}"
 		done; } || true
-	[[ ${SESSION_TYPE} == 'SQLITE3' ]] && sqlite3 "${WORKDIR}"/sessions.sqlite3 "VACUUM" 2>/dev/null || true
+	[[ ${SESSION_TYPE} == 'SQLITE3' ]] && sqlite3 "${WORKDIR}"/sessions.sqlite3 "PRAGMA busy_timeout = 15000; VACUUM;" 2>/dev/null || true
 	zmlog local7.info "Zmbhousekeep: Clean old backups activity concluded."
 }
 
@@ -67,7 +68,7 @@ function leeroy_jenkins() {
 		while read -r LINE || [[ -n ${LINE} ]]; do
 			__DELETEBACKUP "${LINE}"
 		done; } || true
-	[[ ${SESSION_TYPE} == 'SQLITE3' ]] && sqlite3 "${WORKDIR}"/sessions.sqlite3 "VACUUM" 2>/dev/null || true
+	[[ ${SESSION_TYPE} == 'SQLITE3' ]] && sqlite3 "${WORKDIR}"/sessions.sqlite3 "PRAGMA busy_timeout = 15000; VACUUM;" 2>/dev/null || true
 	zmlog local7.info "Zmbhousekeep: Clean old backups activity concluded."
 	echo "All the backups are deleted - Have a nice week :)"
 }

@@ -1140,3 +1140,85 @@ _on_exit_run() {
   _on_exit_run 0 "Mailbox" "mbox-20240615093045"
   [[ "$output" == *"NOTIFY:mbox-20240615093045:Mailbox:SUCCESS"* ]]
 }
+
+# ---------------------------------------------------------------------------
+# v1.2.12 Enterprise Features Tests
+# ---------------------------------------------------------------------------
+
+@test "unfold_ldif: joins 76-column RFC 2849 folded base64 attributes" {
+  local test_ldif="${WORKDIR}/test_folded.ldif"
+  printf "dn: uid=user1,ou=people,dc=example,dc=com\n" >"${test_ldif}"
+  printf "userPassword:: e1NTSEE1MTJ9V0dGeWRHVmthV05wZFdSbGNtRnphR2x6YUdsemFXNW5jbUZ6YUdsem\n" >>"${test_ldif}"
+  printf " FXNW5jbUZ6YUdsemFXNW5jbUZ6YUdsemFXNW5jbUZ6YUdsemFXNW5jbUZ6YUdsemFXNW5jbUZ6YUdse\n" >>"${test_ldif}"
+  printf " aFXNW5jbUZ6YUdseg==\n" >>"${test_ldif}"
+  printf "zimbraMailDeliveryAddress: user1@example.com\n" >>"${test_ldif}"
+
+  local result
+  result="$(unfold_ldif "${test_ldif}")"
+  local pw_line
+  pw_line="$(echo "${result}" | grep '^userPassword::')"
+
+  [ "$(echo "${pw_line}" | wc -l | tr -d ' ')" -eq 1 ]
+  [[ "${pw_line}" == *"e1NTSEE1MTJ9"* ]]
+  [[ "${pw_line}" == *"aFXNW5jbUZ6YUdseg=="* ]]
+}
+
+@test "strip_operational_attributes: removes entryUUID, entryCSN, and modifyTimestamp" {
+  local test_ldif="${WORKDIR}/test_operational.ldif"
+  printf "dn: uid=user1,ou=people,dc=example,dc=com\n" >"${test_ldif}"
+  printf "entryUUID: 4f1c7e96-a83d-103a-8b1e-c123456789ab\n" >>"${test_ldif}"
+  printf "entryCSN: 20260828110000.000000Z#000000#000#000000\n" >>"${test_ldif}"
+  printf "modifyTimestamp: 20260828110500Z\n" >>"${test_ldif}"
+  printf "mail: user1@example.com\n" >>"${test_ldif}"
+
+  local result
+  result="$(strip_operational_attributes "${test_ldif}")"
+
+  [ "$(echo "${result}" | grep -c 'entryUUID:')" -eq 0 ]
+  [ "$(echo "${result}" | grep -c 'modifyTimestamp:')" -eq 0 ]
+  [ "$(echo "${result}" | grep -c 'mail: user1@example.com')" -eq 1 ]
+}
+
+@test "verify_archive_safety: accepts valid archive without path traversal" {
+  local safe_tar="${WORKDIR}/safe.tgz"
+  local safe_dir="${WORKDIR}/safe_data"
+  mkdir -p "${safe_dir}"
+  echo "safe data" >"${safe_dir}/msg.eml"
+  tar -czf "${safe_tar}" -C "${safe_dir}" msg.eml
+
+  run verify_archive_safety "${safe_tar}"
+  [ "$status" -eq 0 ]
+}
+
+@test "apply_hostname_rewrite: replaces old mail host with target hostname" {
+  local test_ldif="${WORKDIR}/test_host.ldif"
+  printf "dn: uid=user1,ou=people,dc=example,dc=com\n" >"${test_ldif}"
+  printf "zimbraMailHost: mail-old.example.com\n" >>"${test_ldif}"
+  printf "zimbraMailTransport: lmtp:mail-old.example.com:7025\n" >>"${test_ldif}"
+
+  apply_hostname_rewrite "${test_ldif}" "mail-old.example.com" "mail-new.example.com"
+
+  [ "$(grep -c 'mail-new.example.com' "${test_ldif}")" -eq 2 ]
+  [ "$(grep -c 'mail-old.example.com' "${test_ldif}")" -eq 0 ]
+}
+
+@test "check_session_integrity: passes valid session and flags corrupted file" {
+  local session_id="full-20260828110000"
+  local session_dir="${WORKDIR}/${session_id}"
+  mkdir -p "${session_dir}"
+
+  echo "mailbox data" >"${session_dir}/user1@example.com.tgz"
+  generate_sha256 "${session_dir}/user1@example.com.tgz"
+  echo "ldap data" >"${session_dir}/user1@example.com.ldiff"
+  generate_sha256 "${session_dir}/user1@example.com.ldiff"
+
+  run check_session_integrity "${session_id}"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"RESULT: INTEGRITY AUDIT PASSED"* ]]
+
+  echo "tampered data" >>"${session_dir}/user1@example.com.tgz"
+  run check_session_integrity "${session_id}"
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"RESULT: INTEGRITY AUDIT FAILED"* ]]
+}
+

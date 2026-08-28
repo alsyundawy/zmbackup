@@ -1,81 +1,49 @@
 #!/bin/bash
 ################################################################################
-# zmbackup - Bash script to hot backup and hot restore Zimbra Collaboration
-#            Suite Opensource
+# zmbackup - Enterprise Hot Backup & Restore for Zimbra Collaboration Suite
+#            and Carbonio Community Edition
 #
-# Copyright (C) 2021 Lucas Costa Beyeler <lucas.costab@outlook.com>
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of version 2 of the GNU General Public
-# License as published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-# USA
-#
+# Copyright (C) 2021-2026 Lucas Costa Beyeler & The Zimbra Community
+# License: GNU General Public License v2
 ################################################################################
-# zmbkpose:
-#
-# 26/10/2010 - Version 1.0.5 - By Alan Nikitiuk Milani
-#                              <alan.milani@4linux.com.br>
-#                              <niki.milani@gmail.com>
-#
-#                              Bruno Gurgel
-#                              <bruno@4linux.com.br>
-#                              <bruno.gurgel@gmail.com>
-#
-# 24/05/2012 - Version 2.0 Beta - By William Felipe Welter
-#                                 <william.welter@4linux.com.br>
-#                                 <wfelipew@gmail.com>
-################################################################################
-# zmbackup:
-#
-# 06/02/2021 - Version 1.2.9  - By The Zimbra Community & Lucas Costa Beyeler
-#                               <lucas.costab@outlook.com>
-################################################################################
-# parallel:
-#
-#   O. Tange (2011): GNU Parallel - The Command-Line Power Tool,
-#  ;login: The USENIX Magazine, February 2011:42-47.
-#
+umask 077
+
 ################################################################################
 # LOADING ZMBACKUP LIBRARIES
 ################################################################################
 # shellcheck source=/dev/null
-source /usr/local/lib/zmbackup/bash/HelpAction.sh
+source /usr/local/lib/zmbackup/bash/HelpAction.sh 2>/dev/null || source "$(dirname "${0}")/lib/bash/HelpAction.sh"
 # shellcheck source=/dev/null
-source /usr/local/lib/zmbackup/bash/MiscAction.sh
+source /usr/local/lib/zmbackup/bash/MiscAction.sh 2>/dev/null || source "$(dirname "${0}")/lib/bash/MiscAction.sh"
 # shellcheck source=/dev/null
-source /usr/local/lib/zmbackup/bash/NotifyAction.sh
+source /usr/local/lib/zmbackup/bash/NotifyAction.sh 2>/dev/null || source "$(dirname "${0}")/lib/bash/NotifyAction.sh"
 # shellcheck source=/dev/null
-source /usr/local/lib/zmbackup/bash/ParallelAction.sh
+source /usr/local/lib/zmbackup/bash/ParallelAction.sh 2>/dev/null || source "$(dirname "${0}")/lib/bash/ParallelAction.sh"
 # shellcheck source=/dev/null
-source /usr/local/lib/zmbackup/bash/ListAction.sh
+source /usr/local/lib/zmbackup/bash/ListAction.sh 2>/dev/null || source "$(dirname "${0}")/lib/bash/ListAction.sh"
 # shellcheck source=/dev/null
-source /usr/local/lib/zmbackup/bash/BackupAction.sh
+source /usr/local/lib/zmbackup/bash/BackupAction.sh 2>/dev/null || source "$(dirname "${0}")/lib/bash/BackupAction.sh"
 # shellcheck source=/dev/null
-source /usr/local/lib/zmbackup/bash/RestoreAction.sh
+source /usr/local/lib/zmbackup/bash/RestoreAction.sh 2>/dev/null || source "$(dirname "${0}")/lib/bash/RestoreAction.sh"
 # shellcheck source=/dev/null
-source /usr/local/lib/zmbackup/bash/DeleteAction.sh
+source /usr/local/lib/zmbackup/bash/DeleteAction.sh 2>/dev/null || source "$(dirname "${0}")/lib/bash/DeleteAction.sh"
 # shellcheck source=/dev/null
-source /usr/local/lib/zmbackup/bash/MigrationAction.sh
+source /usr/local/lib/zmbackup/bash/MigrationAction.sh 2>/dev/null || source "$(dirname "${0}")/lib/bash/MigrationAction.sh"
 # shellcheck source=/dev/null
-source /usr/local/lib/zmbackup/bash/SessionAction.sh
+source /usr/local/lib/zmbackup/bash/SessionAction.sh 2>/dev/null || source "$(dirname "${0}")/lib/bash/SessionAction.sh"
 
 ################################################################################
-# ZMBACKUP MAIN CODE
+# GLOBAL INITIALIZATION
 ################################################################################
 load_config
 validate_config
 export_function
 export_vars
 constant
+
+################################################################################
+# CLI PARSING & ROUTING
+################################################################################
 case "${1}" in
 "-f" | "--full")
 	checkpid
@@ -140,23 +108,59 @@ case "${1}" in
 	rm -rf "${PID}"
 	;;
 "-l" | "--list")
-	list_sessions
+	list_sessions "${2}"
+	;;
+"-c" | "--check-integrity")
+	if [[ -z ${2} ]]; then
+		show_help
+		printf "\nError: Please provide the session ID to verify (e.g. zmbackup -c full-20260828110000)\n\n"
+		exit 2
+	fi
+	check_session_integrity "${2}"
+	ERRCODE=$?
+	;;
+"--health")
+	system_health_check
+	ERRCODE=$?
 	;;
 "-r" | "--restore")
-	create_temp
-	checkpid
-	case "${2}" in
-	"-dl" | "--distributionlist" | "-ldp" | "--ldap" | "-al" | "--alias" | "-sig" | "--signature")
-		case "${3}" in
-		"-a" | "--account" | "-d" | "--domain")
-			if ! validate_session_id "${4}"; then
-				printf "\n\nError! Invalid session ID: %s\n\n" "${4}"
-				exit 2
+	# Check for optional flags like --resolve, --rewrite-host, --dry-run
+	shift
+	RESTORE_FLAGS=()
+	while [[ $# -gt 0 ]]; do
+		case "${1}" in
+		--resolve)
+			RESTORE_RESOLVE_STRATEGY="${2}"
+			export RESTORE_RESOLVE_STRATEGY
+			shift 2
+			;;
+		--rewrite-host)
+			if [[ ${2} =~ ^([^=]+)=([^=]+)$ ]]; then
+				REWRITE_HOST_OLD="${BASH_REMATCH[1]}"
+				REWRITE_HOST_NEW="${BASH_REMATCH[2]}"
+				export REWRITE_HOST_OLD REWRITE_HOST_NEW
 			fi
-			restore_main_ldap "${4}" "${5}"
-			ERRCODE=$?
+			shift 2
+			;;
+		--dry-run)
+			DRY_RUN=true
+			export DRY_RUN
+			shift
 			;;
 		*)
+			RESTORE_FLAGS+=("${1}")
+			shift
+			;;
+		esac
+	done
+
+	set -- "${RESTORE_FLAGS[@]}"
+	create_temp
+	checkpid
+	case "${1}" in
+	"-dl" | "--distributionlist" | "-ldp" | "--ldap" | "-al" | "--alias" | "-sig" | "--signature")
+		case "${2}" in
+		"-a" | "--account" | "-d" | "--domain")
 			if ! validate_session_id "${3}"; then
 				printf "\n\nError! Invalid session ID: %s\n\n" "${3}"
 				exit 2
@@ -164,59 +168,67 @@ case "${1}" in
 			restore_main_ldap "${3}" "${4}"
 			ERRCODE=$?
 			;;
+		*)
+			if ! validate_session_id "${2}"; then
+				printf "\n\nError! Invalid session ID: %s\n\n" "${2}"
+				exit 2
+			fi
+			restore_main_ldap "${2}" "${3}"
+			ERRCODE=$?
+			;;
 		esac
 		rm -rf "${PID}"
 		;;
 	"-dom" | "--domain-backup")
-		if ! validate_session_id "${3}"; then
-			printf "\n\nError! Invalid session ID: %s\n\n" "${3}"
+		if ! validate_session_id "${2}"; then
+			printf "\n\nError! Invalid session ID: %s\n\n" "${2}"
 			exit 2
 		fi
-		restore_main_domain "${3}" "${4}"
+		restore_main_domain "${2}" "${3}"
 		ERRCODE=$?
 		rm -rf "${PID}"
 		;;
 	"-m" | "--mail")
-		if ! validate_session_id "${3}"; then
-			printf "\n\nError! Invalid session ID: %s\n\n" "${3}"
+		if ! validate_session_id "${2}"; then
+			printf "\n\nError! Invalid session ID: %s\n\n" "${2}"
 			exit 2
 		fi
-		restore_main_mailbox "${3}" "${4}" "${5}"
+		restore_main_mailbox "${2}" "${3}" "${4}"
 		ERRCODE=$?
 		rm -rf "${PID}"
 		;;
 	"-ro" | "--restoreOnAccount")
-		if [[ -z ${4} || -z ${5} ]]; then
+		if [[ -z ${3} || -z ${4} ]]; then
 			show_help
-			printf "\n\nError! Please inform the account that should be restored, and when the restore should be placed.\n\n"
+			printf "\n\nError! Please inform the account that should be restored, and destination account.\n\n"
 			exit 2
 		else
-			if ! validate_session_id "${3}"; then
-				printf "\n\nError! Invalid session ID: %s\n\n" "${3}"
+			if ! validate_session_id "${2}"; then
+				printf "\n\nError! Invalid session ID: %s\n\n" "${2}"
+				exit 2
+			fi
+			if ! validate_email "${3}"; then
+				printf "\n\nError! Invalid email address: %s\n\n" "${3}"
 				exit 2
 			fi
 			if ! validate_email "${4}"; then
 				printf "\n\nError! Invalid email address: %s\n\n" "${4}"
 				exit 2
 			fi
-			if ! validate_email "${5}"; then
-				printf "\n\nError! Invalid email address: %s\n\n" "${5}"
-				exit 2
-			fi
-			restore_main_mailbox "${3}" "${4}" "${5}"
+			restore_main_mailbox "${2}" "${3}" "${4}"
 			ERRCODE=$?
 			rm -rf "${PID}"
 		fi
 		;;
 	*)
-		if [[ ${2} == "full"* || ${2} == "inc"* ]]; then
-			if ! validate_session_id "${2}"; then
-				printf "\n\nError! Invalid session ID: %s\n\n" "${2}"
+		if [[ ${1} == "full"* || ${1} == "inc"* ]]; then
+			if ! validate_session_id "${1}"; then
+				printf "\n\nError! Invalid session ID: %s\n\n" "${1}"
 				exit 2
 			fi
-			restore_main_ldap "${2}" "${3}" "${4}"
+			restore_main_ldap "${1}" "${2}" "${3}"
 			ERRCODE=$?
-			restore_main_mailbox "${2}" "${3}" "${4}" || ERRCODE=$?
+			restore_main_mailbox "${1}" "${2}" "${3}" || ERRCODE=$?
 			rm -rf "${PID}"
 		else
 			show_help
@@ -260,7 +272,7 @@ case "${1}" in
 	show_help
 	;;
 "-v" | "--version")
-	VERSION_STR=$(cat /usr/local/lib/zmbackup/VERSION 2>/dev/null || cat "$(dirname "${0}")/../VERSION" 2>/dev/null || echo "1.2.11") || true
+	VERSION_STR=$(cat /usr/local/lib/zmbackup/VERSION 2>/dev/null || cat "$(dirname "${0}")/../VERSION" 2>/dev/null || echo "1.2.12") || true
 	echo "zmbackup version: ${VERSION_STR}"
 	;;
 "-mg" | "--migrate")
