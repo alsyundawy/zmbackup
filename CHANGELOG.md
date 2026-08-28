@@ -1,4 +1,4 @@
-# Changelog
+# [1.2.12] — Zmbackup Release Notes & Changelog
 
 All notable changes, security enhancements, architectural optimizations, and bug fixes for **Zmbackup** will be documented in this file.
 
