@@ -354,7 +354,7 @@ Kontribusi berupa perbaikan bug, penambahan fitur kompatibilitas, atau penyempur
 
 ## Changelog
 
-**v1.2.12 — Enterprise Universal Release (ZCS 7.0–10.1 & Carbonio):**
+**v1.2.13 — Enterprise Universal Release (ZCS 7.0–10.1 & Carbonio):**
 
 - **[SEC]** **Zero-Plaintext Credential Shielding**: Autentikasi OpenLDAP aman via `-y "$LDAP_PASS_FILE"` (mode 0600) dengan automatic trap cleanup.
 - **[SEC]** **Zip-Slip Defense (CVE-2022-27925)**: Integrasi `verify_archive_safety()` untuk inspeksi path traversal pada arsip tarball.

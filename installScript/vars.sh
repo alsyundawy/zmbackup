@@ -20,7 +20,7 @@ ERR_NO_CONNECTION="4" # Missing connection to install packages
 ERR_CREATE_USER="5"   # Can't create the user for some reason
 
 # ZMBACKUP INSTALLATION PATH
-MYDIR=$(dirname "$0")                   # The directory where the install script is
+MYDIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" &>/dev/null && pwd)"                   # The directory where the install script is
 ZMBKP_SRC="/usr/local/bin"              # The main script stay here
 ZMBKP_CONF="/etc/zmbackup"              # The config/blocked list directory
 ZMBKP_SHARE="/usr/local/share/zmbackup" # Keep for upgrade routine
@@ -42,7 +42,12 @@ OSE_INSTALL_HOSTNAME=$(hostname --fqdn 2>/dev/null || hostname -f 2>/dev/null ||
 OSE_INSTALL_PORT=$(grep SourceAdminPort /opt/zimbra/conf/zmztozmig.conf 2>/dev/null | cut -d"=" -f2 || true)
 
 # OSE_INSTALL_ADDRESS: resolve hostname to IP; fall back to 127.0.0.1
-OSE_INSTALL_ADDRESS=$(ping -c1 "${OSE_INSTALL_HOSTNAME}" 2>/dev/null | head -1 | cut -d" " -f3 | tr -d '()' || echo "127.0.0.1")
+if command -v getent >/dev/null 2>&1; then
+    OSE_INSTALL_ADDRESS=$(getent hosts "${OSE_INSTALL_HOSTNAME}" 2>/dev/null | awk '{print $1}' | head -1 || echo "127.0.0.1")
+else
+    OSE_INSTALL_ADDRESS=$(host "${OSE_INSTALL_HOSTNAME}" 2>/dev/null | awk '/has address/ {print $4}' | head -1 || echo "127.0.0.1")
+fi
+OSE_INSTALL_ADDRESS="${OSE_INSTALL_ADDRESS:-127.0.0.1}"
 
 # OSE_INSTALL_LDAPPASS: read LDAP password from localconfig
 OSE_INSTALL_LDAPPASS=$(su -s /bin/bash -c "${OSE_INSTALL_DIR}/bin/zmlocalconfig -s zimbra_ldap_password" "${OSE_USER}" 2>/dev/null | awk '{print $3}' || true)
@@ -60,7 +65,7 @@ if [[ -f "${_ver_file}" ]]; then
 elif [[ -f "${_ver_sys}" ]]; then
 	ZMBKP_VERSION="zmbackup version: $(cat "${_ver_sys}")"
 else
-	ZMBKP_VERSION="zmbackup version: 1.2.12"
+	ZMBKP_VERSION="zmbackup version: 1.2.13"
 fi
 unset _ver_file _ver_sys
 

@@ -275,7 +275,7 @@ case "${1}" in
 	show_help
 	;;
 "-v" | "--version")
-	VERSION_STR=$(cat /usr/local/lib/zmbackup/VERSION 2>/dev/null || cat "$(dirname "${0}")/../VERSION" 2>/dev/null || echo "1.2.12") || true
+	VERSION_STR=$(cat /usr/local/lib/zmbackup/VERSION 2>/dev/null || cat "$(dirname "${0}")/../VERSION" 2>/dev/null || echo "1.2.13") || true
 	echo "zmbackup version: ${VERSION_STR}"
 	;;
 "-mg" | "--migrate")

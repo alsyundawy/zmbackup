@@ -55,22 +55,27 @@ function validate_session_id() {
 # Prints an error and returns 1 if any value fails validation.
 ###############################################################################
 function validate_account_args() {
-	local flag="${1}" values="${2}" item
+	local flag="${1}" values="${2}"
 	if [[ ${flag} == "-a" || ${flag} == "--account" ]] && [[ -n ${values} ]]; then
-		for item in ${values//,/ }; do
-			if ! validate_email "${item}"; then
+		IFS=',' read -ra items <<< "${values}"
+		for item in "${items[@]}"; do
+			item="${item// /}"
+			if [[ -n ${item} ]] && ! validate_email "${item}"; then
 				printf "Error! Invalid email address: %s\n" "${item}"
 				return 1
 			fi
 		done
 	elif [[ ${flag} == "-d" || ${flag} == "--domain" ]] && [[ -n ${values} ]]; then
-		for item in ${values//,/ }; do
-			if ! validate_domain "${item}"; then
+		IFS=',' read -ra items <<< "${values}"
+		for item in "${items[@]}"; do
+			item="${item// /}"
+			if [[ -n ${item} ]] && ! validate_domain "${item}"; then
 				printf "Error! Invalid domain name: %s\n" "${item}"
 				return 1
 			fi
 		done
 	fi
+	return 0
 }
 
 ###############################################################################
@@ -286,11 +291,21 @@ function verify_archive_safety() {
 function apply_hostname_rewrite() {
 	local input_file="${1}" old_host="${2}" new_host="${3}"
 	if [[ -n ${old_host} && -n ${new_host} && -f ${input_file} ]]; then
-		local tmp_file escaped_old
+		local tmp_file
 		tmp_file=$(mktemp "${TEMPDIR:-/tmp}/zm_rewrite_XXXXXX")
-		# Escape old_host metacharacters for safe sed BRE LHS (|, ., *, [, ^, $, \)
-		escaped_old=$(printf '%s' "${old_host}" | sed 's/[\\|.[\^$*]/\\&/g')
-		sed "s|${escaped_old}|${new_host}|g" "${input_file}" >"${tmp_file}" && mv "${tmp_file}" "${input_file}"
+		# Safe literal string substitution using awk index/substr (zero injection risk)
+		awk -v old="${old_host}" -v new="${new_host}" '
+			BEGIN { len = length(old) }
+			{
+				out = ""
+				line = $0
+				while ((idx = index(line, old)) > 0) {
+					out = out substr(line, 1, idx - 1) new
+					line = substr(line, idx + len)
+				}
+				print out line
+			}
+		' "${input_file}" > "${tmp_file}" && mv "${tmp_file}" "${input_file}"
 		rm -f "${tmp_file}"
 	fi
 }
@@ -327,7 +342,7 @@ function generate_session_manifest() {
 	local total_bytes
 	total_bytes=$(du -sb "${session_dir}" 2>/dev/null | awk '{print $1}' || du -sk "${session_dir}" | awk '{print $1 * 1024}')
 	local version_str
-	version_str=$(cat /usr/local/lib/zmbackup/VERSION 2>/dev/null || echo "1.2.12")
+	version_str=$(cat /usr/local/lib/zmbackup/VERSION 2>/dev/null || echo "1.2.13")
 
 	local manifest_file="${session_dir}/MANIFEST.json"
 	{
@@ -821,20 +836,19 @@ function check_parallel_version() {
 ###############################################################################
 function checkpid() {
 	if [[ -f ${PID} ]]; then
-		local PIDP PIDR
-		PIDP=$(cat "${PID}")
-		PIDR=$(ps -efa | awk '{print $2}' | grep -c "^${PIDP}$") || true
-		if [[ ${PIDR} -gt 0 ]]; then
-			echo "FATAL: could not write lock file '/opt/zimbra/log/zmbackup.pid': File already exist"
+		local PIDP
+		PIDP=$(<"${PID}")
+		if [[ ${PIDP} =~ ^[0-9]+$ ]] && kill -0 "${PIDP}" 2>/dev/null; then
+			echo "FATAL: could not write lock file '${PID}': File already exist"
 			echo "This file exist as a secure measurement to protect your system to run two zmbackup"
 			echo "instances at the same time."
 			exit 4
 		else
 			echo 'Found stale PID file. Proceeding'
-			printf '%s\n' "$$" >"${PID}"
+			printf '%s\n' "$$" > "${PID}"
 		fi
 	else
-		printf '%s\n' "$$" >"${PID}"
+		printf '%s\n' "$$" > "${PID}"
 	fi
 }
 

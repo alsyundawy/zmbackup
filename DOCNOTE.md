@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD013 MD024 MD033 MD034 MD028 MD031 -->
 
-# CATATAN TEKNIS & ARSITEKTUR REKAYASA ZMBACKUP (DOCNOTE v1.2.12)
+# CATATAN TEKNIS & ARSITEKTUR REKAYASA ZMBACKUP (DOCNOTE v1.2.13)
 
 Dokumen Spesifikasi Teknis, Desain Arsitektur Hot Backup, Matriks Kompatibilitas Sistem, Hardening Keamanan, dan Rekayasa Database Relasional SQLite3 WAL
 

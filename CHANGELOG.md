@@ -1,19 +1,35 @@
-# [1.2.12] — Zmbackup Release Notes & Changelog
+# [1.2.13] — Zmbackup Release Notes & Changelog
 
-All notable changes, security enhancements, architectural optimizations, and bug fixes for **Zmbackup** will be documented in this file.
+All notable changes to **zmbackup** (ZCS & Carbonio Hot Backup & Disaster Recovery Suite) are documented here.
 
-Original Project & Architecture by **Lucas Costa Beyeler** (inspired by Zmbkpose by **bggo**)
+Original Project & Architecture by **Lucas Costa Beyeler** (inspired by Zmbkpose by **bggo**)  
 Enterprise Optimization, Security Hardening & Maintenance by **Harry Dertin Sutisna Alsyundawy**
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-[![Maintenance Status](https://img.shields.io/badge/Maintained%3F-yes-brightgreen.svg)](https://github.com/alsyundawy)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Release](<https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2Falsyundawy%2Fzmbackup%2F1.2-version%2FVERSION&search=%5E(.%2B)&replace=%241&label=Release&color=green>)](https://github.com/alsyundawy/zmbackup/releases)
-[![Build Status](https://circleci.com/gh/alsyundawy/zmbackup.svg?style=shield)](https://circleci.com/gh/alsyundawy/zmbackup)
-[![WhatsApp](https://img.shields.io/badge/WhatsApp-Chat%20%26%20Call-25D366?style=flat&logo=whatsapp&logoColor=white)](https://wa.me/6285658515212)
-[![Telegram](https://img.shields.io/badge/Telegram-@alsyundawy-2CA5E0?style=flat&logo=telegram&logoColor=white)](https://t.me/alsyundawy)
+---
+
+## [1.2.13] - 2026-08-29
+
+### Security & Hardening in 1.2.13
+- **[SEC]** **AWK Literal Hostname Rewrite Engine**: Eliminated SED command injection vector in `apply_hostname_rewrite()` by migrating to a pure `awk` engine with `index()` and `substr()` literal string replacement.
+- **[SEC]** **POSIX Process Table Verification (`checkpid`)**: Hardened PID validation using POSIX `kill -0 "${PIDP}"` to prevent process table spoofing and cross-distro formatting anomalies while maintaining full error signature parity.
+- **[SEC]** **OpenLDAP Credential Shielding**: Enhanced OpenLDAP authentication passing passwords strictly via mode `0600` file `-y "${LDAP_PASS_FILE}"`, eradicating credential leakage via `/proc/*/cmdline` and `ps`.
+- **[SEC]** **Zip-Slip & Path Traversal Mitigation (CVE-2022-27925)**: Enforced strict `verify_archive_safety()` validation on all incoming archives before extraction.
+- **[SEC]** **CVE-2026-73570 & CVE-2025-71275 Proactive Diagnostics**: Integrated runtime checks and mitigation alerts for SNMP RCE and PostJournal vulnerabilities.
+
+### Bug Fixes in 1.2.13
+- **[FIX]** **Deterministic IP Resolution**: Replaced fragile `ping` parsing with POSIX `getent hosts` / `host` in `vars.sh`.
+- **[FIX]** **Absolute Path Resolution for Installer**: Resolved `MYDIR` using `BASH_SOURCE` ensuring reliable execution from arbitrary working directories.
+- **[FIX]** **Word-Splitting & Globbing Prevention**: Sanitized comma-separated arguments in `validate_account_args` and `ListAction.sh` via `IFS=',' read -ra`.
+- **[FIX]** **Schema V2 SQLite Compatibility**: Updated all migration and unit test SQL inserts to use explicit named columns (`sessionID, initial_date, ...`).
+- **[FIX]** **RestoreAction Deduplication**: Removed redundant `auto_precreate_domains` function in `RestoreAction.sh`.
+
+### Performance & Packaging
+- **[PERF]** **Dynamic Concurrency Governance**: Safe worker throttling derived from available RAM and Zimbra JVM heap.
+- **[PERF]** **SQLite3 WAL Mode**: High-concurrency journaling with 15-second busy timeout.
+- **[CHORE]** **Synchronized Test Discovery**: Added recursive `-r` flags to Bats test suites in `package.json`.
 
 ---
 

@@ -6,3 +6,4 @@ node_modules/
 MULTI_SERVER_SUPPORT.md 
 *.log
 .DS_Store
+.patch-backup*

@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD013 MD024 MD033 MD034 MD028 MD031 -->
 
-# PANDUAN LENGKAP & MASTERCLASS TUTORIAL OPERASIONAL ZMBACKUP (v1.2.12)
+# PANDUAN LENGKAP & MASTERCLASS TUTORIAL OPERASIONAL ZMBACKUP (v1.2.13)
 
 Panduan Praktis Langkah demi Langkah: Hot Backup, Disaster Recovery (Restore), Migrasi Lintas Server/OS, Audit Integritas Kriptografi, dan Otomatisasi Retensi untuk Zimbra Collaboration Suite (ZCS 7.0–10.1.x) & Carbonio FOSS
 
@@ -49,7 +49,7 @@ Enterprise Optimization, Security Hardening & Maintenance by **Harry Dertin Suti
 
 Zmbackup adalah engine otomatisasi backup dan recovery yang dirancang khusus untuk memecahkan kelemahan backup snapshot level VM (yang lambat dan mengharuskan rollback seluruh server). Zmbackup berinteraksi secara cerdas pada level granular (per-akun, per-mailbox, per-domain) langsung melalui **Zimbra Mailbox REST API** (`/?fmt=tgz`) dan **OpenLDAP** tanpa perlu mematikan service Zimbra (*Zero Downtime*).
 
-### Keunggulan Desain Zmbackup v1.2.12
+### Keunggulan Desain Zmbackup v1.2.13
 
 - **Zero Downtime Hot Backup**: Pengguna dapat terus mengirim dan menerima email selama proses backup berlangsung.
 - **Granular Restoration**: Kemampuan memulihkan hanya 1 email, 1 folder, 1 akun, atau seluruh domain tanpa mengganggu akun lain.
@@ -230,7 +230,7 @@ zmbackup -i -a user1@domain.com
 
 ### 5.3. Manajemen Konkurensi & Alokasi Memori
 
-Zmbackup v1.2.12 dilengkapi fungsi `calculate_safe_concurrency()` yang secara otomatis mengestimasi alokasi RAM per-worker (~384MB per koneksi REST). Jika RAM server menipis akibat lonjakan trafik email, jumlah proses paralel akan diturunkan secara dinamis untuk mencegah terjadinya OOM Killer pada Zimbra JVM.
+Zmbackup v1.2.13 dilengkapi fungsi `calculate_safe_concurrency()` yang secara otomatis mengestimasi alokasi RAM per-worker (~384MB per koneksi REST). Jika RAM server menipis akibat lonjakan trafik email, jumlah proses paralel akan diturunkan secara dinamis untuk mencegah terjadinya OOM Killer pada Zimbra JVM.
 
 ---
 
@@ -362,7 +362,7 @@ Untuk beralih dari format flat-file `sessions.txt` ke database relasional `sessi
 Simpan konfigurasi berikut pada `/etc/cron.d/zmbackup` untuk otomatisasi enterprise:
 
 ```cron
-# /etc/cron.d/zmbackup — Penjadwalan Otomatis Zmbackup v1.2.12
+# /etc/cron.d/zmbackup — Penjadwalan Otomatis Zmbackup v1.2.13
 SHELL=/bin/bash
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/opt/zimbra/bin
 

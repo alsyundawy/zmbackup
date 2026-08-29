@@ -1,6 +1,6 @@
 {
   "name": "zmbackup",
-  "version": "1.2.12",
+  "version": "1.2.13",
   "description": "Enterprise Hot Backup, Restore & Disaster Recovery Suite for Zimbra & Carbonio",
   "license": "MIT",
   "author": "Lucas Costa Beyeler & Harry Dertin Sutisna Alsyundawy",

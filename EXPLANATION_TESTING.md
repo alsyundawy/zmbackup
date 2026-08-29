@@ -2,7 +2,7 @@
 
 # PANDUAN ARSITEKTUR TESTING & SAFETY HARNESS ZMBACKUP (BATS & NPM)
 
-Dokumen Teknis Pengujian Otomatis, Metodologi Mocking, Isolasi Sandbox, dan Pemisahan Komponen Runtime Produksi vs Development (v1.2.12)
+Dokumen Teknis Pengujian Otomatis, Metodologi Mocking, Isolasi Sandbox, dan Pemisahan Komponen Runtime Produksi vs Development (v1.2.13)
 
 Original Project & Architecture by **Lucas Costa Beyeler** (inspired by Zmbkpose by **bggo**)
 Enterprise Optimization, Security Hardening & Maintenance by **Harry Dertin Sutisna Alsyundawy**
