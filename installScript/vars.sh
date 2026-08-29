@@ -19,8 +19,14 @@ ERR_DEPNOTFOUND="3"   # Missing dependency
 ERR_NO_CONNECTION="4" # Missing connection to install packages
 ERR_CREATE_USER="5"   # Can't create the user for some reason
 
-# ZMBACKUP INSTALLATION PATH
-MYDIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" &>/dev/null && pwd)"                   # The directory where the install script is
+if [[ -f "$(dirname "${BASH_SOURCE[0]:-$0}")/../VERSION" ]]; then
+	MYDIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." &>/dev/null && pwd)"
+elif [[ -f "$(dirname "${BASH_SOURCE[0]:-$0}")/VERSION" ]]; then
+	MYDIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" &>/dev/null && pwd)"
+else
+	MYDIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." &>/dev/null && pwd)"
+fi
+
 ZMBKP_SRC="/usr/local/bin"              # The main script stay here
 ZMBKP_CONF="/etc/zmbackup"              # The config/blocked list directory
 ZMBKP_SHARE="/usr/local/share/zmbackup" # Keep for upgrade routine

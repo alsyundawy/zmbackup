@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.13] - 2026-08-29
 
 ### Security & Hardening in 1.2.13
+
 - **[SEC]** **AWK Literal Hostname Rewrite Engine**: Eliminated SED command injection vector in `apply_hostname_rewrite()` by migrating to a pure `awk` engine with `index()` and `substr()` literal string replacement.
 - **[SEC]** **POSIX Process Table Verification (`checkpid`)**: Hardened PID validation using POSIX `kill -0 "${PIDP}"` to prevent process table spoofing and cross-distro formatting anomalies while maintaining full error signature parity.
 - **[SEC]** **OpenLDAP Credential Shielding**: Enhanced OpenLDAP authentication passing passwords strictly via mode `0600` file `-y "${LDAP_PASS_FILE}"`, eradicating credential leakage via `/proc/*/cmdline` and `ps`.
@@ -20,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **[SEC]** **CVE-2026-73570 & CVE-2025-71275 Proactive Diagnostics**: Integrated runtime checks and mitigation alerts for SNMP RCE and PostJournal vulnerabilities.
 
 ### Bug Fixes in 1.2.13
+
 - **[FIX]** **Deterministic IP Resolution**: Replaced fragile `ping` parsing with POSIX `getent hosts` / `host` in `vars.sh`.
 - **[FIX]** **Absolute Path Resolution for Installer**: Resolved `MYDIR` using `BASH_SOURCE` ensuring reliable execution from arbitrary working directories.
 - **[FIX]** **Word-Splitting & Globbing Prevention**: Sanitized comma-separated arguments in `validate_account_args` and `ListAction.sh` via `IFS=',' read -ra`.
@@ -27,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **[FIX]** **RestoreAction Deduplication**: Removed redundant `auto_precreate_domains` function in `RestoreAction.sh`.
 
 ### Performance & Packaging
+
 - **[PERF]** **Dynamic Concurrency Governance**: Safe worker throttling derived from available RAM and Zimbra JVM heap.
 - **[PERF]** **SQLite3 WAL Mode**: High-concurrency journaling with 15-second busy timeout.
 - **[CHORE]** **Synchronized Test Discovery**: Added recursive `-r` flags to Bats test suites in `package.json`.

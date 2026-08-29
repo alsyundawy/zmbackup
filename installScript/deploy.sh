@@ -13,7 +13,7 @@
 # blocklist_gen: Generate a blocked list of all accounts Zmbackup should ignore
 ###############################################################################
 function blocklist_gen() {
-	for ACCOUNT in $(su -s /bin/bash -c "/opt/zimbra/bin/zmprov -l gaa 2>/dev/null || true" "${OSE_USER}"); do
+	for ACCOUNT in $(su -s /bin/bash -c "${OSE_INSTALL_DIR}/bin/zmprov -l gaa 2>/dev/null || true" "${OSE_USER}"); do
 		if [[ ${ACCOUNT} == "galsync"* ]] ||
 			[[ ${ACCOUNT} == "virus"* ]] ||
 			[[ ${ACCOUNT} == "ham"* ]] ||
@@ -47,7 +47,7 @@ function deploy_new() {
 	if [[ ${SESSION_TYPE} == "TXT" ]]; then
 		touch "${OSE_DEFAULT_BKP_DIR}"/sessions.txt
 	elif [[ ${SESSION_TYPE} == "SQLITE3" ]]; then
-		sqlite3 "${OSE_DEFAULT_BKP_DIR}"/sessions.sqlite3 <project/lib/sqlite3/database.sql >/dev/null 2>&1 || true
+		sqlite3 "${OSE_DEFAULT_BKP_DIR}"/sessions.sqlite3 <"${MYDIR}"/project/lib/sqlite3/database.sql >/dev/null 2>&1 || true
 	fi
 	chown -R "${OSE_USER}"."${OSE_USER}" "${OSE_DEFAULT_BKP_DIR}" >/dev/null 2>&1 || true
 	echo -ne '#                     (5%)\r'
@@ -98,6 +98,7 @@ function deploy_new() {
 
 	local _conf="${ZMBKP_CONF}/zmbackup.conf"
 	local _tmp="${_conf}.tmp.$$"
+	touch "${_tmp}" 2>/dev/null && chmod 600 "${_tmp}" 2>/dev/null || true
 	sed \
 		-e "s|{OSE_DEFAULT_BKP_DIR}|${OSE_DEFAULT_BKP_DIR}|g" \
 		-e "s|{ZMBKP_MAIL_ALERT}|${ZMBKP_MAIL_ALERT}|g" \
@@ -109,7 +110,7 @@ function deploy_new() {
 		-e "s|{MAX_PARALLEL_PROCESS}|${MAX_PARALLEL_PROCESS}|g" \
 		-e "s|{ROTATE_TIME}|${ROTATE_TIME}|g" \
 		-e "s|{LOCK_BACKUP}|${LOCK_BACKUP}|g" \
-		"${_conf}" > "${_tmp}" && mv "${_tmp}" "${_conf}"
+		"${_conf}" > "${_tmp}" && chmod 600 "${_tmp}" 2>/dev/null && mv "${_tmp}" "${_conf}"
 	echo -ne '#################     (85%)\r'
 
 	# Fix backup dir permissions (owner MUST be $OSE_USER)

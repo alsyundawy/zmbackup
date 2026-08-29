@@ -33,7 +33,7 @@ function __backupFullInc() {
 	if [[ "${ERRCODE}" -eq 0 ]]; then
 		local SHA_VAL=""
 		if [[ -f "${TEMPDIR}/${1}.tgz.sha256" ]]; then
-			SHA_VAL=$(cat "${TEMPDIR}/${1}.tgz.sha256" | tr -d ' \r\n')
+			SHA_VAL=$(tr -d ' \r\n' < "${TEMPDIR}/${1}.tgz.sha256")
 		fi
 		session_query \
 			"insert into backup_account (email,sessionID,account_size,initial_date,conclusion_date,status,sha256_hash) values ('${SAFE_EMAIL}','${SESSION}','${SIZE}','${SDATE}','${EDATE}','SUCCESS','${SHA_VAL}');" \
@@ -66,7 +66,7 @@ function __backupLdap() {
 	if [[ "${ERRCODE}" -eq 0 ]]; then
 		local SHA_VAL=""
 		if [[ -f "${TEMPDIR}/${1}.ldiff.sha256" ]]; then
-			SHA_VAL=$(cat "${TEMPDIR}/${1}.ldiff.sha256" | tr -d ' \r\n')
+			SHA_VAL=$(tr -d ' \r\n' < "${TEMPDIR}/${1}.ldiff.sha256")
 		fi
 		session_query \
 			"insert into backup_account (email,sessionID,account_size,initial_date,conclusion_date,status,sha256_hash) values ('${SAFE_EMAIL}','${SESSION}','${SIZE}','${SDATE}','${EDATE}','SUCCESS','${SHA_VAL}');" \
@@ -95,7 +95,7 @@ function __backupDomain() {
 	if [[ "${ERRCODE}" -eq 0 ]]; then
 		local SHA_VAL=""
 		if [[ -f "${TEMPDIR}/${1}.ldiff.sha256" ]]; then
-			SHA_VAL=$(cat "${TEMPDIR}/${1}.ldiff.sha256" | tr -d ' \r\n')
+			SHA_VAL=$(tr -d ' \r\n' < "${TEMPDIR}/${1}.ldiff.sha256")
 		fi
 		session_query \
 			"insert into backup_account (email,sessionID,account_size,initial_date,conclusion_date,status,sha256_hash) values ('${SAFE_EMAIL}','${SESSION}','${SIZE}','${SDATE}','${EDATE}','SUCCESS','${SHA_VAL}');" \
@@ -125,7 +125,7 @@ function __backupMailbox() {
 	if [[ "${ERRCODE}" -eq 0 ]]; then
 		local SHA_VAL=""
 		if [[ -f "${TEMPDIR}/${1}.tgz.sha256" ]]; then
-			SHA_VAL=$(cat "${TEMPDIR}/${1}.tgz.sha256" | tr -d ' \r\n')
+			SHA_VAL=$(tr -d ' \r\n' < "${TEMPDIR}/${1}.tgz.sha256")
 		fi
 		session_query \
 			"insert into backup_account (email,sessionID,account_size,initial_date,conclusion_date,status,sha256_hash) values ('${SAFE_EMAIL}','${SESSION}','${SIZE}','${SDATE}','${EDATE}','SUCCESS','${SHA_VAL}');" \

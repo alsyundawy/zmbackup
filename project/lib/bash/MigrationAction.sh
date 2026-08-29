@@ -17,7 +17,11 @@ function create_session() {
 		touch "${WORKDIR}"/sessions.txt
 		echo "Session file TXT recreated"
 	elif [[ ${SESSION_TYPE} == "SQLITE3" ]]; then
-		sqlite3 "${WORKDIR}"/sessions.sqlite3 ".read /usr/local/lib/zmbackup/sqlite3/database.sql" 2>/dev/null || true
+		local sql_file="/usr/local/lib/zmbackup/sqlite3/database.sql"
+		[[ ! -f ${sql_file} ]] && sql_file="$(dirname "${BASH_SOURCE[0]}")/../sqlite3/database.sql"
+		if [[ -f ${sql_file} ]]; then
+			sqlite3 "${WORKDIR}"/sessions.sqlite3 ".read ${sql_file}" 2>/dev/null || true
+		fi
 		echo "Session file SQLITE3 recreated"
 	else
 		echo "Invalid File Format - Nothing to do."
